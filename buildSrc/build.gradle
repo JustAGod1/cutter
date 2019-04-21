@@ -11,6 +11,7 @@ repositories {
 }
 
 sourceSets {
+    main.resources.srcDirs = ['src/resources']
     main.java.srcDirs = ['src']
     main.kotlin.srcDirs = ['src']
     main.groovy.srcDirs = ['src']
@@ -18,8 +19,6 @@ sourceSets {
         groovy.outputDir = compileKotlin.destinationDir = compileJava.destinationDir
     }
 }
-
-println compileKotlin.dependsOn
 
 dependencies {
     compile gradleApi()

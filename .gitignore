@@ -5,3 +5,4 @@ build\
 **.rar
 cutter-cache\
 .idea\
+libs/

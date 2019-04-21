@@ -19,26 +19,29 @@ class CutterAction {
     final CutterTaskData data
     final File classesCache
     final Project project
+    final boolean printSidesTree
 
-    CutterAction(String annotation, List<File> classesDirs, CutterTaskData data, File classesCache, Project project) {
+    CutterAction(String annotation, List<File> classesDirs, CutterTaskData data, File classesCache, Project project, boolean printSidesTree) {
         this.annotation = annotation
         this.classesDirs = classesDirs
         this.data = data
         this.classesCache = classesCache
         this.project = project
+        this.printSidesTree = printSidesTree
     }
 
     def action() {
         classesCache.deleteDir()
         classesCache.mkdirs()
         project.copy {
+            def spec = project.jar.getMainSpec()
+            spec.getSourcePaths().forEach { from(it) }
             classesDirs.forEach {
                 from(it)
             }
-            //include('**.class')
             into(classesCache)
         }
-        def firstPass = new ModelBuilderMincer(new ClassTypeReference(annotation), data.primalSides)
+        def firstPass = new ModelBuilderMincer(new ClassTypeReference(annotation), data.primalSides, printSidesTree)
         def secondPass = new CutterMincer(data.targetSides, new HashSet(data.primalSides))
         def pipeline = make(
                 "final",

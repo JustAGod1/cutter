@@ -1,5 +1,6 @@
 package ru.justagod.plugin
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.jvm.tasks.Jar
@@ -14,13 +15,14 @@ class CutterPlugin implements Plugin<Project> {
 
         config.builds.all { task ->
             if (task == null) return
-            project.task(task.name + 'Build', type: Jar) {
-                from(config.classesCache)
-                archiveName = project.jar.archiveName - '.jar' + '-' + task.name + '.jar'
-                destinationDir = project.jar.destinationDir
+            project.task(task.name + 'Build', type: DefaultTask) {
                 group = 'build'
-                doFirst {
-                    new CutterAction(config.annotation, config.classesDirs, task, config.classesCache, project).action()
+                doLast {
+                    new CutterAction(config.annotation, config.classesDirs, task, config.classesCache, project, config.printSidesTree).action()
+                    project.jar.getMainSpec().getSourcePaths().clear()
+                    project.jar.from(config.classesCache)
+                    project.jar.version += '-' + task.name
+                    project.jar.execute()
                 }
             }.dependsOn('classes')
         }

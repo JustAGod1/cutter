@@ -13,7 +13,6 @@ class FallbackModelFactory(loader: ClassLoader, harvester: (String) -> ByteArray
         return try {
             bytecodeModelFactory.makeModel(type, parent)
         } catch (e: BytecodeModelFactory.BytecodeNotFoundException) {
-            println(e)
             try {
                 reflectionModelFactory.makeModel(type, parent)
             } catch (e: Exception) {

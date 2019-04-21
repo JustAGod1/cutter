@@ -14,7 +14,11 @@ import ru.justagod.model.factory.BytecodeModelFactory
 import ru.justagod.model.factory.ModelFactory
 import ru.justagod.plugin.data.SideInfo
 
-class ModelBuilderMincer(private val annotation: ClassTypeReference, private val primalSides: List<SideInfo>) : SubMincer<Unit, SidesTree> {
+class ModelBuilderMincer(
+        private val annotation: ClassTypeReference,
+        private val primalSides: List<SideInfo>,
+        private val printSidesTree: Boolean
+) : SubMincer<Unit, SidesTree> {
     override fun process(
             name: ClassTypeReference,
             data: ClassModel?,
@@ -107,6 +111,6 @@ class ModelBuilderMincer(private val annotation: ClassTypeReference, private val
 
     override fun endProcessing(input: Unit, cache: List<ClassTypeReference>?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, SidesTree>) {
         pipeline.value!!.identify(null)
-        println(pipeline.value!!.toString(primalSides.toSet()))
+        if (printSidesTree) println(pipeline.value!!.toString(primalSides.toSet()))
     }
 }

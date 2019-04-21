@@ -25,6 +25,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 cutter {
+    printSidesTree = true
     annotation = 'ru.justagod.mineplugin.GradleSideOnly'
     classesCache = file('cutter-cache')
     classesDirs = [compileJava.destinationDir]
@@ -55,11 +56,6 @@ minecraft {
 }
 
 jar {
-    manifest {
-        attributes 'FMLAT': 'messagesendler_at.cfg'
-        attributes 'FMLCorePlugin': 'gloomyfolken.hooklib.example.MyHookLoader'
-        attributes 'FMLCorePluginContainsFMLMod': 'true'
-    }
 }
 
 dependencies {
