@@ -26,6 +26,7 @@ targetCompatibility = 1.8
 
 cutter {
     printSidesTree = true
+    processDependencies = false
     annotation = 'ru.justagod.mineplugin.GradleSideOnly'
     classesCache = file('cutter-cache')
     classesDirs = [compileJava.destinationDir]

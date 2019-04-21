@@ -20,22 +20,26 @@ class CutterAction {
     final File classesCache
     final Project project
     final boolean printSidesTree
+    final boolean processDependencies
 
-    CutterAction(String annotation, List<File> classesDirs, CutterTaskData data, File classesCache, Project project, boolean printSidesTree) {
+    CutterAction(String annotation, List<File> classesDirs, CutterTaskData data, File classesCache, Project project, boolean printSidesTree, boolean processDependencies) {
         this.annotation = annotation
         this.classesDirs = classesDirs
         this.data = data
         this.classesCache = classesCache
         this.project = project
         this.printSidesTree = printSidesTree
+        this.processDependencies = processDependencies
     }
 
     def action() {
         classesCache.deleteDir()
         classesCache.mkdirs()
         project.copy {
-            def spec = project.jar.getMainSpec()
-            spec.getSourcePaths().forEach { from(it) }
+            if (processDependencies) {
+                def spec = project.jar.getMainSpec()
+                spec.getSourcePaths().forEach { from(it) }
+            }
             classesDirs.forEach {
                 from(it)
             }

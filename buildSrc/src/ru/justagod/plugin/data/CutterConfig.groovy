@@ -3,6 +3,7 @@ package ru.justagod.plugin.data
 import org.gradle.api.NamedDomainObjectContainer
 
 class CutterConfig {
+    boolean processDependencies = true
     boolean printSidesTree = false
     File classesCache
     String annotation
