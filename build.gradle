@@ -55,11 +55,12 @@ minecraft {
     runDir = "eclipse"
 }
 
-jar {
-}
-
-dependencies {
-
+task makeReleaseArchive(type: Zip) {
+    from file('buildSrc')
+    exclude 'build/'
+    exclude 'gradle/'
+    into 'buildSrc'
+    archiveName 'release.zip'
 }
 
 idea.module.inheritOutputDirs = true
