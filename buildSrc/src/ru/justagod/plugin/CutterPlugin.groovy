@@ -23,7 +23,12 @@ class CutterPlugin implements Plugin<Project> {
                     new CutterAction(config.annotation, config.classesDirs, task, config.classesCache, project, config.printSidesTree, config.processDependencies).action()
                     if (config.processDependencies) project.jar.getMainSpec().getSourcePaths().clear()
                     else project.jar.getMainSpec().getSourcePaths().removeIf { it instanceof SourceSetOutput }
+                    def tmp = project.jar.getMainSpec().getSourcePaths().clone()
+                    project.jar.getMainSpec().getSourcePaths().clear()
                     project.jar.from(config.classesCache)
+                    tmp.forEach {
+                        project.jar.from(it)
+                    }
                     project.jar.version += '-' + task.name
                     project.jar.execute()
                 }
