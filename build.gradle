@@ -3,17 +3,6 @@ import ru.justagod.plugin.CutterPlugin
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
     }
 }
 
@@ -26,6 +15,7 @@ targetCompatibility = 1.8
 
 cutter {
     printSidesTree = true
+    deleteAnnotations = true
     processDependencies = false
     annotation = 'ru.justagod.mineplugin.GradleSideOnly'
     classesCache = file('cutter-cache')

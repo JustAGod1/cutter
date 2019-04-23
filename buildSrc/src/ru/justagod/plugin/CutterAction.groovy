@@ -6,6 +6,7 @@ import ru.justagod.mincer.Mincer
 import ru.justagod.mincer.filter.NoOpFilter
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.data.CutterTaskData
+import ru.justagod.plugin.processing.AnnotationsCutter
 import ru.justagod.plugin.processing.CutterMincer
 import ru.justagod.plugin.processing.ModelBuilderMincer
 
@@ -21,8 +22,18 @@ class CutterAction {
     final Project project
     final boolean printSidesTree
     final boolean processDependencies
+    final boolean deleteAnnotations
 
-    CutterAction(String annotation, List<File> classesDirs, CutterTaskData data, File classesCache, Project project, boolean printSidesTree, boolean processDependencies) {
+    CutterAction(
+            String annotation,
+            List<File> classesDirs,
+            CutterTaskData data,
+            File classesCache,
+            Project project,
+            boolean printSidesTree,
+            boolean processDependencies,
+            boolean deleteAnnotations
+    ) {
         this.annotation = annotation
         this.classesDirs = classesDirs
         this.data = data
@@ -30,6 +41,7 @@ class CutterAction {
         this.project = project
         this.printSidesTree = printSidesTree
         this.processDependencies = processDependencies
+        this.deleteAnnotations = deleteAnnotations
     }
 
     def action() {
@@ -53,6 +65,14 @@ class CutterAction {
                 NoOpFilter.INSTANCE,
                 makeFirst("initial", firstPass, NoOpFilter.INSTANCE, false),
                 Unit.INSTANCE
+        )
+        if (deleteAnnotations) pipeline = make(
+                "cleaner",
+                new AnnotationsCutter(new ClassTypeReference(annotation)),
+                NoOpFilter.INSTANCE,
+                pipeline,
+                Unit.INSTANCE,
+                false
         )
         def mincer = new Mincer.Builder(classesCache, []).registerSubMincer(pipeline).build()
         mincer.process(false)

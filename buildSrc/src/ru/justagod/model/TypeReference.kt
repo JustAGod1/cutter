@@ -16,6 +16,7 @@ data class ClassTypeReference(val name: String) : TypeReference() {
     val simpleName by lazy {
         path.last()
     }
+    val internalName: String = name.replace(".", "/")
 
     override fun toASMType(): Type = Type.getType("L${name.replace(".", "/")};")
 

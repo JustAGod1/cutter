@@ -20,7 +20,7 @@ class CutterPlugin implements Plugin<Project> {
             project.task(task.name + 'Build', type: DefaultTask) {
                 group = 'build'
                 doLast {
-                    new CutterAction(config.annotation, config.classesDirs, task, config.classesCache, project, config.printSidesTree, config.processDependencies).action()
+                    new CutterAction(config.annotation, config.classesDirs, task, config.classesCache, project, config.printSidesTree, config.processDependencies, config.deleteAnnotations).action()
                     if (config.processDependencies) project.jar.getMainSpec().getSourcePaths().clear()
                     else project.jar.getMainSpec().getSourcePaths().removeIf { it instanceof SourceSetOutput }
                     def tmp = project.jar.getMainSpec().getSourcePaths().clone()
