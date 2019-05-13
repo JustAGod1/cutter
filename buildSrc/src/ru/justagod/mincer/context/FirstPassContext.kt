@@ -1,6 +1,5 @@
 package ru.justagod.mincer.context
 
-import com.google.common.collect.HashMultimap
 import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.util.NodesFactory
 import ru.justagod.model.ClassTypeReference
@@ -16,7 +15,7 @@ class FirstPassContext(
 ) : MincerContext(factory, inheritance, nodes, root) {
 
     fun process(mincers: List<Pair<Any, Pipeline<*, *>>>): Map<String, Collection<File>> {
-        val result = HashMultimap.create<String, File>()
+        val result = hashMapOf<String, MutableList<File>>()
         for (file in root.walkTopDown().filter { it.isFile }.filter { it.name.endsWith(".class") }) {
             val name = ClassTypeReference((file.absolutePath.drop(root.absolutePath.length + 1).dropLast(6).replace("[/\\\\]".toRegex(), ".")))
             val model = {
@@ -34,13 +33,13 @@ class FirstPassContext(
                     }
                     if (valid) {
                         accept(file, entry, input, false)
-                        result.put(entry.id, file)
+                        result.computeIfAbsent(entry.id) { arrayListOf() } += file
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         }
-        return result.asMap()
+        return result
     }
 }
