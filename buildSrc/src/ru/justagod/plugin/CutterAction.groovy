@@ -72,7 +72,8 @@ class CutterAction {
                 NoOpFilter.INSTANCE,
                 pipeline,
                 Unit.INSTANCE,
-                false
+                false,
+                true
         )
         def mincer = new Mincer.Builder(classesCache, []).registerSubMincer(pipeline).build()
         mincer.process(false)

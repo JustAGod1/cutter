@@ -67,6 +67,11 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
         return model
     }
 
+    fun clear() {
+        buffer.clear()
+        nodes.clear()
+    }
+
 
     private open class InheritanceNode(
             val isInterface: Boolean,

@@ -36,4 +36,8 @@ class NodesFactory(private val bytecodeProvider: (String) -> ByteArray?) {
         return makeNode(bytecode)
     }
 
+    fun clear() {
+        cache.clear()
+    }
+
 }

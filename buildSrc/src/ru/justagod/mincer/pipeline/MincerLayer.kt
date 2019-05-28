@@ -1,15 +1,12 @@
 package ru.justagod.mincer.pipeline
 
-import ru.justagod.mincer.context.CachedContext
 import ru.justagod.mincer.context.FirstPassContext
 import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.util.NodesFactory
-import ru.justagod.model.ClassTypeReference
 import ru.justagod.model.InheritanceHelper
+import ru.justagod.model.factory.CachedFactory
 import ru.justagod.model.factory.ModelFactory
 import java.io.File
-import java.io.FileOutputStream
-import java.io.PrintStream
 
 class MincerLayer(
         private val root: File,
@@ -24,6 +21,11 @@ class MincerLayer(
     @Suppress("UNCHECKED_CAST")
     fun process(caching: Boolean) {
         val unCached = layer
+        if (unCached.any { it.second.cacheClearingRequired }) {
+            nodes.clear()
+            inheritance.clear()
+            (factory as? CachedFactory)?.clear()
+        }
         if (!caching || unCached.isNotEmpty()) {
             for ((value, pipeline) in unCached) {
                 (pipeline.worker as SubMincer<Any, Any>).startProcessing(

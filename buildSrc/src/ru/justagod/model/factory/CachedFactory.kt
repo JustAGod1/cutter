@@ -12,8 +12,8 @@ class CachedFactory(private val delegate: ModelFactory) : ModelFactory {
         return cache.computeIfAbsent(Pair(type, parent)) { delegate.makeModel(type, parent) }
     }
 
-    companion object {
-
-
+    fun clear() {
+        cache.clear()
     }
+
 }

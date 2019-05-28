@@ -9,7 +9,8 @@ class Pipeline<in Input : Any, Output : Any> private constructor(
         internal val filter: ClassFilter,
         internal val parent: Pipeline<*, in Input>? = null,
         default: Output?,
-        internal val skippable: Boolean = true
+        internal val skippable: Boolean = true,
+        internal val cacheClearingRequired: Boolean = false
 ) {
 
     var value: Output? = default
@@ -24,8 +25,9 @@ class Pipeline<in Input : Any, Output : Any> private constructor(
                 filter: ClassFilter,
                 parent: Pipeline<*, out Input>,
                 default: Output? = null,
-                skippable: Boolean = true
-        ) = Pipeline(id, worker, filter, parent, default, skippable)
+                skippable: Boolean = true,
+                cacheCleaningRequired: Boolean = false
+        ) = Pipeline(id, worker, filter, parent, default, skippable, cacheCleaningRequired)
 
         @JvmOverloads
         @JvmStatic
@@ -34,7 +36,8 @@ class Pipeline<in Input : Any, Output : Any> private constructor(
                 worker: SubMincer<Unit, Output>,
                 filter: ClassFilter,
                 skippable: Boolean = true,
-                default: Output? = null
-        ): Pipeline<Unit, Output> = Pipeline(id, worker, filter, null, default, skippable)
+                default: Output? = null,
+                cacheCleaningRequired: Boolean = false
+        ): Pipeline<Unit, Output> = Pipeline(id, worker, filter, null, default, skippable, cacheCleaningRequired)
     }
 }
