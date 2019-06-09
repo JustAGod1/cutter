@@ -34,7 +34,6 @@ cutter {
     }
 }
 dependencies {
-    compile files('libs/tracker.jar')
 }
 
 compileJava.options.encoding = "UTF-8"
