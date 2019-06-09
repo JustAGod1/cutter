@@ -85,7 +85,7 @@ class ModelBuilderMincer(
 
     private fun processMethods(tree: SidesTree, node: ClassNode, path: List<String>) {
         node.methods?.forEach { method ->
-            val annotations = method.invisibleAnnotations?.toAnnotationsInfo()?.plus(method.visibleAnnotations?.toAnnotationsInfo() ?: emptyMap()) ?: emptyMap()
+            val annotations = (method.invisibleAnnotations?.toAnnotationsInfo() ?: emptyMap()).plus(method.visibleAnnotations?.toAnnotationsInfo() ?: emptyMap())
             val sides = proccessAnnotations(annotations, tree) { path + (method.name + "()") } ?: return@forEach
             for (instruction in method.instructions) {
                 if (instruction is TypeInsnNode) {
