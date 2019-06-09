@@ -10,6 +10,11 @@ repositories {
     mavenCentral()
 }
 
+sourceSets { 
+main.resources.srcDirs = ['src/resources'] 
+main.groovy.srcDirs = ['src'] 
+}
+
 sourceSets {
     main.resources.srcDirs = ['src/resources']
     main.java.srcDirs = ['src']
@@ -18,6 +23,10 @@ sourceSets {
     main {
         groovy.outputDir = compileKotlin.destinationDir = compileJava.destinationDir
     }
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
