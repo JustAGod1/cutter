@@ -3,7 +3,9 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
       <module name="copy_messenger.api" target="1.8" />
+      <module name="copy_messenger.buildSrc.main" target="1.8" />
       <module name="copy_messenger.buildSrc.res" target="1.8" />
+      <module name="copy_messenger.buildSrc.test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
