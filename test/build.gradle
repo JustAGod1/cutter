@@ -16,7 +16,7 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
 }
-apply plugin: 'cutter'
+apply plugin: ru.justagod.plugin.CutterPlugin
 
 group 'ru.justagod'
 version '1.0-SNAPSHOT'
@@ -30,6 +30,7 @@ repositories {
 cutter {
     printSidesTree = true
     annotation = "anno.SideOnly"
+    classesDirs
     def serverSide = side('SERVER')
     def clientSide = side('CLIENT')
     builds {
@@ -42,7 +43,17 @@ cutter {
             primalSides = [clientSide, serverSide]
         }
     }
+    invokes("lambda.Invoke") {
+        server {
+            sides = [serverSide]
+        }
+        client {
+            sides = [clientSide]
+        }
+    }
+    
 }
+
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

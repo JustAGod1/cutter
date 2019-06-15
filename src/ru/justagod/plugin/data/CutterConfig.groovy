@@ -77,8 +77,17 @@ class CutterConfig {
      */
     List<File> classesDirs
 
-    CutterConfig(NamedDomainObjectContainer<CutterTaskData> builds) {
+    String invokesHolder
+    NamedDomainObjectContainer<CutterInvokeData> invokes
+
+    def invokes(String clazz, Closure action) {
+        invokesHolder = clazz
+        invokes.configure(action)
+    }
+
+    CutterConfig(NamedDomainObjectContainer<CutterTaskData> builds, NamedDomainObjectContainer<CutterInvokeData> invokes) {
         this.builds = builds
+        this.invokes = invokes
     }
 
     /**

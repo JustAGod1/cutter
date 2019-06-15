@@ -7,25 +7,38 @@ import org.gradle.api.Task
 import org.gradle.api.execution.TaskExecutionListener
 import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskState
+import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.data.CutterConfig
+import ru.justagod.plugin.data.CutterInvokeData
 import ru.justagod.plugin.data.CutterTaskData
 
 class CutterPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         def tasksContainer = project.container(CutterTaskData)
-        def config = project.extensions.create("cutter", CutterConfig, tasksContainer)
+        def invokesContainer = project.container(CutterInvokeData)
+        def config = project.extensions.create("cutter", CutterConfig, tasksContainer, invokesContainer)
 
         project.afterEvaluate {
             config.initDefault(project)
         }
 
+        def buildAll = project.task("buildAll") {
+            group = 'build'
+        }
         config.builds.all { taskData ->
             if (taskData == null) return
 
-            def gradleTask = project.task(taskData.name + 'Build', type: DefaultTask, dependsOn: project.build) {
+            def gradleTask = project.task('build' + ((String)taskData.name).capitalize(), type: DefaultTask, dependsOn: project.build) {
                 group = 'build'
             }
+            def gradleTaskClasses = project.task('build' + ((String)taskData.name).capitalize() + "Classes", type: DefaultTask, dependsOn: project.build) {
+                group = 'build'
+                doLast {
+                    new CutterAction(config.annotation, config.classesDirs, taskData, config.classesCache, project, config.printSidesTree, config.processDependencies, config.deleteAnnotations, new ClassTypeReference(config.invokesHolder), config.invokes.collect()).action()
+                }
+            }
+            buildAll.dependsOn(gradleTask)
             project.gradle.taskGraph.whenReady {
                 if (it.hasTask(gradleTask)) {
                     it.addTaskExecutionListener new TaskExecutionListener() {

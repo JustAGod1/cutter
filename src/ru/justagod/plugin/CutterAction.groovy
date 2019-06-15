@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import ru.justagod.mincer.Mincer
 import ru.justagod.mincer.filter.NoOpFilter
 import ru.justagod.model.ClassTypeReference
+import ru.justagod.plugin.data.CutterInvokeData
 import ru.justagod.plugin.data.CutterTaskData
 import ru.justagod.plugin.processing.AnnotationsCutter
 import ru.justagod.plugin.processing.CutterMincer
@@ -23,6 +24,8 @@ class CutterAction {
     final boolean printSidesTree
     final boolean processDependencies
     final boolean deleteAnnotations
+    private final List<CutterInvokeData> invokes
+    private final ClassTypeReference invokesClass
 
     CutterAction(
             String annotation,
@@ -32,8 +35,12 @@ class CutterAction {
             Project project,
             boolean printSidesTree,
             boolean processDependencies,
-            boolean deleteAnnotations
+            boolean deleteAnnotations,
+            ClassTypeReference invokesClass,
+            List<CutterInvokeData> invokes
     ) {
+        this.invokesClass = invokesClass
+        this.invokes = invokes
         this.annotation = annotation
         this.classesDirs = classesDirs
         this.data = data
@@ -58,7 +65,7 @@ class CutterAction {
             into(classesCache)
         }
         def firstPass = new ModelBuilderMincer(new ClassTypeReference(annotation), data.primalSides, printSidesTree)
-        def secondPass = new CutterMincer(data.targetSides, new HashSet(data.primalSides))
+        def secondPass = new CutterMincer(data.targetSides, new HashSet(data.primalSides), invokesClass, invokes.groupBy {it.name}.collectEntries { a, b -> [ a, b[0].sides.toList() ] })
         def pipeline = make(
                 "final",
                 secondPass,

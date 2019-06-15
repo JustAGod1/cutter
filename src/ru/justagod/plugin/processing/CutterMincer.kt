@@ -2,6 +2,9 @@ package ru.justagod.plugin.processing
 
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.InsnList
+import org.objectweb.asm.tree.InvokeDynamicInsnNode
+import org.objectweb.asm.tree.MethodInsnNode
 import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.processor.ProcessingResult
 import ru.justagod.mincer.processor.SubMincer
@@ -10,9 +13,15 @@ import ru.justagod.model.ClassModel
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.model.InheritanceHelper
 import ru.justagod.model.factory.ModelFactory
+import ru.justagod.model.fetchTypeReference
 import ru.justagod.plugin.data.SideInfo
 
-class CutterMincer(private val targetSides: List<SideInfo>, private val primalSides: Set<SideInfo>): SubMincer<SidesTree, Unit> {
+class CutterMincer(
+        private val targetSides: List<SideInfo>,
+        private val primalSides: Set<SideInfo>,
+        private val invokesClass: ClassTypeReference,
+        private val invokes: Map<String, List<SideInfo>>
+): SubMincer<SidesTree, Unit> {
     override fun process(
             name: ClassTypeReference,
             data: ClassModel?,
@@ -52,9 +61,21 @@ class CutterMincer(private val targetSides: List<SideInfo>, private val primalSi
                 modified = true
                 println(name.name + "." + method.name + method.desc + " has been discarded")
             }
+            if (!result) analyzeCode(method.instructions)
             result
         }
 
         return if (modified) ProcessingResult.REWRITE else ProcessingResult.NOOP
+    }
+
+    private fun analyzeCode(instructions: InsnList) {
+        for (node in instructions) {
+            if (node is MethodInsnNode) {
+                if (node.opcode == Opcodes.INVOKESTATIC && fetchTypeReference("L" + node.owner + ";") == invokesClass) {
+                    val sides = invokes[node.name] ?: continue
+
+                }
+            }
+        }
     }
 }
