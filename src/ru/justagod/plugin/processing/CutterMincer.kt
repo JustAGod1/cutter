@@ -45,12 +45,12 @@ class CutterMincer(private val targetSides: List<SideInfo>, private val primalSi
             val methodPath = if (method.access and Opcodes.ACC_SYNTHETIC != 0 && method.name.startsWith("lambda")) {
                 val author = method.name.split("$")[1]
                 path + (author + "()")
-            } else path + (method.name + "()")
+            } else path + (method.name + method.desc)
             val methodSides = input.get(methodPath, primalSides)
             val result = !targetSides.any { it in methodSides }
             if (result) {
                 modified = true
-                println(name.name + "." + method.name + "() has been discarded")
+                println(name.name + "." + method.name + method.desc + " has been discarded")
             }
             result
         }

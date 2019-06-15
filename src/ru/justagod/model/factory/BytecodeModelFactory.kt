@@ -81,6 +81,7 @@ class BytecodeModelFactory(private val harvester: (String) -> ByteArray?) : Mode
                 MethodModel(
                         method.name,
                         AccessModel(method.access),
+                        method.desc,
                         method.visibleAnnotations?.toAnnotationsInfo() ?: emptyMap(),
                         method.invisibleAnnotations?.toAnnotationsInfo() ?: emptyMap(),
                         model

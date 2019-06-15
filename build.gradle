@@ -21,6 +21,7 @@ sourceSets {
 }
 
 jar {
+    archiveName = "cutter.jar"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 

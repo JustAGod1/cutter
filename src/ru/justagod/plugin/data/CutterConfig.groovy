@@ -1,6 +1,7 @@
 package ru.justagod.plugin.data
 
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
 
 class CutterConfig {
     /**
@@ -113,5 +114,14 @@ class CutterConfig {
 
     def builds() {
         return builds
+    }
+
+    def initDefault(Project project) {
+        if (classesDirs == null) {
+            classesDirs = [project.tasks.compileJava.destinationDir]
+        }
+        if (classesCache == null) {
+            classesCache = project.file("cutter-cache")
+        }
     }
 }

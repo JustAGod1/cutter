@@ -37,7 +37,7 @@ class ModelBuilderMincer(
 
         processClass(tree, inheritance, data, path)
         processFields(tree, data, path)
-        processMethods(tree, node, path)
+        processMethods(name, tree, node, path, inheritance)
 
         return ProcessingResult.NOOP
     }
@@ -71,6 +71,10 @@ class ModelBuilderMincer(
     ): List<SideInfo>? {
         val sides = fetchSides(annotations) ?: return null
 
+        return processSides(sides, tree, pathProvider)
+    }
+
+    private fun processSides(sides: List<SideInfo>, tree: SidesTree, pathProvider: () -> List<String>): List<SideInfo> {
         val path = pathProvider()
         tree.set(path, sides.toSet())
         return sides
@@ -83,15 +87,29 @@ class ModelBuilderMincer(
         }
     }
 
-    private fun processMethods(tree: SidesTree, node: ClassNode, path: List<String>) {
+    private fun processMethods(name: ClassTypeReference, tree: SidesTree, node: ClassNode, path: List<String>, inheritance: InheritanceHelper) {
         node.methods?.forEach { method ->
-            val annotations = (method.invisibleAnnotations?.toAnnotationsInfo() ?: emptyMap()).plus(method.visibleAnnotations?.toAnnotationsInfo() ?: emptyMap())
-            val sides = proccessAnnotations(annotations, tree) { path + (method.name + "()") } ?: return@forEach
+            val resultingSides = arrayListOf<SideInfo>()
+            var first = true
+            inheritance.walk(name) { clazz ->
+                val it = clazz.methods.find { it.name == method.name && it.desc == method.desc } ?: return@walk
+                val annotations = it.invisibleAnnotations + it.visibleAnnotations
+                val sides = fetchSides(annotations) ?: return@walk
+                if (first) {
+                    resultingSides.addAll(sides)
+                    first = false
+                } else {
+                    resultingSides.removeIf { it !in sides }
+                }
+            }
+            if (first) return@forEach
+
+            val sides = processSides(resultingSides, tree) { path + (method.name + method.desc) } ?: return@forEach
             for (instruction in method.instructions) {
                 if (instruction is TypeInsnNode) {
                     val type = ClassTypeReference(instruction.desc.replace("/", "."))
                     try {
-                        if (type.path.any { it.matches("[0-9]+".toRegex()) } ) {
+                        if (type.path.any { it.matches("[0-9]+".toRegex()) }) {
                             val newPath = path + type.path.last()
                             tree.set(newPath, sides.toSet())
                         }
@@ -102,7 +120,6 @@ class ModelBuilderMincer(
             }
         }
     }
-
 
 
     override fun startProcessing(input: Unit, cache: List<ClassTypeReference>?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, SidesTree>) {

@@ -16,6 +16,10 @@ class CutterPlugin implements Plugin<Project> {
         def tasksContainer = project.container(CutterTaskData)
         def config = project.extensions.create("cutter", CutterConfig, tasksContainer)
 
+        project.afterEvaluate {
+            config.initDefault(project)
+        }
+
         config.builds.all { taskData ->
             if (taskData == null) return
 
