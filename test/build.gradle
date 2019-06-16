@@ -67,3 +67,12 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+jar {
+    configurations.compile.each {
+        from(project.zipTree(it))
+    }
+    manifest {
+        attributes 'Main-Class': 'Main'
+    }
+}
+

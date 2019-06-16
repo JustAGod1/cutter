@@ -35,7 +35,18 @@ class CutterPlugin implements Plugin<Project> {
             def gradleTaskClasses = project.task('build' + ((String)taskData.name).capitalize() + "Classes", type: DefaultTask, dependsOn: project.build) {
                 group = 'build'
                 doLast {
-                    new CutterAction(config.annotation, config.classesDirs, taskData, config.classesCache, project, config.printSidesTree, config.processDependencies, config.deleteAnnotations, new ClassTypeReference(config.invokesHolder), config.invokes.collect()).action()
+                    new CutterAction(
+                            config.annotation,
+                            config.classesDirs,
+                            taskData as CutterTaskData,
+                            config.classesCache,
+                            project,
+                            config.printSidesTree,
+                            config.processDependencies,
+                            config.deleteAnnotations,
+                            new ClassTypeReference(config.invokesHolder),
+                            config.invokes.collect()
+                    ).action()
                 }
             }
             buildAll.dependsOn(gradleTask)
@@ -45,7 +56,19 @@ class CutterPlugin implements Plugin<Project> {
                         @Override
                         void beforeExecute(Task task) {
                             if (task == project.jar) {
-                                new CutterAction(config.annotation, config.classesDirs, taskData, config.classesCache, project, config.printSidesTree, config.processDependencies, config.deleteAnnotations).action()
+                                //noinspection GroovyAssignabilityCheck
+                                new CutterAction(
+                                        config.annotation,
+                                        config.classesDirs,
+                                        taskData,
+                                        config.classesCache,
+                                        project,
+                                        config.printSidesTree,
+                                        config.processDependencies,
+                                        config.deleteAnnotations,
+                                        new ClassTypeReference(config.invokesHolder),
+                                        config.invokes.collect()
+                                ).action()
                                 if (config.processDependencies) project.jar.getMainSpec().getSourcePaths().clear()
                                 else project.jar.getMainSpec().getSourcePaths().removeIf {
                                     it instanceof SourceSetOutput

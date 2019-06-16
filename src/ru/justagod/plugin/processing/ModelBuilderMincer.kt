@@ -1,5 +1,6 @@
 package ru.justagod.plugin.processing
 
+import org.objectweb.asm.Type
 import ru.justagod.model.factory.BytecodeModelFactory.Companion.toAnnotationsInfo
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.TypeInsnNode
@@ -12,18 +13,22 @@ import ru.justagod.model.ClassTypeReference
 import ru.justagod.model.InheritanceHelper
 import ru.justagod.model.factory.BytecodeModelFactory
 import ru.justagod.model.factory.ModelFactory
+import ru.justagod.model.fetchTypeReference
 import ru.justagod.plugin.data.SideInfo
+import java.lang.IllegalArgumentException
 
 class ModelBuilderMincer(
         private val annotation: ClassTypeReference,
         private val primalSides: List<SideInfo>,
+        private val invokesHolder: ClassTypeReference,
+        private val invokes: Map<String, List<SideInfo>>,
         private val printSidesTree: Boolean
-) : SubMincer<Unit, SidesTree> {
+) : SubMincer<Unit, ProjectModel> {
     override fun process(
             name: ClassTypeReference,
             data: ClassModel?,
             node: ClassNode?,
-            pipeline: Pipeline<Unit, SidesTree>,
+            pipeline: Pipeline<Unit, ProjectModel>,
             input: Unit,
             inheritance: InheritanceHelper,
             nodes: NodesFactory,
@@ -32,14 +37,31 @@ class ModelBuilderMincer(
     ): ProcessingResult {
         data!!
         node!!
-        val tree = pipeline.value!!
+        val model = pipeline.value!!
         val path = if (data.name.simpleName == "package-info") data.name.path.dropLast(1) else data.name.path
 
-        processClass(tree, inheritance, data, path)
-        processFields(tree, data, path)
-        processMethods(name, tree, node, path, inheritance)
+        processClass(model.sidesTree, inheritance, data, path)
+        processFields(model.sidesTree, data, path)
+        processMethods(name, model.sidesTree, node, path, inheritance)
+
+        if (name == invokesHolder) processHolder(model, data, invokes)
 
         return ProcessingResult.NOOP
+    }
+
+    private fun processHolder(model: ProjectModel, data: ClassModel, invokes: Map<String, List<SideInfo>>) {
+        for ((name, sides) in invokes) {
+            val method = data.methods.find { it.name == name }
+                    ?: throw IllegalArgumentException("Class ${data.name} must have method with name $name")
+
+            if (!method.access.static) throw IllegalArgumentException("Method $name must be static")
+            val args = Type.getArgumentTypes(method.desc)
+            if (args.size != 1) throw IllegalArgumentException("Method $name must have 1 argument")
+            val argumentType = fetchTypeReference(args[0].descriptor) as? ClassTypeReference
+                    ?: throw IllegalArgumentException("Argument of method $name must be class or interface")
+            model.invokeClasses[argumentType] = sides
+            model.sidesTree.set(argumentType.path, sides.toSet())
+        }
     }
 
     private fun processClass(tree: SidesTree, inheritance: InheritanceHelper, data: ClassModel, path: List<String>) {
@@ -122,12 +144,12 @@ class ModelBuilderMincer(
     }
 
 
-    override fun startProcessing(input: Unit, cache: List<ClassTypeReference>?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, SidesTree>) {
-        pipeline.value = SidesTree("root")
+    override fun startProcessing(input: Unit, cache: List<ClassTypeReference>?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, ProjectModel>) {
+        pipeline.value = ProjectModel()
     }
 
-    override fun endProcessing(input: Unit, cache: List<ClassTypeReference>?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, SidesTree>) {
-        pipeline.value!!.identify(null)
-        if (printSidesTree) println(pipeline.value!!.toString(primalSides.toSet()))
+    override fun endProcessing(input: Unit, cache: List<ClassTypeReference>?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, ProjectModel>) {
+        pipeline.value!!.sidesTree.identify(null)
+        if (printSidesTree) println(pipeline.value!!.sidesTree.toString(primalSides.toSet()))
     }
 }

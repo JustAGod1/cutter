@@ -64,8 +64,14 @@ class CutterAction {
             }
             into(classesCache)
         }
-        def firstPass = new ModelBuilderMincer(new ClassTypeReference(annotation), data.primalSides, printSidesTree)
-        def secondPass = new CutterMincer(data.targetSides, new HashSet(data.primalSides), invokesClass, invokes.groupBy {it.name}.collectEntries { a, b -> [ a, b[0].sides.toList() ] })
+        def entries = invokes.groupBy { it.name }.collectEntries { a, b -> [a, b[0].sides.toList()] }
+        def firstPass = new ModelBuilderMincer(new ClassTypeReference(annotation), data.primalSides, invokesClass, entries, printSidesTree)
+        def secondPass = new CutterMincer(
+                data.targetSides,
+                new HashSet(data.primalSides),
+                invokesClass,
+                entries
+        )
         def pipeline = make(
                 "final",
                 secondPass,

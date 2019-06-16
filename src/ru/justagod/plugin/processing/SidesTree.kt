@@ -14,7 +14,7 @@ class SidesTree(val name: String) {
         if (this.sides == null) {
             this.sides = sides?.toMutableSet()
         } else if (sides != null) {
-            error("Already completed node")
+            error("Already completed node $name")
         }
     }
 

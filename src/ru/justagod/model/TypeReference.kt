@@ -57,7 +57,7 @@ fun fetchTypeReference(desc: String): TypeReference {
             Type.DOUBLE -> PrimitiveKind.DOUBLE
             Type.BOOLEAN -> PrimitiveKind.BOOLEAN
             Type.CHAR -> PrimitiveKind.CHAR
-            else -> error("")
+            else -> error(desc)
 
         })
     }
