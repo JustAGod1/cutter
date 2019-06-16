@@ -44,7 +44,7 @@ class CutterPlugin implements Plugin<Project> {
                             config.printSidesTree,
                             config.processDependencies,
                             config.deleteAnnotations,
-                            new ClassTypeReference(config.invokesHolder),
+                            config.invokesHolder != null ? new ClassTypeReference(config.invokesHolder) : null,
                             config.invokes.collect()
                     ).action()
                 }
@@ -66,7 +66,7 @@ class CutterPlugin implements Plugin<Project> {
                                         config.printSidesTree,
                                         config.processDependencies,
                                         config.deleteAnnotations,
-                                        new ClassTypeReference(config.invokesHolder),
+                                        config.invokesHolder != null ? new ClassTypeReference(config.invokesHolder) : null,
                                         config.invokes.collect()
                                 ).action()
                                 if (config.processDependencies) project.jar.getMainSpec().getSourcePaths().clear()

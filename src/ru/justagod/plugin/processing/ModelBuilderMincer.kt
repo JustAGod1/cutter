@@ -20,7 +20,7 @@ import java.lang.IllegalArgumentException
 class ModelBuilderMincer(
         private val annotation: ClassTypeReference,
         private val primalSides: List<SideInfo>,
-        private val invokesHolder: ClassTypeReference,
+        private val invokesHolder: ClassTypeReference?,
         private val invokes: Map<String, List<SideInfo>>,
         private val printSidesTree: Boolean
 ) : SubMincer<Unit, ProjectModel> {
@@ -44,7 +44,7 @@ class ModelBuilderMincer(
         processFields(model.sidesTree, data, path)
         processMethods(name, model.sidesTree, node, path, inheritance)
 
-        if (name == invokesHolder) processHolder(model, data, invokes)
+        if (invokesHolder != null && name == invokesHolder) processHolder(model, data, invokes)
 
         return ProcessingResult.NOOP
     }

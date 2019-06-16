@@ -17,7 +17,7 @@ import ru.justagod.plugin.data.SideInfo
 class CutterMincer(
         private val targetSides: List<SideInfo>,
         private val primalSides: Set<SideInfo>,
-        private val invokesClass: ClassTypeReference,
+        private val invokesClass: ClassTypeReference?,
         private val invokes: Map<String, List<SideInfo>>
 ) : SubMincer<ProjectModel, Unit> {
     override fun process(
@@ -60,7 +60,11 @@ class CutterMincer(
                 modified = true
                 println(name.name + "." + method.name + method.desc + " has been discarded")
             }
-            if (!result) lambdas += analyzeCode(method.instructions, input, inheritance)
+            if (invokesClass != null) {
+                val (instructionsModified, newLambdas) = analyzeCode(method.instructions, input, inheritance)
+                if (!result) lambdas += newLambdas
+                modified = modified || instructionsModified
+            }
             if (method.name !in lambdas) {
                 result
             } else {
@@ -89,11 +93,12 @@ class CutterMincer(
         return if (!first) resultingSides else primalSides
     }
 
-    private fun analyzeCode(instructions: InsnList, model: ProjectModel, inheritance: InheritanceHelper): List<String> {
+    private fun analyzeCode(instructions: InsnList, model: ProjectModel, inheritance: InheritanceHelper): Pair<Boolean, List<String>> {
         val foundedLambdas = arrayListOf<String>()
         val targetClasses = model.invokeClasses.filter { !it.value.any { it in targetSides } }.keys.toSet()
         val iter = instructions.iterator()
         var line = 0
+        var modified = false
         loop@ while (iter.hasNext()) {
             val node = iter.next()
             when (node) {
@@ -105,20 +110,30 @@ class CutterMincer(
                             val sides = invokes[node.name] ?: continue@loop
 
                             if (!sides.any { it in targetSides }) {
+                                modified = true
                                 iter.remove()
+                                modified = true
                                 println("MethodInsn@$line has been discarded")
                             }
                         }
                     }
                     if (targetClasses.any { inheritance.isChild(type, it) }) {
                         iter.remove()
+                        modified = true
                         println("MethodInsn@$line has been discarded")
                     }
                 }
                 is TypeInsnNode -> {
                     val type = fetchTypeReference("L" + node.desc + ";") as ClassTypeReference
                     if (targetClasses.any { inheritance.isChild(type, it) }) {
-                        iter.remove()
+                        if (node.opcode == Opcodes.NEW && node.next.opcode == Opcodes.DUP) {
+                            iter.remove()
+                            iter.next()
+                            iter.remove()
+                        } else {
+                            iter.remove()
+                        }
+                        modified = true
                         println("TypeInsn@$line has been discarded")
                     }
                 }
@@ -126,6 +141,7 @@ class CutterMincer(
                     val type = fetchTypeReference(node.desc) as? ClassTypeReference ?: continue@loop
                     if (targetClasses.any { inheritance.isChild(type, it) }) {
                         iter.remove()
+                        modified = true
                         println("FieldInsn@$line has been discarded")
                     }
                 }
@@ -137,11 +153,12 @@ class CutterMincer(
                             foundedLambdas += name
                         }
                         iter.remove()
+                        modified = true
                         println("DynamicInsn@$line has been discarded")
                     }
                 }
             }
         }
-        return foundedLambdas
+        return modified to foundedLambdas
     }
 }
