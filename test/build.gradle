@@ -3,7 +3,7 @@ buildscript {
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-        classpath rootProject.files("build/libs/cutter.jar")
+        classpath rootProject.files("cutter.jar")
         classpath group: 'org.ow2.asm', name: 'asm', version: '6.0'
         classpath group: 'org.ow2.asm', name: 'asm-commons', version: '6.0'
         classpath group: 'org.ow2.asm', name: 'asm-tree', version: '6.0'
