@@ -5,6 +5,8 @@ import org.objectweb.asm.Type
 
 sealed class TypeReference {
     abstract fun toASMType(): Type
+
+    override fun toString() = toASMType().toString()
 }
 
 data class ClassTypeReference(val name: String) : TypeReference() {
@@ -16,7 +18,6 @@ data class ClassTypeReference(val name: String) : TypeReference() {
     val simpleName by lazy {
         path.last()
     }
-    val internalName: String = name.replace(".", "/")
 
     override fun toASMType(): Type = Type.getType("L${name.replace(".", "/")};")
 
@@ -57,7 +58,7 @@ fun fetchTypeReference(desc: String): TypeReference {
             Type.DOUBLE -> PrimitiveKind.DOUBLE
             Type.BOOLEAN -> PrimitiveKind.BOOLEAN
             Type.CHAR -> PrimitiveKind.CHAR
-            else -> error(desc)
+            else -> error("")
 
         })
     }

@@ -5,6 +5,6 @@ import ru.justagod.model.ClassTypeReference
 import ru.justagod.model.InheritanceHelper
 import ru.justagod.model.factory.ModelFactory
 
-object NoOpFilter : ClassFilter {
+object WalkThroughFilter : ClassFilter {
     override fun isValid(name: ClassTypeReference, model: () -> ClassModel, inheritance: InheritanceHelper, factory: ModelFactory): Boolean = true
 }

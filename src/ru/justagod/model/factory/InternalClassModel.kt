@@ -19,9 +19,9 @@ class InternalClassModel(
     var _interfaces: List<ClassParent>? = null
     override val interfaces: List<ClassParent>
         get() = _interfaces!!
-    var _typeParameters: List<ReferencedGenericTypeModel>? = null
+    var _typeParameters: (() -> List<ReferencedGenericTypeModel>)? = null
     override val typeParameters: List<ReferencedGenericTypeModel>
-        get() = _typeParameters!!
+        get() = _typeParameters!!()
     var _fields: List<FieldModel>? = null
     override val fields: List<FieldModel>
         get() = _fields!!

@@ -15,9 +15,9 @@ sourceSets {
     main.java.srcDirs = ['src']
     main.kotlin.srcDirs = ['src']
     main.groovy.srcDirs = ['src']
-    main {
+    main( {
         groovy.outputDir = compileKotlin.destinationDir = compileJava.destinationDir
-    }
+    })
 }
 
 jar {
@@ -30,6 +30,7 @@ jar {
 dependencies {
     compile gradleApi()
     compile localGroovy()
+    compile 'org.zeroturnaround:zt-zip:1.12'
     compile group: 'org.ow2.asm', name: 'asm', version: '6.0'
     compile group: 'org.ow2.asm', name: 'asm-commons', version: '6.0'
     compile group: 'org.ow2.asm', name: 'asm-tree', version: '6.0'

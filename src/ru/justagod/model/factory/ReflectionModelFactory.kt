@@ -32,7 +32,7 @@ class ReflectionModelFactory(val loader: ClassLoader) : ModelFactory {
         classModel._interfaces = clazz.genericInterfaces.map { makeTypeModel(it, classModel) } as List<ClassParent>
         classModel._fields = fields
         classModel._methods = methods
-        classModel._typeParameters = typeParameters.filterIsInstance<ReferencedGenericTypeModel>()
+        classModel._typeParameters = { typeParameters.filterIsInstance<ReferencedGenericTypeModel>() }
         return classModel
     }
 
@@ -41,7 +41,7 @@ class ReflectionModelFactory(val loader: ClassLoader) : ModelFactory {
         val access = AccessModel(field.modifiers)
         val type = makeTypeModel(field.genericType, parent)
 
-        return FieldModel(name, type, access, field.getAnnotation(Nullable::class.java) != null, emptyMap(), emptyMap(), parent)
+        return FieldModel(name, type, access, field.getAnnotation(Nullable::class.java) != null, parent)
     }
 
     private fun makeTypeModel(type: Type, parent: AbstractModel): TypeModel {
@@ -80,7 +80,7 @@ class ReflectionModelFactory(val loader: ClassLoader) : ModelFactory {
         @JvmStatic
         fun main(args: Array<String>) {
             val factory = ReflectionModelFactory(Thread.currentThread().contextClassLoader)
-            val model = factory.makeModel(ClassTypeReference(Bar::class.java.name), null)
+            val model = factory.makeModel(ClassTypeReference(ru.justagod.model.factory.Bar::class.java.name), null)
             println(model)
         }
     }

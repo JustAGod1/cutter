@@ -1,55 +1,65 @@
 package ru.justagod.mincer
 
-import ru.justagod.mincer.pipeline.MincerLayer
+import ru.justagod.mincer.control.*
 import ru.justagod.mincer.pipeline.Pipeline
+import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.util.NodesFactory
 import ru.justagod.model.InheritanceHelper
+import ru.justagod.model.factory.BytecodeModelFactory
 import ru.justagod.model.factory.CachedFactory
 import ru.justagod.model.factory.FallbackModelFactory
 import java.io.File
 import java.util.*
 
 class Mincer private constructor(
-        private val root: File,
-        private val pipelines: List<Pipeline<*, *>>,
-        private val subClassPaths: List<File> = emptyList()
-) {
-    private val bytecodeFetcher: (String) -> ByteArray? = {
-        val name = it.replace('.', '/') + ".class"
-        val file = root.resolve(name)
-        if (!file.exists()) {
-            val subFile = subClassPaths.find {
-                val tmp = it.resolve(name)
-                tmp.exists()
-            }
-            if (subFile != null) {
-                subFile.resolve(name).readBytes()
-            } else null
-        } else file.readBytes()
-    }
-    val factory = CachedFactory(FallbackModelFactory(this.javaClass.classLoader, bytecodeFetcher))
+        val fs: MincerFS,
+        val canSkip: Boolean,
+        pipelines: List<Pipeline<*, *>>
+) : MincerControlPane {
+    val nodes = NodesFactory { fs.pullClass(it) ?: throw BytecodeModelFactory.BytecodeNotFoundException(it) }
+    val factory = CachedFactory(FallbackModelFactory(this.javaClass.classLoader, nodes))
     val inheritance = InheritanceHelper(factory)
-    val nodes = NodesFactory(bytecodeFetcher)
 
-    fun process(caching: Boolean) {
-        val queues = pipelines.map { fetchPipelineQueue(it) }
+    private var queues = pipelines.map { it.unwind(fs) }
+    private val archive = hashMapOf<String, MutableSet<String>>()
 
-        val layer = MincerLayer(root, queues.map { Pair(Unit, it) }, factory, nodes, inheritance)
-        layer.process(caching)
+    init {
+        queues.forEach {
+            (it.pipeline.worker as SubMincer<Unit, Any>)
+                    .startProcessing(
+                            Unit,
+                            fs.pullArchive(it.pipeline.id),
+                            inheritance,
+                            it.pipeline as Pipeline<Unit, Any>
+                    )
+        }
     }
 
-    private fun fetchPipelineQueue(pipeline: Pipeline<*, *>): List<Pipeline<*, *>> {
-        val result = LinkedList<Pipeline<*, *>>()
-        var entry: Pipeline<*, *>? = pipeline
-        while (entry != null) {
-            result.add(0, entry)
-            entry = entry.parent
+    override fun advance(source: ByteArray, name: String, lastModified: Long): MincerResult {
+        var result = MincerResult(source, MincerResultType.SKIPPED)
+        for (head in queues) {
+            val newResult = head.process(this, result.resultedBytecode, lastModified, name)
+            if (newResult.type == MincerResultType.DELETED) return result
+            result = result.merge(newResult)
         }
         return result
     }
 
+    override fun endIteration(): Boolean {
+        for ((id, entries) in archive) {
+            fs.pushArchive(id, entries)
+        }
+        archive.clear()
 
-    class Builder(private val root: File, private val subPaths: List<File> = emptyList()) {
+        queues = queues.mapNotNull { it.advance(it.pipeline.value!!, fs) }
+        return queues.isNotEmpty()
+    }
+
+    fun submitArchiveEntry(id: String, name: String) {
+        archive.computeIfAbsent(id) { hashSetOf() } += name
+    }
+
+    class Builder(private val fs: MincerFS, private val canSkip: Boolean) {
         private val registry = LinkedList<Pipeline<*, *>>()
 
         fun registerSubMincer(pipeline: Pipeline<*, *>): Builder {
@@ -57,6 +67,6 @@ class Mincer private constructor(
             return this
         }
 
-        fun build() = Mincer(root, registry, subPaths)
+        fun build(): MincerControlPane = Mincer(MincerCachedFS(fs), canSkip, registry)
     }
 }

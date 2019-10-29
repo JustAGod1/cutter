@@ -1,4 +1,4 @@
-package ru.justagod.plugin
+package ru.justagod.plugin.gradle
 
 import kotlin.Unit
 import org.gradle.api.Project

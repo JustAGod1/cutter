@@ -1,66 +1,56 @@
 package ru.justagod.model.factory
 
+import ru.justagod.model.*
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
-import org.objectweb.asm.tree.MethodNode
-import ru.justagod.model.*
+import ru.justagod.mincer.util.NodesFactory
 
-class BytecodeModelFactory(private val harvester: (String) -> ByteArray?) : ModelFactory {
+class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
 
 
     override fun makeModel(type: ClassTypeReference, parent: AbstractModel?): ClassModel {
-        val bytecode = harvester(type.name) ?: throw BytecodeNotFoundException(type.name)
-        val node = makeNode(bytecode)
+        val node = harvester.makeNode(type)
         return makeModel(node, parent)
     }
 
     companion object {
         private val genericsRegex = "^<.*>".toRegex()
 
-        private fun mapAnnotationEntry(value: Any): Any {
-            @Suppress("IMPLICIT_CAST_TO_ANY")
-            return if (value is Array<*>)
-                EnumHolder(fetchTypeReference((value as Array<String>)[0]) as ClassTypeReference, listOf(value[1]))
-            else if (value is List<*> && value.getOrNull(0) is Array<*>) {
-                value as List<Array<String>>
-                // TODO в теории могут быть случаи когда энумы будут разных типов
-                val annoType = fetchTypeReference(value[0][0]) as ClassTypeReference
-                val values = value.map { it[1] }
-                EnumHolder(annoType, values)
-            } else
-                value
-        }
-
-        fun List<AnnotationNode>.toAnnotationsInfo(): Map<ClassTypeReference, Map<String, Any>> {
-            return this.groupBy { fetchTypeReference(it.desc) as ClassTypeReference }
-                    .mapValues { it.value[0] }
-                    .mapValues {
-                        val values = it.value.values ?: return@mapValues emptyMap<String, Any>()
-                        val tmp = arrayListOf<List<Any>>()
-                        for (i in 0 until values.size step 2) {
-                            val chunk = arrayListOf<Any>()
-                            chunk += values[i]
-                            if (i < values.size - 1) chunk += values[i + 1]
-                            tmp += chunk
-                        }
-                        tmp.map { Pair(it[0] as String, it[1]) }.toMap()
-                    }
-                    .mapValues {
-                        it.value.mapValues {
-                            mapAnnotationEntry(it.value)
-                        }
-                    }
-        }
-
         fun makeModel(node: ClassNode, parent: AbstractModel?): InternalClassModel {
             val invisibleAnnotations = node.invisibleAnnotations
-                    ?.toAnnotationsInfo()
+                    ?.groupBy { fetchTypeReference(it.desc) as ClassTypeReference }
+                    ?.mapValues { it.value[0] }
+                    ?.mapValues {
+                        it.value.values?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
+                    }
+                    ?.mapValues {
+                        it.value.mapValues {
+                            @Suppress("IMPLICIT_CAST_TO_ANY")
+                            if (it.value is Array<*>)
+                                EnumHolder(fetchTypeReference((it.value as Array<String>)[0]) as ClassTypeReference, (it.value as Array<String>)[1])
+                            else
+                                it.value
+                        }
+                    }
                     ?: emptyMap()
             val visibleAnnotations = node.visibleAnnotations
-                    ?.toAnnotationsInfo()
+                    ?.groupBy { fetchTypeReference(it.desc) as ClassTypeReference }
+                    ?.mapValues { it.value[0] }
+                    ?.mapValues {
+                        it.value.values?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
+                    }
+                    ?.mapValues {
+                        it.value.mapValues {
+                            @Suppress("IMPLICIT_CAST_TO_ANY")
+                            if (it.value is Array<*>)
+                                EnumHolder(fetchTypeReference((it.value as Array<String>)[0]) as ClassTypeReference, (it.value as Array<String>)[1])
+                            else
+                                it.value
+                        }
+                    }
                     ?: emptyMap()
             val access = AccessModel(node.access)
             val hasDefaultConstructor = node.methods
@@ -77,25 +67,16 @@ class BytecodeModelFactory(private val harvester: (String) -> ByteArray?) : Mode
                     ClassTypeReference(node.name.toCanonicalName())
             )
             val fields = node.fields?.map { makeFieldModel(it, model) } ?: emptyList()
-            val methods = node.methods?.map { method ->
-                MethodModel(
-                        method.name,
-                        AccessModel(method.access),
-                        method.desc,
-                        method.visibleAnnotations?.toAnnotationsInfo() ?: emptyMap(),
-                        method.invisibleAnnotations?.toAnnotationsInfo() ?: emptyMap(),
-                        model
-                )
-            }
+            val methods = emptyList<MethodModel>()
             model._fields = fields
             model._methods = methods
-            model._typeParameters = parseClassSignature(node.signature, model).filterIsInstance<ReferencedGenericTypeModel>()
+            model._typeParameters = { parseClassSignature(node.signature, model).filterIsInstance<ReferencedGenericTypeModel>() }
             val (superClass, interfaces) = if (node.signature != null) {
                 val elements = parseClassParentsSignature(node.signature, model)
                 Pair(elements.firstOrNull(), elements.subList(1, elements.size))
             } else {
                 Pair(node.superName?.let { FinalTypeModel(ClassTypeReference(it.toCanonicalName()), model) }, node.interfaces
-                         ?.map { FinalTypeModel(ClassTypeReference(it.toCanonicalName()), model) })
+                        ?.map { FinalTypeModel(ClassTypeReference(it.toCanonicalName()), model) })
             }
             model._superClass = superClass
             model._interfaces = interfaces
@@ -124,7 +105,7 @@ class BytecodeModelFactory(private val harvester: (String) -> ByteArray?) : Mode
             signature ?: return emptyList()
             return if (signature.contains(genericsRegex)) {
                 val inner = signature.substring(1, signature.indexOf(">"))
-                inner.split(";".toRegex()).filterNot { it.isEmpty() }.map { parseClassGeneric("$it;", parent) }
+                inner.split(";").filterNot { it.isEmpty() }.map { parseClassGeneric("$it;", parent) }
             } else emptyList()
         }
 
@@ -143,8 +124,6 @@ class BytecodeModelFactory(private val harvester: (String) -> ByteArray?) : Mode
                     AccessModel(field.access),
                     (field.invisibleAnnotations
                             ?: emptyList<AnnotationNode>()).any { it.desc == "Lorg/jetbrains/annotations/Nullable;" },
-                    field.visibleAnnotations?.toAnnotationsInfo() ?: emptyMap(),
-                    field.invisibleAnnotations?.toAnnotationsInfo() ?: emptyMap(),
                     parent
             )
         }
@@ -217,31 +196,12 @@ class BytecodeModelFactory(private val harvester: (String) -> ByteArray?) : Mode
             return result
         }
 
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val factory = BytecodeModelFactory {
-                val name = it.replace(".", "/") + ".class"
-                val input = Thread.currentThread().contextClassLoader.getResourceAsStream(name)
-                        ?: return@BytecodeModelFactory null
-                input.readBytes(input.available())
-            }
-            val barModel = factory.makeModel(ClassTypeReference(Bar::class.java.name), null)
-            println(barModel)
-        }
-
-        private fun makeNode(bytecode: ByteArray): ClassNode {
-            val reader = ClassReader(bytecode)
-            val node = ClassNode(Opcodes.ASM6)
-            reader.accept(node, ClassReader.SKIP_FRAMES or ClassReader.SKIP_CODE)
-            return node
-        }
-
         private fun String.toCanonicalName() = this.replace("/", ".")
 
     }
 
     class BytecodeNotFoundException(className: String) : Exception(className)
 
-    data class EnumHolder(val type: ClassTypeReference, val value: List<String>)
+    data class EnumHolder(val type: ClassTypeReference, val value: String)
 
 }
