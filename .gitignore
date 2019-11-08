@@ -1,8 +1,9 @@
 out\
-gradle\
+gradle\wrapper\gradle-wrapper.jar
 build\
 .gradle\
 **.rar
 cutter-cache\
 .idea\
 libs/
+gradle-test/

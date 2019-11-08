@@ -11,30 +11,26 @@ repositories {
 }
 
 sourceSets {
-    main.resources.srcDirs = ['src/resources']
-    main.java.srcDirs = ['src']
-    main.kotlin.srcDirs = ['src']
-    main.groovy.srcDirs = ['src']
-    main( {
-        groovy.outputDir = compileKotlin.destinationDir = compileJava.destinationDir
-    })
+    main {
+        groovy.outputDir = (compileKotlin.destinationDir = compileJava.destinationDir)
+    }
 }
-
 jar {
     archiveName = "cutter.jar"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+test.dependsOn(jar)
 
+test {
+    workingDir = rootProject.rootDir
+}
 
 dependencies {
     compile gradleApi()
     compile localGroovy()
     compile 'org.zeroturnaround:zt-zip:1.12'
-    compile group: 'org.ow2.asm', name: 'asm', version: '6.0'
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '6.0'
-    compile group: 'org.ow2.asm', name: 'asm-tree', version: '6.0'
-    compile group: 'org.ow2.asm', name: 'asm-util', version: '6.0'
+    compile group: 'org.ow2.asm', name: 'asm-debug-all', version: '5.2'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.40"
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.40'
 
