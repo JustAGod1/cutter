@@ -1,4 +1,4 @@
-package ru.justagod.plugin.test.test6
+package ru.justagod.plugin.test.test8
 
 import ru.justagod.mincer.control.MincerResultType
 import ru.justagod.mincer.processor.SubMincer
@@ -6,14 +6,15 @@ import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.test.common.TestVerifierMincer
 
-class Test6Verifier: TestVerifierMincer() {
-    override fun mandatoryClasses(): Set<ClassTypeReference> = hashSetOf(ClassTypeReference("test6.Simple"))
+class Test8Verifier : TestVerifierMincer() {
+    override fun mandatoryClasses(): Set<ClassTypeReference> = hashSetOf(
+            ClassTypeReference("test8.Simple"),
+            ClassTypeReference("test8.Simple$2")
+
+    )
 
     override fun process(context: WorkerContext<Unit, Unit>): MincerResultType {
-        if (context.name.name == "test6.Simple") {
-            assert(context.info!!.node.methods.size == 1)
-            assert(context.info!!.node.methods[0].name == "<init>")
-        }
+        assert(context.name.name != "test8.Simple$1")
         return MincerResultType.SKIPPED
     }
 }

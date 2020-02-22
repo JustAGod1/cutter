@@ -3,7 +3,6 @@ package ru.justagod.mincer.pipeline
 import ru.justagod.mincer.control.MincerFS
 import ru.justagod.mincer.filter.ClassFilter
 import ru.justagod.mincer.processor.SubMincer
-import ru.justagod.plugin.processing.ProjectModel
 
 class Pipeline<in Input : Any, Output : Any> private constructor(
         val id: String,

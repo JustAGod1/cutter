@@ -1,3 +1,4 @@
+package test7;
 class Simple {
     @anno.SideOnly(anno.Side.SERVER)
     int server;

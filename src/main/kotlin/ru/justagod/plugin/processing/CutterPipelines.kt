@@ -5,6 +5,7 @@ import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.util.join
 import ru.justagod.mincer.util.makeFirstSimple
 import ru.justagod.plugin.data.CutterTaskData
+import ru.justagod.plugin.processing.model.ProjectModel
 import ru.justagod.plugin.processing.pipeline.*
 
 object CutterPipelines {
@@ -15,7 +16,7 @@ object CutterPipelines {
                 .makeFirstSimple(
                         FirstAnalyzerMincer(annotation, data.primalSides),
                         WalkThroughFilter,
-                        ProjectModel()
+                        ProjectModel(data.invokeClasses)
                 )
                 .join(
                         SecondAnalyzerMincer(data.primalSides.toSet()),

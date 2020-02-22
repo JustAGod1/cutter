@@ -1,4 +1,4 @@
-package ru.justagod.plugin.processing
+package ru.justagod.plugin.processing.model
 
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.util.intersection

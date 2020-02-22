@@ -7,7 +7,7 @@ import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.InheritanceHelper
 import ru.justagod.plugin.data.SideName
-import ru.justagod.plugin.processing.ProjectModel
+import ru.justagod.plugin.processing.model.ProjectModel
 import ru.justagod.plugin.util.intersectsWith
 
 class SecondAnalyzerMincer(private val primalSides: Set<SideName>): SubMincer<ProjectModel, ProjectModel> {

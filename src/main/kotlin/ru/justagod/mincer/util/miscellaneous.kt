@@ -5,7 +5,6 @@ import ru.justagod.mincer.control.MincerFS
 import ru.justagod.mincer.filter.ClassFilter
 import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.processor.SubMincer
-import ru.justagod.plugin.processing.ProjectModel
 
 typealias MincerFactory = (MincerFS) -> MincerControlPane
 

@@ -5,16 +5,23 @@ import ru.justagod.mincer.Mincer
 import ru.justagod.mincer.filter.WalkThroughFilter
 import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.processor.SubMincer
+import ru.justagod.mincer.util.join
 import ru.justagod.mincer.util.makeFirstSimple
+import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.data.CutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.CutterPipelines
+import ru.justagod.plugin.test.common.ClassSearcherMincer
+import ru.justagod.plugin.test.common.TestVerifierMincer
 import ru.justagod.plugin.test.test1.Test1Verifier
 import ru.justagod.plugin.test.test2.Test2Verifier
 import ru.justagod.plugin.test.test3.Test3Verifier
 import ru.justagod.plugin.test.test4.Test4Verifier
 import ru.justagod.plugin.test.test5.Test5Verifier
 import ru.justagod.plugin.test.test6.Test6Verifier
+import ru.justagod.plugin.test.test7.Test7Verifier
+import ru.justagod.plugin.test.test8.Test8Verifier
+import ru.justagod.plugin.test.test9.Test9Runner
 
 class StraightTester : StraightCommon() {
 
@@ -52,7 +59,24 @@ class StraightTester : StraightCommon() {
         test("test6", "CLIENT", Test6Verifier())
     }
 
-    private fun test(name: String, side: String, verifier: SubMincer<Unit, Unit>) {
+    @Test
+    fun test7() {
+        test("test7", "CLIENT", Test7Verifier(false))
+        test("test7", "SERVER", Test7Verifier(true))
+    }
+
+    @Test
+    fun test8() {
+        test("test8", "CLIENT", Test8Verifier())
+    }
+
+    @Test
+    fun test9() {
+        Test9Runner.run()
+    }
+
+
+    private fun test(name: String, side: String, verifier: TestVerifierMincer) {
         return compileAndProcess(resolve(name)) {
             Mincer.Builder(it, false)
                     .registerSubMincer(
@@ -76,6 +100,10 @@ class StraightTester : StraightCommon() {
                     .registerSubMincer(
                             Pipeline.makeFirstSimple(
                                     verifier,
+                                    WalkThroughFilter,
+                                    Unit
+                            ).join(
+                                    ClassSearcherMincer(verifier.mandatoryClasses()),
                                     WalkThroughFilter,
                                     Unit
                             )
