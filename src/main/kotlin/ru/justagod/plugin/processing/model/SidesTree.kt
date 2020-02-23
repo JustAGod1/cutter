@@ -2,6 +2,7 @@ package ru.justagod.plugin.processing.model
 
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.util.intersection
+import java.lang.Exception
 
 class SidesTree(val name: String) {
 

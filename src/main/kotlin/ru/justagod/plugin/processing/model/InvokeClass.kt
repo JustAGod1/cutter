@@ -8,4 +8,5 @@ class InvokeClass(
         val sides: Set<SideName>,
         val functionalMethod: MethodDesc
 ) {
+
 }

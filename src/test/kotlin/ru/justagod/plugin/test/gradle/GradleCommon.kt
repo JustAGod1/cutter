@@ -6,10 +6,13 @@ import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.util.MincerUtils
 import ru.justagod.mincer.util.MincerUtils.processArchive
+import ru.justagod.mincer.util.join
 import ru.justagod.mincer.util.makeFirstSimple
 import ru.justagod.plugin.data.CutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.CutterPipelines
+import ru.justagod.plugin.test.common.ClassSearcherMincer
+import ru.justagod.plugin.test.common.TestVerifierMincer
 import ru.justagod.plugin.test.straight.StraightCommon
 import java.io.File
 import java.lang.RuntimeException
@@ -18,7 +21,7 @@ import ru.justagod.plugin.data.SideName.Companion.make as makeSide
 
 open class GradleCommon {
 
-    private val root = File("gradle-test")
+    protected val root = File("gradle-test")
 
     protected fun setUpDirectory(gradleScript: String): File {
         root.deleteRecursively()
@@ -61,23 +64,31 @@ open class GradleCommon {
                     |$gradleScript
                 """.trimMargin()
         )
+        if (System.getProperty("debug") == "true") {
+            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005")
+        }
         val srcDir = root.resolve("src").resolve("main").resolve("java")
         srcDir.mkdirs()
 
         return srcDir
     }
 
-    protected fun buildJar(name: String) {
+    protected fun runGradleCommand(vararg args: String) {
         val pb = ProcessBuilder()
         pb.inheritIO()
-        pb.command("gradle", "build" + name.capitalize(), "--no-daemon", "--stacktrace")
+        pb.command(listOf("gradle") + args + "--no-daemon" + "--stacktrace")
         pb.directory(root)
         val p = pb.start()
         val code = p.waitFor()
         if (code != 0) throw RuntimeException("Bad exit code $code")
     }
 
-    protected fun test(src: String, targetSide: String, verifier: SubMincer<Unit, Unit>) {
+    protected fun buildJar(name: String): String {
+        runGradleCommand("build" + name.capitalize())
+        return "mod-${name.toLowerCase()}.jar";
+    }
+
+    protected fun insertSources(src: String) {
         val srcDist = root
                 .resolve("src")
                 .resolve("main")
@@ -93,8 +104,23 @@ open class GradleCommon {
         srcEmitter.copyRecursively(generalDist, overwrite = true)
         resolve("/anno").toFile().copyRecursively(annoDist, overwrite = true)
 
-        buildJar(targetSide.toLowerCase())
-        verify(targetSide, verifier)
+    }
+
+    protected fun clean() {
+        runGradleCommand("clean")
+    }
+
+    protected fun insertSourcesAndClean(src: String) {
+        insertSources(src)
+        clean()
+    }
+
+    protected fun test(src: String, targetSide: String, verifier: TestVerifierMincer) {
+        insertSources(src)
+        clean()
+
+        val jarName = buildJar(targetSide.toLowerCase())
+        verify(jarName, verifier)
     }
 
     protected fun resolve(name: String): URL {
@@ -109,11 +135,11 @@ open class GradleCommon {
         return File(this.path)
     }
 
-    protected fun verify(targetSide: String, verifier: SubMincer<Unit, Unit>) {
+    protected fun verify(jarName: String, verifier: TestVerifierMincer) {
         val archive = root
                 .resolve("build")
                 .resolve("libs")
-                .resolve("mod-${targetSide.toLowerCase()}.jar")
+                .resolve(jarName)
         assert(archive.exists())
         assert(archive.isFile)
         processArchive(archive) {
@@ -121,6 +147,10 @@ open class GradleCommon {
                     .registerSubMincer(
                             Pipeline.makeFirstSimple(
                                     verifier,
+                                    WalkThroughFilter,
+                                    Unit
+                            ).join(
+                                    ClassSearcherMincer(verifier.mandatoryClasses()),
                                     WalkThroughFilter,
                                     Unit
                             )

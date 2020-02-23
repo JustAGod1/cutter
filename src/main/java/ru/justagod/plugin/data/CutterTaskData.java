@@ -14,4 +14,14 @@ public class CutterTaskData {
     public CutterTaskData(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return "CutterTaskData{" +
+                "name='" + name + '\'' +
+                ", primalSides=" + primalSides +
+                ", targetSides=" + targetSides +
+                ", invokeClasses=" + invokeClasses +
+                '}';
+    }
 }

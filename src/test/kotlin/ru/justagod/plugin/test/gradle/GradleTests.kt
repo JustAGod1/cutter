@@ -7,6 +7,9 @@ import ru.justagod.plugin.test.test3.Test3Verifier
 import ru.justagod.plugin.test.test4.Test4Verifier
 import ru.justagod.plugin.test.test5.Test5Verifier
 import ru.justagod.plugin.test.test6.Test6Verifier
+import ru.justagod.plugin.test.test7.Test7Verifier
+import ru.justagod.plugin.test.test8.Test8Verifier
+import ru.justagod.plugin.test.test9.Test9Runner
 
 class GradleTests : GradleCommon() {
 
@@ -76,4 +79,17 @@ class GradleTests : GradleCommon() {
     fun test6() {
         test("test6", "CLIENT", Test6Verifier())
     }
+
+    @Test
+    fun test7() {
+        test("test7", "CLIENT", Test7Verifier(false))
+        test("test7", "SERVER", Test7Verifier(true))
+    }
+
+    @Test
+    fun test8() {
+        test("test8", "CLIENT", Test8Verifier())
+    }
+
+
 }

@@ -1,7 +1,10 @@
 package ru.justagod.plugin.data
 
+import groovy.transform.CompileStatic
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.util.ConfigureUtil
+import ru.justagod.plugin.processing.model.InvokeClass
 
 class CutterConfig {
     /**
@@ -77,17 +80,16 @@ class CutterConfig {
      */
     List<File> classesDirs
 
-    String invokesHolder
-    NamedDomainObjectContainer<CutterInvokeData> invokes
+    List<InvocationClassData> invokes = new ArrayList<>()
 
-    def invokes(String clazz, Closure action) {
-        invokesHolder = clazz
-        invokes.configure(action)
+    def invocation(Closure closure) {
+        def data = new InvocationClassData()
+        invokes.add(data)
+        ConfigureUtil.configure(closure, data)
     }
 
-    CutterConfig(NamedDomainObjectContainer<CutterTaskData> builds, NamedDomainObjectContainer<CutterInvokeData> invokes) {
+    CutterConfig(NamedDomainObjectContainer<CutterTaskData> builds) {
         this.builds = builds
-        this.invokes = invokes
     }
 
     /**

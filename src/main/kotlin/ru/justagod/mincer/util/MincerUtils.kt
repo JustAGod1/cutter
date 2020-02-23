@@ -43,19 +43,25 @@ object MincerUtils {
     fun processArchive(file: File, factory: MincerFactory): MincerZipFS {
         val archive = MincerZipFS(file, readZip(file))
         val mincer = factory(archive)
+        val resultEntries = hashMapOf<String, ByteArraySource>()
         do {
-            val iterator = archive.entries.map { it.value }.iterator()
+            val iterator = archive.entries.entries.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                if (!entry.path.endsWith(".class")) continue
+                if (!entry.value.path.endsWith(".class")) continue
 
-                val result = mincer.advance(entry.bytes, entry.path, 0)
-                if (result.type == MincerResultType.MODIFIED)
-                    archive.entries[entry.path] = ByteArraySource(entry.path, result.resultedBytecode)
-                else if (result.type == MincerResultType.DELETED)
-                    archive.entries -= entry.path
+                val result = mincer.advance(entry.value.bytes, entry.value.path, 0)
+                if (result.type == MincerResultType.DELETED) {
+                    iterator.remove()
+                    resultEntries -= entry.key
+                } else {
+                    resultEntries[entry.key] = ByteArraySource(entry.key, result.resultedBytecode)
+                }
             }
+            archive.entries.clear()
+            archive.entries.putAll(resultEntries)
         } while (mincer.endIteration())
+
 
         return archive
 

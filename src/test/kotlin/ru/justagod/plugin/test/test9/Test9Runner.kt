@@ -19,34 +19,46 @@ object Test9Runner : StraightCommon() {
     fun run() {
         run {
             val compiled = compile(Test9Runner.javaClass.getResource("/test9")!!)
-            runAndCheck(compiled, """
-                Hello client lambda
-                Hello client anonymous
-                Hello server lambda
-                Hello server anonymous
-                
-            """.trimIndent())
-        }
-
-        run {
-            val compiled = compile(Test9Runner.javaClass.getResource("/test9")!!)
-            process(compiled, "SERVER")
-            runAndCheck(compiled, """
-                Hello server lambda
-                Hello server anonymous
-                
-            """.trimIndent())
+            run1(compiled)
         }
 
         run {
             val compiled = compile(Test9Runner.javaClass.getResource("/test9")!!)
             process(compiled, "CLIENT")
-            runAndCheck(compiled, """
+            runClientCheck(compiled)
+        }
+
+        run {
+            val compiled = compile(Test9Runner.javaClass.getResource("/test9")!!)
+            process(compiled, "SERVER")
+            runServerCheck(compiled)
+        }
+    }
+
+    fun run1(compiled: File) {
+        runAndCheck(compiled, """
+                Hello client lambda
+                Hello client anonymous
+                Hello server lambda
+                Hello server anonymous
+                
+            """.trimIndent())
+    }
+
+    fun runServerCheck(compiled: File) {
+        runAndCheck(compiled, """
+                Hello server lambda
+                Hello server anonymous
+                
+            """.trimIndent())
+    }
+
+    fun runClientCheck(compiled: File) {
+        runAndCheck(compiled, """
                 Hello client lambda
                 Hello client anonymous
                 
             """.trimIndent())
-        }
     }
 
     private fun process(compiled: File, side: String) {
