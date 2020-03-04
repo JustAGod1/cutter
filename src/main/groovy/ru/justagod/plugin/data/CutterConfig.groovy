@@ -68,7 +68,7 @@ class CutterConfig {
      * @return удобавиромое представление стороны
      */
     SideName side(String name) {
-        def info = new SideName(name)
+        def info = SideName.make$cutter(name)
         return info
     }
 

@@ -11,6 +11,9 @@ import ru.justagod.model.factory.FallbackModelFactory
 import java.io.File
 import java.util.*
 
+
+typealias MincerBuilder = Mincer.Builder
+
 class Mincer private constructor(
         val fs: MincerFS,
         val canSkip: Boolean,

@@ -6,8 +6,9 @@ class SideName private constructor(val name: String) {
     companion object {
         private val cache = hashMapOf<String, SideName>()
 
+        @JvmStatic
         internal fun make(name: String): SideName {
-            return cache.computeIfAbsent(name) { SideName(name) }
+            return cache.computeIfAbsent(name.toLowerCase()) { SideName(name.toLowerCase()) }
         }
     }
 
@@ -20,7 +21,7 @@ class SideName private constructor(val name: String) {
 
         other as SideName
 
-        if (name != other.name) return false
+        if (!name.equals(other.name, ignoreCase = true)) return false
 
         return true
     }

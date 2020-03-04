@@ -9,31 +9,11 @@ import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.CutterPipelines
 import ru.justagod.plugin.processing.model.InvokeClass
 import ru.justagod.plugin.processing.model.MethodDesc
-import ru.justagod.plugin.test.straight.StraightCommon
 import java.io.*
 import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
 
-object Test9Runner : StraightCommon() {
-
-    fun run() {
-        run {
-            val compiled = compile(Test9Runner.javaClass.getResource("/test9")!!)
-            run1(compiled)
-        }
-
-        run {
-            val compiled = compile(Test9Runner.javaClass.getResource("/test9")!!)
-            process(compiled, "CLIENT")
-            runClientCheck(compiled)
-        }
-
-        run {
-            val compiled = compile(Test9Runner.javaClass.getResource("/test9")!!)
-            process(compiled, "SERVER")
-            runServerCheck(compiled)
-        }
-    }
+object Test9Runner {
 
     fun run1(compiled: File) {
         runAndCheck(compiled, """
