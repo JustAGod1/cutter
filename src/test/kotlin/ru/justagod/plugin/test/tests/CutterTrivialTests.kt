@@ -51,40 +51,40 @@ object CutterTrivialTests {
                     dir("test4") {
                         klass("Class1") {
                             method("server", "()V").conf("server")
-                            method("server", "(I)V").exists()
+                            method("server", "(I)V")
                             method("client", "()V").conf("client")
-                            method("client", "(I)V").exists()
+                            method("client", "(I)V")
                         }
                         klass("Class2") {
                             method("server", "()V").conf("server")
-                            method("server", "(I)V").exists()
+                            method("server", "(I)V")
                             method("client", "()V").conf("client")
-                            method("client", "(I)V").exists()
+                            method("client", "(I)V")
                         }
                     }
                 }.build()
 
         registry += TrivialTestBuilder("Single anonymous class")
                 .src("test5")
-                .conf("client")
+                .conf("client", "server")
                 .model {
                     dir("test5") {
                         klass("Simple") {
-                            method("server", "()V").absents()
+                            method("server", "()V").conf("server")
                         }
-                        klass("Simple$0").absents()
+                        klass("Simple$0").conf("server")
                     }
                 }
                 .build()
 
         registry += TrivialTestBuilder("Lambda's impl method")
                 .src("test6")
-                .conf("client")
+                .conf("client", "server")
                 .model {
                     dir("test6") {
                         klass("Simple") {
-                            method("a", "()V").absents()
-                            method("lambda\$a$0", "()V").absents()
+                            method("a", "()V").conf("server")
+                            method("lambda\$a$0", "()V").conf("server")
                         }
                     }
                 }.build()

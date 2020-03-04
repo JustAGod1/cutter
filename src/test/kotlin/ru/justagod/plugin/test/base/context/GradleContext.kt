@@ -22,7 +22,6 @@ abstract class GradleContext : TestingContext() {
         root.resolve("settings.gradle").writeText("include 'gradle-test'")
         root.resolve("./build.gradle").writeText(
                 """
-                    |import ru.justagod.plugin.gradle.CutterPlugin
                     |buildscript {
                     |    repositories {
                     |        mavenCentral()
@@ -43,7 +42,7 @@ abstract class GradleContext : TestingContext() {
                     |}
                     |
                     |apply plugin: 'java'
-                    |apply plugin: CutterPlugin
+                    |apply plugin: 'cutter'
                     |
                     |jar {
                     |   archiveName = 'mod.jar'

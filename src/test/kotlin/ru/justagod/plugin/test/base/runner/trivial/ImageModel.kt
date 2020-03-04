@@ -29,16 +29,6 @@ class ImageModel private constructor() {
     abstract class ProjectEntry(protected val parent: ProjectEntry?) {
         private var shouldExists: ((String) -> Boolean) = { true }
 
-        fun exists(): ProjectEntry {
-            shouldExists = { true }
-            return this
-        }
-
-        fun absents(): ProjectEntry {
-            shouldExists = { false }
-            return this
-        }
-
         fun conf(confName: String): ProjectEntry {
             shouldExists = { it == confName }
             return this
