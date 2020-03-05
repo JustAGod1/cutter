@@ -1,12 +1,12 @@
 package test1;
 
 class Simple {
-    @anno.SideOnly(anno.Side.CLIENT)
+    @ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.CLIENT)
     private static void client() {
 
     }
 
-    @anno.SideOnly(anno.Side.SERVER)
+    @ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.SERVER)
     private static void server() {
 
     }

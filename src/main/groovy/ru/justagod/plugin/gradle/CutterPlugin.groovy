@@ -15,7 +15,7 @@ class CutterPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         def tasksContainer = project.container(CutterTaskData)
-        def config = project.extensions.create("cutter", CutterConfig, tasksContainer)
+        def config = project.extensions.create("cutter", CutterConfig, tasksContainer, project)
 
         def taskAll = project.getTasks().create("buildAll") {
             group = 'build'

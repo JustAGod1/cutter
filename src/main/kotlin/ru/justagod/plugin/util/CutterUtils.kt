@@ -17,7 +17,7 @@ object CutterUtils {
         var result: InvokeClass? = null
 
         for (invokeClass in model.invokeClasses) {
-            if (mincer.inheritance.isChild(ref, invokeClass.name)) {
+            if (mincer.inheritance.isChild(ref, invokeClass.name, considerInterfaces = true)) {
                 if (result != null) error("$ref inherits more than one invoke class")
                 result = invokeClass
             }

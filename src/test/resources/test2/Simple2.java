@@ -1,6 +1,6 @@
 package test2;
 
-@anno.SideOnly(anno.Side.CLIENT)
+@ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.CLIENT)
 public class Simple2 {
     public static void main() {
         Runnable runnable = new Runnable() {

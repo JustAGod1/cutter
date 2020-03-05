@@ -8,16 +8,16 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
     private val buffer = HashMap<ClassTypeReference, ClassModel>()
     private val nodes = HashMap<ClassTypeReference, InheritanceNode>()
 
-    fun isChild(child: ClassTypeReference, parent: ClassTypeReference): Boolean {
+    fun isChild(child: ClassTypeReference, parent: ClassTypeReference, considerInterfaces: Boolean? = null): Boolean {
         val childNode = getNode(child)
         if (childNode.name == parent) return true
         val resolvedChildNode = resolveNode(childNode)
-        if (getNode(parent).isInterface) {
-            val result = resolvedChildNode.interfaces.any { isChild(it.name, parent) }
+        if (considerInterfaces != false && (considerInterfaces == true || getNode(parent).isInterface)) {
+            val result = resolvedChildNode.interfaces.any { isChild(it.name, parent, considerInterfaces) }
             if (result) return true
         }
         if (resolvedChildNode.superClass == null) return false
-        return isChild(resolvedChildNode.superClass.name, parent)
+        return isChild(resolvedChildNode.superClass.name, parent, considerInterfaces)
     }
 
     inline fun walk(type: ClassTypeReference, acceptor: (ClassModel) -> Unit) {

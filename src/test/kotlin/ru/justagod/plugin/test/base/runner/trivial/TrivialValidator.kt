@@ -30,6 +30,7 @@ class TrivialValidator(private val configName: String, private val imageModel: I
             unexpectedEntries += klass
             return MincerResultType.SKIPPED
         }
+        notFoundEntries -= klass
 
         context.info!!.node.methods?.forEach { mn ->
             val m = klass.methods[mn.name] ?: return@forEach

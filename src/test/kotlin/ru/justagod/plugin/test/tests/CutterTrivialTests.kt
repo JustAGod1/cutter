@@ -35,9 +35,9 @@ object CutterTrivialTests {
                 .model {
                     dir("test2") {
                         klass("Simple1").conf("server")
-                        klass("Simple1$0").conf("server")
+                        klass("Simple1$1").conf("server")
                         klass("Simple2").conf("client")
-                        klass("Simple2$0").conf("client")
+                        klass("Simple2$1").conf("client")
                     }
                 }.build()
 
@@ -79,7 +79,7 @@ object CutterTrivialTests {
                         klass("Simple") {
                             method("server", "()V").conf("server")
                         }
-                        klass("Simple$0").conf("server")
+                        klass("Simple$1").conf("server")
                     }
                 }
                 .build()
@@ -112,7 +112,7 @@ object CutterTrivialTests {
     private fun tests(): List<TestRunner> = registry.map { TrivialTestRunner(it) }
     private val script = """
         cutter {
-                annotation = "anno.SideOnly"
+                annotation = "ru.justagod.cutter.GradleSideOnly"
                 def serverSide = side('SERVER')
                 def clientSide = side('CLIENT')
                 builds {
@@ -149,6 +149,33 @@ object CutterTrivialTests {
     @TestFactory
     fun forge18(): List<DynamicTest> {
         val context = ForgeContext("1.8", script)
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
+    fun gradleTasksDef(): List<DynamicTest> {
+        val context = GradleContext(GradleContext.defaultGradleScript).default()
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
+    fun forge1710Def(): List<DynamicTest> {
+        val context = ForgeContext("1.7.10", GradleContext.defaultGradleScript).default()
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
+    fun forge18Def(): List<DynamicTest> {
+        val context = ForgeContext("1.8", GradleContext.defaultGradleScript).default()
         context.before()
         return tests().map {
             DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }

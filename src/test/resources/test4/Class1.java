@@ -2,7 +2,7 @@ package test4;
 
 class Class1 {
 
-    @anno.SideOnly(anno.Side.SERVER)
+    @ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.SERVER)
     public void server() {
 
     }
@@ -11,7 +11,7 @@ class Class1 {
 
     }
 
-    @anno.SideOnly(anno.Side.CLIENT)
+    @ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.CLIENT)
     public void client() {
 
     }

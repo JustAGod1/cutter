@@ -2,7 +2,7 @@ package test5;
 
 class Simple {
 
-    @anno.SideOnly(anno.Side.SERVER)
+    @ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.SERVER)
     public void server() {
         Runnable r = new Runnable() {
             @Override

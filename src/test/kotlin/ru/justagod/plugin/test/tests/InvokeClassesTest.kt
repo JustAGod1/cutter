@@ -1,7 +1,6 @@
 package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestFactory
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.data.CutterTaskData
 import ru.justagod.plugin.data.SideName
@@ -15,7 +14,6 @@ import ru.justagod.plugin.test.base.context.StraightContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
 
 object InvokeClassesTest : TestRunner {
@@ -33,12 +31,12 @@ object InvokeClassesTest : TestRunner {
             )
             taskData.invokeClasses = listOf(
                     InvokeClass(
-                            ClassTypeReference("test9.ServerInvoke"),
+                            ClassTypeReference("ru.justagod.cutter.invoke.InvokeServer"),
                             hashSetOf(SideName.make("SERVER")),
                             MethodDesc("run", "()V")
                     ),
                     InvokeClass(
-                            ClassTypeReference("test9.ClientInvoke"),
+                            ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
                             hashSetOf(SideName.make("CLIENT")),
                             MethodDesc("run", "()V")
                     )
@@ -70,18 +68,53 @@ object InvokeClassesTest : TestRunner {
         run(context)
     }
 
+    @Test
+    fun forge1122() {
+        val context = ForgeContext("1.12.2", gradleScript)
+        context.before()
+        run(context)
+    }
+
+    @Test
+    fun gradleDef() {
+        val context = GradleContext(GradleContext.defaultGradleScript)
+        context.before()
+        run(context)
+    }
+
+    @Test
+    fun forge1710Def() {
+        val context = ForgeContext("1.7.10", GradleContext.defaultGradleScript)
+        context.before()
+        run(context)
+    }
+
+    @Test
+    fun forge18Def() {
+        val context = ForgeContext("1.8", GradleContext.defaultGradleScript)
+        context.before()
+        run(context)
+    }
+
+    @Test
+    fun forge1122Def() {
+        val context = ForgeContext("1.12.2", GradleContext.defaultGradleScript)
+        context.before()
+        run(context)
+    }
+
     private val gradleScript = """
             cutter {
-                annotation = "anno.SideOnly"
+                annotation = "ru.justagod.cutter.GradleSideOnly"
                 def serverSide = side('server')
                 def clientSide = side('client')
                 invocation {
-                    name = 'test9.ServerInvoke'
+                    name = 'ru.justagod.cutter.invoke.InvokeServer'
                     sides = [serverSide]
                     method = 'run()V'
                 }
                 invocation {
-                    name = 'test9.ClientInvoke'
+                    name = 'ru.justagod.cutter.invoke.InvokeClient'
                     sides = [clientSide]
                     method = 'run()V'
                 }

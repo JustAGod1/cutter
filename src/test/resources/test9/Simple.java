@@ -1,24 +1,27 @@
 package test9;
 
+import ru.justagod.cutter.*;
+import ru.justagod.cutter.invoke.*;
+
 class Simple {
 
     public static void main(String[] args) {
-        ClientInvoke a = () -> {
+        InvokeClient a = () -> {
             System.out.println("Hello client lambda");
         };
         a.run();
-        ClientInvoke b = new ClientInvoke() {
+        InvokeClient b = new InvokeClient() {
             public void run() {
                 System.out.println("Hello client anonymous");
             }
         };
         b.run();
 
-        ServerInvoke c = () -> {
+        InvokeServer c = () -> {
             System.out.println("Hello server lambda");
         };
         c.run();
-        ServerInvoke d = new ServerInvoke() {
+        InvokeServer d = new InvokeServer() {
             public void run() {
                 System.out.println("Hello server anonymous");
             }

@@ -10,11 +10,12 @@ class ImageModel private constructor() {
     private fun parseDirectory(directory: Directory, confName: String): Set<ProjectEntry> {
         val result = directory.directories.values.filter { it.doesExistInConf(confName) }.flatMap { parseDirectory(it, confName) }.toMutableSet()
         result += directory.classes.values.filter { it.doesExistInConf(confName) }.flatMap { parseClass(it, confName) }.toMutableSet()
+        if (directory.name != "" && directory.doesExistInConf(confName)) result += directory
         return result
     }
 
     private fun parseClass(klass: Klass, confName: String): Set<ProjectEntry> {
-        return (klass.fields.values.filter { it.doesExistInConf(confName) } + klass.methods.flatMap { it.value }.filter { it.doesExistInConf(confName) }).toSet()
+        return (klass.fields.values.filter { it.doesExistInConf(confName) } + klass.methods.flatMap { it.value }.filter { it.doesExistInConf(confName) }).toHashSet().also { if (klass.doesExistInConf(confName)) it += klass }
     }
 
     companion object {

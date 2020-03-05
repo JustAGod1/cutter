@@ -1,7 +1,7 @@
 package test7;
 class Simple {
-    @anno.SideOnly(anno.Side.SERVER)
+    @ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.SERVER)
     int server;
-    @anno.SideOnly(anno.Side.CLIENT)
+    @ru.justagod.cutter.GradleSideOnly(ru.justagod.cutter.GradleSide.CLIENT)
     int client;
 }

@@ -19,7 +19,7 @@ class StraightContext(private val taskFactory: (String) -> CutterTaskData) : Tes
         val src = Files.createTempDirectory("src").toFile()
         src.deleteRecursively()
         root.copyRecursively(src, overwrite = true)
-        val annotationsRoot = resolve("anno")
+        val annotationsRoot = resolve("ru/justagod/cutter")
         annotationsRoot.copyRecursively(src, overwrite = true)
 
         val compiled = File("build/tmp")
@@ -48,7 +48,7 @@ class StraightContext(private val taskFactory: (String) -> CutterTaskData) : Tes
 
 
         val pipeline = CutterPipelines.makePipeline(
-                "anno.SideOnly",
+                "ru.justagod.cutter.GradleSideOnly",
                 taskFactory(name)
                 )
         val mincer = MincerBuilder(MincerDecentFS(compiled), false)

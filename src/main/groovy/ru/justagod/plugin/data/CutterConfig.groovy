@@ -1,6 +1,8 @@
 package ru.justagod.plugin.data
 
 import groovy.transform.CompileStatic
+import kotlin.io.ByteStreamsKt
+import kotlin.io.FilesKt
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.util.ConfigureUtil
@@ -39,6 +41,7 @@ class CutterConfig {
     NamedDomainObjectContainer<CutterTaskData> builds
 
     List<InvocationClassData> invokes = new ArrayList<>()
+    private final Project project
 
     def invocation(Closure closure) {
         def data = new InvocationClassData()
@@ -46,7 +49,8 @@ class CutterConfig {
         ConfigureUtil.configure(closure, data)
     }
 
-    CutterConfig(NamedDomainObjectContainer<CutterTaskData> builds) {
+    CutterConfig(NamedDomainObjectContainer<CutterTaskData> builds, Project project) {
+        this.project = project
         this.builds = builds
     }
 
@@ -83,6 +87,57 @@ class CutterConfig {
 
     def builds() {
         return builds
+    }
+
+    void initializeDefault() {
+        def targetDir = new File(project.buildDir, "cutter-defaults")
+        targetDir.mkdirs()
+
+        def names = ['Defaults.jar', 'Defaults-sources.jar', 'Defaults-javadoc.jar']
+        for (String name : names) {
+            def target = new File(targetDir, name)
+            def path = "defaults/" + name
+            def input = getClass().classLoader.getResourceAsStream(path)
+            if (input == null) throw new RuntimeException("Cannot find $path")
+            def output = new FileOutputStream(target)
+            ByteStreamsKt.copyTo(input, output, 1024 * 5)
+
+            project.dependencies.compile(project.files(target))
+            project.jar.from(target)
+        }
+        annotation = "ru.justagod.cutter.GradleSideOnly"
+        def serverSide = side('SERVER')
+        def clientSide = side('CLIENT')
+        invocation {
+            name = 'ru.justagod.cutter.invoke.InvokeClient'
+            sides = [clientSide]
+            method = 'run()V'
+        }
+        invocation {
+            name = 'ru.justagod.cutter.invoke.InvokeServer'
+            sides = [serverSide]
+            method = 'run()V'
+        }
+        invocation {
+            name = 'ru.justagod.cutter.invoke.InvokeServerValue'
+            sides = [serverSide]
+            method = 'run()Ljava/lang/Object;'
+        }
+        invocation {
+            name = 'ru.justagod.cutter.invoke.InvokeClientValue'
+            sides = [clientSide]
+            method = 'run()Ljava/lang/Object;'
+        }
+        builds {
+            client {
+                targetSides = [clientSide]
+                primalSides = [clientSide, serverSide]
+            }
+            server {
+                targetSides = [serverSide]
+                primalSides = [clientSide, serverSide]
+            }
+        }
     }
 
 }

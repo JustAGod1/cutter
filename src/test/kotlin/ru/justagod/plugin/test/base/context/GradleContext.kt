@@ -9,7 +9,12 @@ import java.nio.file.Files
 
 open class GradleContext(protected val gradleScript: String) : TestingContext() {
     protected val root = File("./gradle-test")
+    private var dontCopyAnno = false
 
+    fun default(): GradleContext {
+        dontCopyAnno = true
+        return this
+    }
 
     override fun before() {
         root.deleteRecursively()
@@ -68,8 +73,8 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
     }
 
     override fun compileFolder(root: File, name: String): File {
-        insertSourcesAndClean(root)
-        runGradleCommand("build" + name.capitalize())
+        insertSources(root)
+        runGradleCommand("clean", "build" + name.capitalize())
         val jarFile = this.root.resolve("build").resolve("libs").resolve("mod-${name.toLowerCase()}.jar")
 
         val unpackTarget = Files.createTempDirectory("out").toFile()
@@ -97,20 +102,19 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
         srcDist.deleteRecursively()
         srcDist.mkdirs()
 
-        val annoDist = srcDist.resolve("anno").also { it.mkdirs() }
         val generalDist = srcDist.resolve(src.name).also { it.mkdirs() }
-
         src.copyRecursively(generalDist, overwrite = true)
-        resolve("/anno").copyRecursively(annoDist, overwrite = true)
+        if (!dontCopyAnno) {
+            val annoDist = srcDist
+                    .resolve("ru").resolve("justagod").resolve("cutter")
+                    .also { it.mkdirs() }
+            resolve("/ru/justagod/cutter").copyRecursively(annoDist, overwrite = true)
+        }
 
     }
 
-    private fun clean() {
-        runGradleCommand("clean")
-    }
 
-    private fun insertSourcesAndClean(src: File) {
-        insertSources(src)
-        clean()
+    companion object {
+        const val defaultGradleScript = "cutter { it.initializeDefault() } "
     }
 }
