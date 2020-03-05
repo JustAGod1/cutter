@@ -15,7 +15,6 @@ import ru.justagod.plugin.data.CutterTaskData
 import ru.justagod.plugin.processing.CutterPipelines
 import ru.justagod.plugin.util.Extensions
 
-@CompileStatic
 class CutterTask extends DefaultTask {
 
     CutterConfig config
@@ -23,12 +22,13 @@ class CutterTask extends DefaultTask {
 
     @TaskAction
     void process() {
-        processArchive((project.tasks.findByPath("jar") as Jar).getArchivePath(), data.name)
+        processArchive(project.tasks.findByPath("jar").getArchivePath(), data.name)
     }
 
+    @CompileStatic
     private void processArchive(File f, String name) {
         def archive = MincerUtils.INSTANCE.processArchive(f) {
-            buildMincer(it)
+            this.buildMincer(it)
         }
         def target = new File(f.absoluteFile.parentFile, Extensions.nameWithoutExtension(f) + "-" + name + "." + Extensions.extension(f) ?: "")
         ZipUtil.pack((ZipEntrySource[]) (Object) archive.entries.values().toArray(), target)
@@ -36,6 +36,7 @@ class CutterTask extends DefaultTask {
 
 
 
+    @CompileStatic
     private MincerControlPane buildMincer(MincerFS fs) {
         def builder = new Mincer.Builder(fs, false)
         builder.registerSubMincer(

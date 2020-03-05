@@ -11,9 +11,7 @@ import java.io.File
 import java.lang.RuntimeException
 import java.nio.file.Files
 
-abstract class StraightContext : TestingContext() {
-
-    abstract fun makeTask(name: String): CutterTaskData
+class StraightContext(private val taskFactory: (String) -> CutterTaskData) : TestingContext() {
 
     override fun before() {}
 
@@ -51,7 +49,7 @@ abstract class StraightContext : TestingContext() {
 
         val pipeline = CutterPipelines.makePipeline(
                 "anno.SideOnly",
-                makeTask(name)
+                taskFactory(name)
                 )
         val mincer = MincerBuilder(MincerDecentFS(compiled), false)
                 .registerSubMincer(pipeline)

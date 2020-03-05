@@ -9,6 +9,7 @@ import ru.justagod.plugin.processing.model.InvokeClass
 import ru.justagod.plugin.processing.model.MethodDesc
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.TestingContext
+import ru.justagod.plugin.test.base.context.ForgeContext
 import ru.justagod.plugin.test.base.context.GradleContext
 import ru.justagod.plugin.test.base.context.StraightContext
 import java.io.BufferedReader
@@ -21,48 +22,7 @@ object InvokeClassesTest : TestRunner {
 
     @Test
     fun straight() {
-        InvocationStraightContext.before()
-        run(InvocationStraightContext)
-    }
-
-    @Test
-    fun gradle() {
-        InvocationGradleContext.before()
-        run(InvocationGradleContext)
-    }
-
-    private object InvocationGradleContext : GradleContext() {
-        override fun gradleScript(): String = """
-            cutter {
-                annotation = "anno.SideOnly"
-                def serverSide = side('SERVER')
-                def clientSide = side('CLIENT')
-                builds {
-                    client {
-                        targetSides = [clientSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                    server {
-                        targetSides = [serverSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                }
-                invocation {
-                    name = 'test9.ServerInvoke'
-                    sides = [serverSide]
-                    method = 'run()V'
-                }
-                invocation {
-                    name = 'test9.ClientInvoke'
-                    sides = [clientSide]
-                    method = 'run()V'
-                }
-            }
-        """.trimIndent()
-    }
-
-    private object InvocationStraightContext : StraightContext() {
-        override fun makeTask(name: String): CutterTaskData {
+        val context = StraightContext { name ->
             val taskData = CutterTaskData(name)
             taskData.primalSides = listOf(
                     SideName.make("SERVER"),
@@ -83,9 +43,60 @@ object InvokeClassesTest : TestRunner {
                             MethodDesc("run", "()V")
                     )
             )
-            return taskData
+            taskData
         }
+        context.before()
+        run(context)
     }
+
+    @Test
+    fun gradle() {
+        val context = GradleContext(gradleScript)
+        context.before()
+        run(context)
+    }
+
+    @Test
+    fun forge1710() {
+        val context = ForgeContext("1.7.10", gradleScript)
+        context.before()
+        run(context)
+    }
+
+    @Test
+    fun forge18() {
+        val context = ForgeContext("1.8", gradleScript)
+        context.before()
+        run(context)
+    }
+
+    private val gradleScript = """
+            cutter {
+                annotation = "anno.SideOnly"
+                def serverSide = side('server')
+                def clientSide = side('client')
+                invocation {
+                    name = 'test9.ServerInvoke'
+                    sides = [serverSide]
+                    method = 'run()V'
+                }
+                invocation {
+                    name = 'test9.ClientInvoke'
+                    sides = [clientSide]
+                    method = 'run()V'
+                }
+                builds {
+                    client {
+                        targetSides = [clientSide]
+                        primalSides = [clientSide, serverSide]
+                    }
+                    server {
+                        targetSides = [serverSide]
+                        primalSides = [clientSide, serverSide]
+                    }
+                }
+            }
+        """.trimIndent()
 
     override val name: String = "Invocation classes test"
 

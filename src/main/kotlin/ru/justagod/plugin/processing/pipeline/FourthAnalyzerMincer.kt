@@ -141,6 +141,6 @@ class FourthAnalyzerMincer(private val primalSides: Set<SideName>) : SubMincer<P
     override fun endProcessing(input: ProjectModel, cache: MincerArchive?, inheritance: InheritanceHelper, pipeline: Pipeline<ProjectModel, ProjectModel>) {
         input.sidesTree.identify(null)
         pipeline.value = input
-        println(pipeline.value!!.sidesTree.toString(primalSides.toSet()))
+        if (System.getProperty("print-sides") == "true") println(pipeline.value!!.sidesTree.toString(primalSides.toSet()))
     }
 }

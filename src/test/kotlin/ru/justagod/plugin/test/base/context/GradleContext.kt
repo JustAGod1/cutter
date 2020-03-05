@@ -1,15 +1,15 @@
 package ru.justagod.plugin.test.base.context
 
+import org.gradle.tooling.internal.gradle.DefaultGradleScript
 import org.zeroturnaround.zip.ZipUtil
 import ru.justagod.plugin.test.base.TestingContext
 import java.io.File
 import java.lang.RuntimeException
 import java.nio.file.Files
 
-abstract class GradleContext : TestingContext() {
-    private val root = File("./gradle-test")
+open class GradleContext(protected val gradleScript: String) : TestingContext() {
+    protected val root = File("./gradle-test")
 
-    protected abstract fun gradleScript(): String
 
     override fun before() {
         root.deleteRecursively()
@@ -20,6 +20,20 @@ abstract class GradleContext : TestingContext() {
         File("build/libs/cutter.jar").copyTo(dist)
 
         root.resolve("settings.gradle").writeText("include 'gradle-test'")
+        makeBuildGradle()
+        if (System.getProperty("debug") == "true") {
+            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005\norg.gradle.jvmargs=-Dprint-sides=true")
+        } else {
+            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-Dprint-sides=true")
+        }
+        val srcDir = root.resolve("src").resolve("main").resolve("java")
+        srcDir.mkdirs()
+        prepare()
+    }
+
+    protected open fun prepare() {}
+
+    protected open fun makeBuildGradle() {
         root.resolve("./build.gradle").writeText(
                 """
                     |buildscript {
@@ -48,15 +62,9 @@ abstract class GradleContext : TestingContext() {
                     |   archiveName = 'mod.jar'
                     |}
                     |
-                    |${gradleScript()}
+                    |$gradleScript
                 """.trimMargin()
         )
-        if (System.getProperty("debug") == "true") {
-            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005")
-        }
-        val srcDir = root.resolve("src").resolve("main").resolve("java")
-        srcDir.mkdirs()
-
     }
 
     override fun compileFolder(root: File, name: String): File {
@@ -71,7 +79,7 @@ abstract class GradleContext : TestingContext() {
     }
 
 
-    private fun runGradleCommand(vararg args: String) {
+    protected open fun runGradleCommand(vararg args: String) {
         val pb = ProcessBuilder()
         pb.inheritIO()
         pb.command(listOf("gradle") + args + "--no-daemon" + "--stacktrace")

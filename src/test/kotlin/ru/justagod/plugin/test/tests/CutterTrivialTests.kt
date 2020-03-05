@@ -1,6 +1,13 @@
 package ru.justagod.plugin.test.tests
 
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
+import ru.justagod.plugin.data.CutterTaskData
+import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.test.base.TestRunner
+import ru.justagod.plugin.test.base.context.ForgeContext
+import ru.justagod.plugin.test.base.context.GradleContext
+import ru.justagod.plugin.test.base.context.StraightContext
 import ru.justagod.plugin.test.base.runner.TrivialTestRunner
 import ru.justagod.plugin.test.base.runner.trivial.TrivialTestData
 import ru.justagod.plugin.test.base.runner.trivial.TrivialTestBuilder
@@ -102,6 +109,65 @@ object CutterTrivialTests {
                 }.build()
     }
 
-    fun tests(): List<TestRunner> = registry.map { TrivialTestRunner(it) }
+    private fun tests(): List<TestRunner> = registry.map { TrivialTestRunner(it) }
+    private val script = """
+        cutter {
+                annotation = "anno.SideOnly"
+                def serverSide = side('SERVER')
+                def clientSide = side('CLIENT')
+                builds {
+                    client {
+                        targetSides = [clientSide]
+                        primalSides = [clientSide, serverSide]
+                    }
+                    server {
+                        targetSides = [serverSide]
+                        primalSides = [clientSide, serverSide]
+                    }
+                }
+            }
+    """.trimIndent()
+
+    @TestFactory
+    fun gradleTasks(): List<DynamicTest> {
+        val context = GradleContext(script)
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
+    fun forge1710(): List<DynamicTest> {
+        val context = ForgeContext("1.7.10", script)
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
+    fun forge18(): List<DynamicTest> {
+        val context = ForgeContext("1.8", script)
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
+    fun straightTests(): List<DynamicTest> {
+        val context = StraightContext { name ->
+            val data = CutterTaskData(name)
+            data.invokeClasses = emptyList()
+            data.primalSides = listOf(SideName.make("server"), SideName.make("client"))
+            data.targetSides = listOf(SideName.make(name))
+            data
+        }
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
 
 }

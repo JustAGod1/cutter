@@ -13,7 +13,6 @@ public class CutterTaskData {
 
     public CutterTaskData(String name) {
         this.name = name;
-        Runnable a = () -> System.out.println("LOL");
     }
 
 
