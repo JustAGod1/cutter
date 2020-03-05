@@ -1,16 +1,20 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.10'
-    id 'maven-publish'
 }
 apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
-group 'ru.justagod'
-version '2.0'
+group 'tech.justagod'
+archivesBaseName = 'cutter'
+version '2.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
-
+signing {
+    sign configurations.archives
+}
 sourceSets {
     main {
         groovy.outputDir = (compileKotlin.destinationDir = compileJava.destinationDir)
@@ -27,14 +31,62 @@ test {
     workingDir = rootProject.rootDir
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'ru.justagod'
-            artifactId = 'cutter'
-            version = '2.0'
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
 
-            from components.java
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'Cutter'
+                packaging 'jar'
+
+                description 'Gradle plugin to simplify mods protection'
+                url 'https://gitlab.com/hvalick2111/cutter'
+
+
+                scm {
+                    connection 'scm:git:https://gitlab.com/hvalick2111/cutter.git'
+                    developerConnection 'scm:git:https://gitlab.com/hvalick2111/cutter.git'
+                    url 'https://gitlab.com/hvalick2111/cutter'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'JustAGod'
+                        name 'Yury Barinov'
+                        email 'hvalick2111@gmail.com'
+                    }
+                }
+            }
         }
     }
 }

@@ -7,4 +7,4 @@ cutter-cache\
 .idea\
 libs/
 gradle-test/
-settings.gradle
+gradle.properties
