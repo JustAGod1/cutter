@@ -55,8 +55,8 @@ class FirstAnalyzerMincer(annotationName: String, private val primalSides: List<
             val name = iterator.next() as String
             val value = iterator.next()
             if (name == "value") {
-                if (value is String) {
-                    return listOf(SideName.make(value))
+                if (value is Array<*>) {
+                    return listOf(SideName.make(value[1] as String))
                 } else if (value is List<*>) {
                     if (value[0] !is Array<*>) return null
                     return value.map { SideName.make((it as Array<String>)[1]) }
