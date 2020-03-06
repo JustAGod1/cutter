@@ -1,6 +1,5 @@
 package ru.justagod.plugin.test.base.context
 
-import org.gradle.tooling.internal.gradle.DefaultGradleScript
 import org.zeroturnaround.zip.ZipUtil
 import ru.justagod.plugin.test.base.TestingContext
 import java.io.File
@@ -72,11 +71,15 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
         )
     }
 
-    override fun compileFolder(root: File, name: String): File {
+    override fun compileFolder(root: File, conf: String?): File {
         insertSources(root)
-        runGradleCommand("clean", "build" + name.capitalize())
-        val jarFile = this.root.resolve("build").resolve("libs").resolve("mod-${name.toLowerCase()}.jar")
-
+        val jarFile = if (conf != null) {
+            runGradleCommand("clean", "build" + conf.capitalize())
+            this.root.resolve("build").resolve("libs").resolve("mod-${conf.toLowerCase()}.jar")
+        } else {
+            runGradleCommand("clean", "build")
+            this.root.resolve("build").resolve("libs").resolve("mod.jar")
+        }
         val unpackTarget = Files.createTempDirectory("out").toFile()
         ZipUtil.unpack(jarFile, unpackTarget)
 

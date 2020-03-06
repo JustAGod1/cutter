@@ -7,6 +7,7 @@ import java.util.List;
 
 public class CutterTaskData {
     public String name;
+    public boolean removeAnnotations = true;
     public List<SideName> primalSides;
     public List<SideName> targetSides;
     public List<InvokeClass> invokeClasses = new ArrayList<>();

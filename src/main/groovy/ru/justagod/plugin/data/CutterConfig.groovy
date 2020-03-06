@@ -34,6 +34,8 @@ class CutterConfig {
      */
     String annotation
 
+    boolean removeAnnotations = false
+
     /**
      * Список конфигураций билдов
      * @see #builds(groovy.lang.Closure)

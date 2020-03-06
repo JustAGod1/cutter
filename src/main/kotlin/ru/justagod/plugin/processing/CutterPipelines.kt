@@ -33,6 +33,15 @@ object CutterPipelines {
                         WalkThroughFilter,
                         null
                 )
+                .let {
+                    if (data.removeAnnotations) it
+                            .join(
+                                    AnnotationsRemoverMincer(annotation),
+                                    WalkThroughFilter,
+                                    null
+                            )
+                    else it
+                }
                 .join(
                         CutterMincer(data.targetSides, data.primalSides.toSet()),
                         WalkThroughFilter,

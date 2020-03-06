@@ -4,7 +4,6 @@ import ru.justagod.mincer.MincerBuilder
 import ru.justagod.mincer.util.MincerDecentFS
 import ru.justagod.mincer.util.MincerUtils
 import ru.justagod.plugin.data.CutterTaskData
-import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.CutterPipelines
 import ru.justagod.plugin.test.base.TestingContext
 import java.io.File
@@ -15,7 +14,7 @@ class StraightContext(private val taskFactory: (String) -> CutterTaskData) : Tes
 
     override fun before() {}
 
-    override fun compileFolder(root: File, name: String): File {
+    override fun compileFolder(root: File, conf: String?): File {
         val src = Files.createTempDirectory("src").toFile()
         src.deleteRecursively()
         root.copyRecursively(src, overwrite = true)
@@ -46,10 +45,10 @@ class StraightContext(private val taskFactory: (String) -> CutterTaskData) : Tes
         val exitCode = p.waitFor()
         if (exitCode != 0) throw RuntimeException("Cannot compile source")
 
-
+        if (conf == null) return compiled
         val pipeline = CutterPipelines.makePipeline(
                 "ru.justagod.cutter.GradleSideOnly",
-                taskFactory(name)
+                taskFactory(conf)
                 )
         val mincer = MincerBuilder(MincerDecentFS(compiled), false)
                 .registerSubMincer(pipeline)

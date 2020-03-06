@@ -21,13 +21,14 @@ class CutterPlugin implements Plugin<Project> {
             group = 'build'
         }
         if (taskAll == null) throw new RuntimeException("de")
-        config.builds.all { data ->
+        config.builds.all { CutterTaskData data ->
             def task = project.getTasks().create("build" + data.name.capitalize(), CutterTask.class as Class<CutterTask>) as CutterTask;
             if (task == null) throw new RuntimeException("dede")
             task.group = 'build'
             def invokeClasses = config.invokes.collect { parse(it) }
             task.dependsOn(project.tasks.jar)
             data.invokeClasses = invokeClasses
+            data.removeAnnotations = data.removeAnnotations && config.removeAnnotations
             task.data = data
             task.config = config
             taskAll.dependsOn(task)
