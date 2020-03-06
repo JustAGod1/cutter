@@ -156,6 +156,15 @@ object CutterTrivialTests {
     }
 
     @TestFactory
+    fun forge1122(): List<DynamicTest> {
+        val context = ForgeContext("1.12.2", script)
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
     fun gradleTasksDef(): List<DynamicTest> {
         val context = GradleContext(GradleContext.defaultGradleScript).default()
         context.before()
@@ -176,6 +185,15 @@ object CutterTrivialTests {
     @TestFactory
     fun forge18Def(): List<DynamicTest> {
         val context = ForgeContext("1.8", GradleContext.defaultGradleScript).default()
+        context.before()
+        return tests().map {
+            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
+        }
+    }
+
+    @TestFactory
+    fun forge1122Def(): List<DynamicTest> {
+        val context = ForgeContext("1.12.2", GradleContext.defaultGradleScript).default()
         context.before()
         return tests().map {
             DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }

@@ -1,6 +1,7 @@
 package ru.justagod.model
 
 import ru.justagod.model.factory.ModelFactory
+import java.lang.Exception
 import java.util.*
 
 class InheritanceHelper(private val modelFactory: ModelFactory) {
@@ -9,10 +10,10 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
     private val nodes = HashMap<ClassTypeReference, InheritanceNode>()
 
     fun isChild(child: ClassTypeReference, parent: ClassTypeReference, considerInterfaces: Boolean? = null): Boolean {
-        val childNode = getNode(child)
+        val childNode = getNode(child) ?: return false
         if (childNode.name == parent) return true
-        val resolvedChildNode = resolveNode(childNode)
-        if (considerInterfaces != false && (considerInterfaces == true || getNode(parent).isInterface)) {
+        val resolvedChildNode = resolveNode(childNode) ?: return false
+        if (considerInterfaces != false && (considerInterfaces == true || getNode(parent)?.isInterface ?: return false)) {
             val result = resolvedChildNode.interfaces.any { isChild(it.name, parent, considerInterfaces) }
             if (result) return true
         }
@@ -28,8 +29,8 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
     }
 
     fun getSuperClasses(type: ClassTypeReference, target: MutableList<ClassModel> = LinkedList()): List<ClassModel> {
-        target.add(getModel(type))
-        val node = resolveNode(getNode(type))
+        target.add(getModel(type) ?: return target)
+        val node = resolveNode(getNode(type) ?: return target) ?: return target
         node.superClass?.let { getSuperClasses(it.name, target) }
         for (inter in node.interfaces) {
             getSuperClasses(inter.name, target)
@@ -37,28 +38,28 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
         return target
     }
 
-    private fun getNode(type: ClassTypeReference): InheritanceNode {
+    private fun getNode(type: ClassTypeReference): InheritanceNode? {
         if (type in nodes) return nodes[type]!!
-        val node = makeNode(getModel(type))
+        val node = makeNode(getModel(type) ?: return null)
         nodes[type] = node
         return node
     }
 
     private fun makeNode(model: ClassModel) = InheritanceNode(model.access.isInterface, model.name, model)
 
-    private fun resolveNode(node: InheritanceNode): ResolvedInheritanceNode {
+    private fun resolveNode(node: InheritanceNode): ResolvedInheritanceNode? {
         if (node is ResolvedInheritanceNode) return node
-        val interfaces = node.model.interfaces.map { getNode(it.rawType) }
+        val interfaces = node.model.interfaces.map { getNode(it.rawType) ?: return null }
         val superClass = node.model.superClass?.let { getNode(it.rawType) }
         val resolvedNode = ResolvedInheritanceNode(node, interfaces, superClass)
         nodes[node.name] = resolvedNode
         return resolvedNode
     }
 
-    private fun getModel(type: ClassTypeReference): ClassModel {
+    private fun getModel(type: ClassTypeReference): ClassModel? {
         if (type in buffer) return buffer[type]!!
-        val model = modelFactory.makeModel(type, null)
-        buffer[type] = model
+        val model = try { modelFactory.makeModel(type, null) } catch (e: Exception) { null }
+        buffer[type] = model ?: return null
         return model
     }
 

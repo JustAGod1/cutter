@@ -90,7 +90,7 @@ class CutterConfig {
     }
 
     void initializeDefault() {
-        def targetDir = new File(project.buildDir, "cutter-defaults")
+        def targetDir = new File(project.file(".gradle"), "cutter-defaults")
         targetDir.mkdirs()
 
         def names = ['Defaults.jar', 'Defaults-sources.jar', 'Defaults-javadoc.jar']
@@ -103,6 +103,7 @@ class CutterConfig {
             ByteStreamsKt.copyTo(input, output, 1024 * 5)
 
             project.dependencies.compile(project.files(target))
+            println("Adding ${target.absolutePath} to compile conf...")
             project.jar.from(target)
         }
         annotation = "ru.justagod.cutter.GradleSideOnly"

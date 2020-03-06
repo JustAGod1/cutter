@@ -115,6 +115,6 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
 
 
     companion object {
-        const val defaultGradleScript = "cutter { it.initializeDefault() } "
+        const val defaultGradleScript = "cutter.initializeDefault()"
     }
 }
