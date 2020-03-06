@@ -105,8 +105,8 @@ class CutterConfig {
             ByteStreamsKt.copyTo(input, output, 1024 * 5)
 
             project.dependencies.compile(project.files(target))
-            println("Adding ${target.absolutePath} to compile conf...")
-            project.jar.from(target)
+            // I'm sorry for that
+            if (name == 'Defaults.jar') project.jar.from(project.zipTree(target))
         }
         annotation = "ru.justagod.cutter.GradleSideOnly"
         def serverSide = side('SERVER')

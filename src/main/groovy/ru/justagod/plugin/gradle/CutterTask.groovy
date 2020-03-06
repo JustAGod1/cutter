@@ -22,7 +22,6 @@ class CutterTask extends DefaultTask {
 
     @TaskAction
     void process() {
-        println(data.invokeClasses)
         processArchive(project.tasks.findByPath("jar").getArchivePath(), data.name)
     }
 

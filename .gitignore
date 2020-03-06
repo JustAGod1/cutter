@@ -1,6 +1,8 @@
 out\
 gradle\wrapper\gradle-wrapper.jar
-build\
+**/build/**
+**/out/**
+.gradle/**
 .gradle\
 **.rar
 cutter-cache\

@@ -48,7 +48,10 @@ object MincerUtils {
             val iterator = archive.entries.entries.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                if (!entry.value.path.endsWith(".class")) continue
+                if (!entry.value.path.endsWith(".class")) {
+                    resultEntries[entry.key] = entry.value
+                    continue
+                }
 
                 val result = mincer.advance(entry.value.bytes, entry.value.path, 0)
                 if (result.type == MincerResultType.DELETED) {
