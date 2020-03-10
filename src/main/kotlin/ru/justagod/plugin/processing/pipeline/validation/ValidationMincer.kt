@@ -20,16 +20,21 @@ import ru.justagod.plugin.processing.pipeline.validation.data.ValidationError
 
 typealias ValidationResult = Map<SideName, List<ValidationError>>
 
-// Probably we also have to check for annotation's validity but thanks to java runtime existence of
+// Probably we also have to check for annotations validity but thanks to java runtime existence of
 // annotations at runtime is very optional.
-class ValidationMincer(private val primalSides: Set<SideName>) : SubMincer<ProjectModel, ValidationResult> {
+class ValidationMincer(private val primalSides: Set<SideName>, annotation: String?) : SubMincer<ProjectModel, ValidationResult> {
 
+    private val annotationDesc = annotation?.let { "L${it.replace('.', '/')};" }
     private val result = hashMapOf<SideName, MutableList<ValidationError>>()
 
     override fun process(context: WorkerContext<ProjectModel, ValidationResult>): MincerResultType {
         val node = context.info!!.node
+        if (validationDisabled(node.invisibleAnnotations)) return MincerResultType.SKIPPED
+        if (validationDisabled(node.visibleAnnotations)) return MincerResultType.SKIPPED
 
         node.fields?.forEach {
+            if (validationDisabled(it.invisibleAnnotations)) return@forEach
+            if (validationDisabled(it.visibleAnnotations)) return@forEach
             val fieldType = fetchTypeReference(it.desc).unpack()
             if (fieldType !is ClassTypeReference) return@forEach
             val sidesOfExistence = context.input.sidesTree.get(
@@ -41,6 +46,8 @@ class ValidationMincer(private val primalSides: Set<SideName>) : SubMincer<Proje
         }
 
         node.methods?.forEach {
+            if (validationDisabled(it.invisibleAnnotations)) return@forEach
+            if (validationDisabled(it.visibleAnnotations)) return@forEach
             val sidesOfExistence = context.input.sidesTree.get(
                     PathHelper.method(context.name, it.name, it.desc),
                     primalSides
@@ -59,6 +66,12 @@ class ValidationMincer(private val primalSides: Set<SideName>) : SubMincer<Proje
         }
 
         return MincerResultType.SKIPPED;
+    }
+
+    private fun validationDisabled(annotations: List<AnnotationNode>?): Boolean {
+        if (annotationDesc == null) return false
+        if (annotations == null) return false
+        return annotations.any { it.desc == annotationDesc }
     }
 
     private fun considerClass(

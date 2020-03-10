@@ -97,15 +97,15 @@ uploadArchives {
 
                 licenses {
                     license {
-                        name 'MIT License'
+                        name = 'MIT License'
                     }
                 }
 
                 developers {
                     developer {
-                        id 'JustAGod'
-                        name 'Yury Barinov'
-                        email 'hvalick2111@gmail.com'
+                        id = 'JustAGod'
+                        name = 'Yury Barinov'
+                        email = 'hvalick2111@gmail.com'
                     }
                 }
             }
