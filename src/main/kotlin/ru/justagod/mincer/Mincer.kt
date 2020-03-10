@@ -63,7 +63,7 @@ class Mincer private constructor(
                     it.pipeline as Pipeline<Any, Any>
             )
         }
-        queues = queues.mapNotNull { it.advance(it.pipeline.value!!, fs, inheritance) }
+        queues = queues.mapNotNull { it.advance(it.pipeline.value ?: error("${it.pipeline.worker.javaClass} has returned nothing"), fs, inheritance) }
         return queues.isNotEmpty()
     }
 

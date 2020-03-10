@@ -8,30 +8,27 @@ import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.InheritanceHelper
 import ru.justagod.plugin.data.SideName
+import ru.justagod.plugin.processing.model.PathHelper
 import ru.justagod.plugin.processing.model.ProjectModel
 
-class FirstAnalyzerMincer(annotationName: String, private val primalSides: List<SideName>): SubMincer<Unit, ProjectModel> {
+class FirstAnalyzerMincer(annotationName: String): SubMincer<Unit, ProjectModel> {
 
     private val annotationDescriptor = 'L' + annotationName.replace('.', '/') + ';'
 
     override fun process(context: WorkerContext<Unit, ProjectModel>): MincerResultType {
         val node = context.info!!.node
         val project = context.pipeline.value!!
-        val path = if (context.name.simpleName != "package-info") {
-            context.name.path
-        } else {
-            context.name.path.dropLast(1)
-        }
-        inscribeSides(node.invisibleAnnotations, path, project)
-        inscribeSides(node.visibleAnnotations, path, project)
+
+        inscribeSides(node.invisibleAnnotations, PathHelper.klass(context.name), project)
+        inscribeSides(node.visibleAnnotations, PathHelper.klass(context.name), project)
 
         node.methods?.forEach {
-            val name = path + (it.name + it.desc)
+            val name = PathHelper.method(context.name, it.name, it.desc)
             inscribeSides(it.invisibleAnnotations, name, project)
             inscribeSides(it.visibleAnnotations, name, project)
         }
         node.fields?.forEach {
-            val name = path + (it.name + it.desc)
+            val name = PathHelper.field(context.name, it.name, it.desc)
             inscribeSides(it.invisibleAnnotations, name, project)
             inscribeSides(it.visibleAnnotations, name, project)
         }

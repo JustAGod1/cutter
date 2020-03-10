@@ -15,6 +15,7 @@ import ru.justagod.model.ClassTypeReference
 import ru.justagod.model.InheritanceHelper
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.model.MethodDesc
+import ru.justagod.plugin.processing.model.PathHelper
 import ru.justagod.plugin.processing.model.ProjectModel
 import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.util.intersection
@@ -82,7 +83,7 @@ class FourthAnalyzerMincer(private val primalSides: Set<SideName>) : SubMincer<P
             context.input.sidesTree.set(
                     type.path,
                     context.input.sidesTree.get(
-                            context.name.path + (method.name + method.desc),
+                            PathHelper.method(context.name, method.name, method.desc),
                             primalSides
                     )
             )

@@ -12,6 +12,7 @@ public class CutterTaskData {
     public List<SideName> targetSides;
     public List<InvokeClass> invokeClasses = new ArrayList<>();
 
+
     public CutterTaskData(String name) {
         this.name = name;
     }

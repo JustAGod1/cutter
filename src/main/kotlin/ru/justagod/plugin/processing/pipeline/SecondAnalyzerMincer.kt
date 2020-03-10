@@ -7,6 +7,7 @@ import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.InheritanceHelper
 import ru.justagod.plugin.data.SideName
+import ru.justagod.plugin.processing.model.PathHelper
 import ru.justagod.plugin.processing.model.ProjectModel
 import ru.justagod.plugin.util.intersectsWith
 
@@ -20,7 +21,7 @@ class SecondAnalyzerMincer(private val primalSides: Set<SideName>): SubMincer<Pr
             sides.intersectsWith(tree.get(it.name.path, primalSides))
         }
 
-        tree.set(context.name.path, sides)
+        tree.set(PathHelper.klass(context.name), sides)
 
         return MincerResultType.SKIPPED
     }

@@ -4,13 +4,12 @@ import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.MethodNode
+import ru.justagod.mincer.control.MincerArchive
 import ru.justagod.mincer.control.MincerResultType
+import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.processor.WorkerContext
-import ru.justagod.model.ClassTypeReference
-import ru.justagod.model.PrimitiveKind
-import ru.justagod.model.PrimitiveTypeReference
-import ru.justagod.model.fetchTypeReference
+import ru.justagod.model.*
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.processing.model.InvokeClass
@@ -20,10 +19,10 @@ import ru.justagod.plugin.util.PrimitivesAdapter
 import ru.justagod.plugin.util.intersectsWith
 
 /**
- * Final stage
+ * Final stage (just before validation)
  */
-class CutterMincer(private val targetSides: List<SideName>, private val primalSides: Set<SideName>): SubMincer<ProjectModel, Unit> {
-    override fun process(context: WorkerContext<ProjectModel, Unit>): MincerResultType {
+class CutterMincer(private val targetSides: Set<SideName>, private val primalSides: Set<SideName>): SubMincer<ProjectModel, ProjectModel> {
+    override fun process(context: WorkerContext<ProjectModel, ProjectModel>): MincerResultType {
         val tree = context.input.sidesTree
         val invokeClass = CutterUtils.findInvokeClass(context.name, context.mincer, context.input)
         if (invokeClass != null) {
@@ -70,7 +69,7 @@ class CutterMincer(private val targetSides: List<SideName>, private val primalSi
         return if (modified) MincerResultType.MODIFIED else MincerResultType.SKIPPED
     }
 
-    private fun processInvokeClass(context: WorkerContext<ProjectModel, Unit>, info: InvokeClass) {
+    private fun processInvokeClass(context: WorkerContext<ProjectModel, ProjectModel>, info: InvokeClass) {
         if (info.name == context.name) return
         val node = context.info!!.node
         val implMethod = node.methods?.find { it.name == info.functionalMethod.name && it.desc == info.functionalMethod.desc }
@@ -119,5 +118,9 @@ class CutterMincer(private val targetSides: List<SideName>, private val primalSi
     }
 
     private fun visitInsns(mv: MethodVisitor, vararg opcodes: Int) = opcodes.forEach { mv.visitInsn(it) }
+
+    override fun endProcessing(input: ProjectModel, cache: MincerArchive?, inheritance: InheritanceHelper, pipeline: Pipeline<ProjectModel, ProjectModel>) {
+        pipeline.value = input
+    }
 
 }
