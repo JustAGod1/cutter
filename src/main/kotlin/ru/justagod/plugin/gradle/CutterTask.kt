@@ -20,6 +20,7 @@ import javax.inject.Inject
 
 open class CutterTask: DefaultTask() {
     lateinit var dataHarvester: () -> BakedCutterTaskData
+    var archiveName: (() -> String)? = null
     private val data: BakedCutterTaskData by lazy { dataHarvester() }
 
     @TaskAction
@@ -47,7 +48,7 @@ open class CutterTask: DefaultTask() {
                 throw RuntimeException("Validation failed")
             }
         }
-        val target = File(f.absoluteFile.parentFile, f.nameWithoutExtension + "-" + name + "." + f.extension)
+        val target = File(f.absoluteFile.parentFile, archiveName?.invoke() ?: f.nameWithoutExtension + "-" + name + "." + f.extension)
         ZipUtil.pack(archive.entries.values.toTypedArray(), target)
     }
 }
