@@ -73,16 +73,4 @@ class ReflectionModelFactory(val loader: ClassLoader) : ModelFactory {
         return model
     }
 
-    companion object {
-
-        fun makeTypeReference(type: AsmType) = fetchTypeReference(type.descriptor)
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val factory = ReflectionModelFactory(Thread.currentThread().contextClassLoader)
-            val model = factory.makeModel(ClassTypeReference(ru.justagod.model.factory.Bar::class.java.name), null)
-            println(model)
-        }
-    }
-
 }

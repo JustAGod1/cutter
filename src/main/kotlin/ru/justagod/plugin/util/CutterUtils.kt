@@ -1,5 +1,6 @@
 package ru.justagod.plugin.util
 
+import org.objectweb.asm.Opcodes
 import ru.justagod.mincer.Mincer
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.processing.model.InvokeClass
@@ -31,5 +32,17 @@ object CutterUtils {
         }
 
         return result
+    }
+
+    private val opcodes = hashMapOf<Int, String>()
+
+    init {
+        for (field in Opcodes::class.java.fields) {
+            opcodes[field.get(null) as Int] = field.name
+        }
+    }
+
+    fun opcodeToString(opcode: Int): String {
+        return opcodes.getValue(opcode)
     }
 }

@@ -93,7 +93,8 @@ object ValidationTests {
                                 hashSetOf(SideName.make("CLIENT")),
                                 MethodDesc("run", "()V")
                         )
-                )
+                ),
+                markers = emptyList()
         )
         val pipeline = CutterPipelines.makePipelineWithValidation(task)
 

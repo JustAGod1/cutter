@@ -10,5 +10,7 @@ class BakedCutterTaskData(
         val removeAnnotations: Boolean,
         val primalSides: Set<SideName>,
         val targetSides: Set<SideName>,
-        val invocators: List<InvokeClass>
+        val invocators: List<InvokeClass>,
+        val markers: List<DynSideMarker>,
+        val cuttingMarkers: List<DynSideMarker> = markers
 )

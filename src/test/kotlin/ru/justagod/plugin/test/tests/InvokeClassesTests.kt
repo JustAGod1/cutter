@@ -17,7 +17,7 @@ import java.io.File
 import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
-object InvokeClassesTest : TestRunner {
+object InvokeClassesTests : TestRunner {
 
     @Test
     fun straight() {
@@ -40,7 +40,9 @@ object InvokeClassesTest : TestRunner {
                                     hashSetOf(SideName.make("CLIENT")),
                                     MethodDesc("run", "()V")
                             )
-                    )
+                    ),
+                    markers = emptyList(),
+                    cuttingMarkers = emptyList()
 
             )
         }

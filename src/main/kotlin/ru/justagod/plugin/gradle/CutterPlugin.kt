@@ -36,7 +36,8 @@ class CutterPlugin : Plugin<Project> {
                         config.validationOverriderAnnotation?.let { ClassTypeReference(it) },
                         data.removeAnnotations && config.removeAnnotations,
                         data.primalSides.toSet(), data.targetSides.toSet(),
-                        invokeClasses
+                        invokeClasses,
+                        emptyList()
                 )
             }
             val task = project.getTasks().create("build" + data.name.capitalize(), CutterTask::class.java)

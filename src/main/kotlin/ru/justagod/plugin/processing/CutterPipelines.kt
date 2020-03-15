@@ -39,7 +39,7 @@ object CutterPipelines {
                         null
                 )
                 .join(
-                        FourthAnalyzerMincer(data.primalSides.toSet()),
+                        FourthAnalyzerMincer(data.primalSides.toSet(), data.cuttingMarkers),
                         WalkThroughFilter,
                         null
                 )
@@ -53,7 +53,7 @@ object CutterPipelines {
                     else it
                 }
                 .join(
-                        CutterMincer(data.targetSides, data.primalSides.toSet()),
+                        CutterMincer(data.targetSides, data.primalSides.toSet(), data.cuttingMarkers),
                         WalkThroughFilter,
                         null
                 )

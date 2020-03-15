@@ -211,8 +211,8 @@ object CutterTrivialTests {
                     removeAnnotations = false,
                     primalSides = setOf(SideName.make("server"), SideName.make("client")),
                     targetSides = setOf(SideName.make(name)),
-                    invocators = emptyList()
-
+                    invocators = emptyList(),
+                    markers = emptyList()
             )
         }
         context.before()

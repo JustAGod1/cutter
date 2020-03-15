@@ -9,10 +9,13 @@ import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.*
+import ru.justagod.plugin.data.DynSideMarker
+import ru.justagod.plugin.data.DynSideMarkerBuilder
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.model.MethodDesc
 import ru.justagod.plugin.processing.model.PathHelper
 import ru.justagod.plugin.processing.model.ProjectModel
+import ru.justagod.plugin.processing.pipeline.SidlyInstructionsIter
 import ru.justagod.plugin.processing.pipeline.validation.data.ClassError
 import ru.justagod.plugin.processing.pipeline.validation.data.FieldError
 import ru.justagod.plugin.processing.pipeline.validation.data.MethodError
@@ -21,8 +24,12 @@ import ru.justagod.plugin.processing.pipeline.validation.data.ValidationError
 typealias ValidationResult = Map<SideName, List<ValidationError>>
 
 // Probably we also have to check for annotations validity but thanks to java runtime existence of
-// annotations at runtime is very optional.
-class ValidationMincer(private val primalSides: Set<SideName>, annotation: String?) : SubMincer<ProjectModel, ValidationResult> {
+// annotations at runtime is quite optional.
+class ValidationMincer(
+        private val primalSides: Set<SideName>,
+        annotation: String?,
+        private val markers: List<DynSideMarker>
+) : SubMincer<ProjectModel, ValidationResult> {
 
     private val annotationDesc = annotation?.let { "L${it.replace('.', '/')};" }
     private val result = hashMapOf<SideName, MutableList<ValidationError>>()
@@ -128,13 +135,18 @@ class ValidationMincer(private val primalSides: Set<SideName>, annotation: Strin
             src: String?
     ) {
         var line: Int = 0
-        for (instruction in method.instructions) {
+        val iter = SidlyInstructionsIter(
+                method.instructions.iterator(),
+                sidesOfExistence,
+                markers
+        )
+        for ((instruction, sides) in iter) {
             if (instruction is MethodInsnNode) {
                 considerMethodRef(
                         instruction.owner,
                         instruction.name,
                         instruction.desc,
-                        sidesOfExistence,
+                        sides,
                         project,
                         holder,
                         method,
@@ -144,7 +156,7 @@ class ValidationMincer(private val primalSides: Set<SideName>, annotation: Strin
             } else if (instruction is FieldInsnNode) {
                 val fieldHolder = ClassTypeReference.fromInternal(instruction.owner)
                 analyze(
-                        sidesOfExistence,
+                        sides,
                         project.sidesTree.get(
                                 PathHelper.method(
                                         fieldHolder,
@@ -161,7 +173,7 @@ class ValidationMincer(private val primalSides: Set<SideName>, annotation: Strin
                 val type = fetchTypeReference(instruction.desc).unpack()
                 if (type is ClassTypeReference) {
                     considerClass(
-                            sidesOfExistence,
+                            sides,
                             holder,
                             method.name,
                             type,
@@ -171,7 +183,7 @@ class ValidationMincer(private val primalSides: Set<SideName>, annotation: Strin
             } else if (instruction is TypeInsnNode) {
                 val klass = ClassTypeReference.fromInternal(instruction.desc)
                 considerClass(
-                        sidesOfExistence,
+                        sides,
                         holder,
                         method.name,
                         klass,
@@ -181,7 +193,7 @@ class ValidationMincer(private val primalSides: Set<SideName>, annotation: Strin
                 // Actually I'm one hundred percents sure that nobody will ever write their own bootstrap methods
                 considerMethodRef(
                         instruction.bsm.owner, instruction.bsm.name, instruction.bsm.desc,
-                        sidesOfExistence, project, holder, method, src, line
+                        sides, project, holder, method, src, line
                 )
 
                 val implHandle = instruction.bsmArgs[1] as Handle
@@ -190,7 +202,7 @@ class ValidationMincer(private val primalSides: Set<SideName>, annotation: Strin
                         || project.lambdaMethods[holder]?.contains(MethodDesc(implHandle.name, implHandle.desc)) != true) {
                         considerMethodRef(
                                 implHandle.owner, implHandle.name, implHandle.desc,
-                                sidesOfExistence, project, holder, method, src, line
+                                sides, project, holder, method, src, line
                         )
                 }
             } else if (instruction is LineNumberNode) {
