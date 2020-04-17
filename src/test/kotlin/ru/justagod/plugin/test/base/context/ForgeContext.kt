@@ -9,8 +9,11 @@ class ForgeContext(private val forgeVersion: String, gradleScript: String) : Gra
         File("forge").resolve(forgeVersion).copyRecursively(root, false) { _, err ->
             throw RuntimeException("Cannot copy", err)
         }
-        val exitCode = ProcessBuilder("chmod", "+rwx", root.resolve("gradlew").absolutePath).inheritIO().start().waitFor()
-        if (exitCode != 0) error(exitCode.toString())
+        val property = System.getProperties().getProperty("windows")
+        if (property == null || !property.toBoolean()) {
+            val exitCode = ProcessBuilder("chmod", "+rwx", root.resolve("gradlew").absolutePath).inheritIO().start().waitFor()
+            if (exitCode != 0) error(exitCode.toString())
+        }
         root.resolve("build.gradle").appendText(gradleScript)
     }
 
@@ -21,7 +24,11 @@ class ForgeContext(private val forgeVersion: String, gradleScript: String) : Gra
     override fun runGradleCommand(vararg args: String) {
         val pb = ProcessBuilder()
         pb.inheritIO()
-        pb.command(listOf("./gradlew") + args + "--no-daemon" + "--stacktrace")
+        val property = System.getProperties().getProperty("windows")
+        if (property?.toBoolean() == true)
+            pb.command(listOf("cmd", "/c", "gradlew") + args + "--no-daemon" + "--stacktrace")
+        else
+            pb.command(listOf("./gradlew") + args + "--no-daemon" + "--stacktrace")
         pb.directory(root)
         val p = pb.start()
         val code = p.waitFor()
