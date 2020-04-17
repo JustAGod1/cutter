@@ -37,12 +37,12 @@ class CutterPlugin : Plugin<Project> {
                         data.removeAnnotations && config.removeAnnotations,
                         data.primalSides.toSet(), data.targetSides.toSet(),
                         invokeClasses,
-                        emptyList()
+                        config.markers
                 )
             }
             val task = project.getTasks().create("build" + data.name.capitalize(), CutterTask::class.java)
             task.dataHarvester = dataHarvester
-            task.archiveName = { data.archiveName }
+            task.archiveName = { data.archiveName ?: null }
             task.group = "build"
             task.dependsOn(project.tasks.getByName("build"))
             taskAll.dependsOn(task)

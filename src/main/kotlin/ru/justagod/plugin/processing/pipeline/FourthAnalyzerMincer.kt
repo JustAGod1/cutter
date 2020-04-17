@@ -58,17 +58,16 @@ class FourthAnalyzerMincer(
         val node = context.info!!.node
         node.methods?.forEach {
             val sides = context.input.sidesTree.get(PathHelper.method(context.name, it.name, it.desc), primalSides)
-            val iter = SidlyInstructionsIter(
-                    it.instructions.iterator(),
+            SidlyInstructionsIter.iterate(
+                    it.instructions,
                     sides,
                     markers
-            )
-            for ((instruction, sides) in iter) {
-                if (instruction is InvokeDynamicInsnNode) {
-                    analyzeInvokeDynamic(instruction, context, sides)
-                } else if (instruction is TypeInsnNode) {
-                    analyzeTypeInsn(instruction, context, sides)
-                }
+            ) { (instruction, sides) ->
+                    if (instruction is InvokeDynamicInsnNode) {
+                        analyzeInvokeDynamic(instruction, context, sides)
+                    } else if (instruction is TypeInsnNode) {
+                        analyzeTypeInsn(instruction, context, sides)
+                    }
             }
         }
 

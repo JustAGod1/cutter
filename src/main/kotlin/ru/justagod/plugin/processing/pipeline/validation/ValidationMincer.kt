@@ -135,79 +135,78 @@ class ValidationMincer(
             src: String?
     ) {
         var line: Int = 0
-        val iter = SidlyInstructionsIter(
-                method.instructions.iterator(),
+        SidlyInstructionsIter.iterate(
+                method.instructions,
                 sidesOfExistence,
                 markers
-        )
-        for ((instruction, sides) in iter) {
-            if (instruction is MethodInsnNode) {
-                considerMethodRef(
-                        instruction.owner,
-                        instruction.name,
-                        instruction.desc,
-                        sides,
-                        project,
-                        holder,
-                        method,
-                        src,
-                        line
-                )
-            } else if (instruction is FieldInsnNode) {
-                val fieldHolder = ClassTypeReference.fromInternal(instruction.owner)
-                analyze(
-                        sides,
-                        project.sidesTree.get(
-                                PathHelper.method(
-                                        fieldHolder,
-                                        instruction.name, instruction.desc
-                                ),
-                                primalSides
+        ) { (instruction, sides) ->
+                if (instruction is MethodInsnNode) {
+                    considerMethodRef(
+                            instruction.owner,
+                            instruction.name,
+                            instruction.desc,
+                            sides,
+                            project,
+                            holder,
+                            method,
+                            src,
+                            line
+                    )
+                } else if (instruction is FieldInsnNode) {
+                    val fieldHolder = ClassTypeReference.fromInternal(instruction.owner)
+                    analyze(
+                            sides,
+                            project.sidesTree.get(
+                                    PathHelper.method(
+                                            fieldHolder,
+                                            instruction.name, instruction.desc
+                                    ),
+                                    primalSides
+                            )
+                    ) {
+                        inscribeError(it, FieldError(
+                                fieldHolder, instruction.name, holder, method.name, src, line
+                        ))
+                    }
+                } else if (instruction is MultiANewArrayInsnNode) {
+                    val type = fetchTypeReference(instruction.desc).unpack()
+                    if (type is ClassTypeReference) {
+                        considerClass(
+                                sides,
+                                holder,
+                                method.name,
+                                type,
+                                project, src, line
                         )
-                ) {
-                    inscribeError(it, FieldError(
-                            fieldHolder, instruction.name, holder, method.name, src, line
-                    ))
-                }
-            } else if (instruction is MultiANewArrayInsnNode) {
-                val type = fetchTypeReference(instruction.desc).unpack()
-                if (type is ClassTypeReference) {
+                    }
+                } else if (instruction is TypeInsnNode) {
+                    val klass = ClassTypeReference.fromInternal(instruction.desc)
                     considerClass(
                             sides,
                             holder,
                             method.name,
-                            type,
+                            klass,
                             project, src, line
                     )
-                }
-            } else if (instruction is TypeInsnNode) {
-                val klass = ClassTypeReference.fromInternal(instruction.desc)
-                considerClass(
-                        sides,
-                        holder,
-                        method.name,
-                        klass,
-                        project, src, line
-                )
-            } else if (instruction is InvokeDynamicInsnNode) {
-                // Actually I'm one hundred percents sure that nobody will ever write their own bootstrap methods
-                considerMethodRef(
-                        instruction.bsm.owner, instruction.bsm.name, instruction.bsm.desc,
-                        sides, project, holder, method, src, line
-                )
+                } else if (instruction is InvokeDynamicInsnNode) {
+                    // Actually I'm one hundred percents sure that nobody will ever write their own bootstrap methods
+                    considerMethodRef(
+                            instruction.bsm.owner, instruction.bsm.name, instruction.bsm.desc,
+                            sides, project, holder, method, src, line
+                    )
 
-                val implHandle = instruction.bsmArgs[1] as Handle
-                // We won't ever delete methods that implement bodies of lambdas that will be passed to invokators
-                if (ClassTypeReference.fromInternal(implHandle.owner) != holder
-                        || project.lambdaMethods[holder]?.contains(MethodDesc(implHandle.name, implHandle.desc)) != true) {
+                    val implHandle = instruction.bsmArgs[1] as Handle
+                    // We won't ever delete methods that implement bodies of lambdas that will be passed to invokators
+                    if (ClassTypeReference.fromInternal(implHandle.owner) != holder
+                            || project.lambdaMethods[holder]?.contains(MethodDesc(implHandle.name, implHandle.desc)) != true) {
                         considerMethodRef(
                                 implHandle.owner, implHandle.name, implHandle.desc,
                                 sides, project, holder, method, src, line
                         )
+                    }
+                } else if (instruction is LineNumberNode) {
+                    line = instruction.line
                 }
-            } else if (instruction is LineNumberNode) {
-                line = instruction.line
-            }
         }
     }
 

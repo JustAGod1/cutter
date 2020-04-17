@@ -59,8 +59,8 @@ object EuristicTests : TestRunner {
         runAndCheck(compiled, """
                 Server code
                 Server code
-                code
-                code
+                Server code
+                Both
                 
             """.trimIndent())
     }
@@ -69,8 +69,8 @@ object EuristicTests : TestRunner {
         runAndCheck(compiled, """
                 Client code
                 Client code
-                code
-                code
+                Client code
+                Both
                 
             """.trimIndent())
     }

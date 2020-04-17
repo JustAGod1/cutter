@@ -3,6 +3,7 @@ package ru.justagod.plugin.processing.pipeline
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import org.objectweb.asm.tree.FrameNode
 import org.objectweb.asm.tree.MethodNode
 import ru.justagod.mincer.control.MincerArchive
 import ru.justagod.mincer.control.MincerResultType
@@ -69,19 +70,16 @@ class CutterMincer(
                     }
                     modified = true
                 } else {
-                    val iter = SidlyInstructionsIter(
-                            method.instructions.iterator(),
+                    SidlyInstructionsIter.iterateAndTransform(
+                            method.instructions,
                             methodSides,
                             markers
-                    )
-                    while (iter.hasNext()) {
-                        val (_, sides) = iter.next()
-                        if (!sides.intersectsWith(targetSides)) {
-                            iter.remove()
+                    ) { (insn,sides) ->
+                        if (insn is FrameNode || !sides.intersectsWith(targetSides)) {
                             modified = true
-                            continue
+                            return@iterateAndTransform false
                         }
-
+                        true
                     }
                 }
             }

@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 open class CutterTask: DefaultTask() {
     lateinit var dataHarvester: () -> BakedCutterTaskData
-    var archiveName: (() -> String)? = null
+    var archiveName: (() -> String?)? = null
     private val data: BakedCutterTaskData by lazy { dataHarvester() }
 
     @TaskAction

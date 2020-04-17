@@ -6,6 +6,9 @@
       <module name="copy_messenger.buildSrc.main" target="1.8" />
       <module name="copy_messenger.buildSrc.res" target="1.8" />
       <module name="copy_messenger.buildSrc.test" target="1.8" />
+      <module name="cutter.test.main" target="1.8" />
+      <module name="cutter.test.test" target="1.8" />
+      <module name="ru.justagod.cutter.test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

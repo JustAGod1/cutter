@@ -18,7 +18,7 @@ class TrivialTestRunner(private val testData: TrivialTestData) : TestRunner {
 
     override fun run(context: TestingContext): Boolean {
         for (config in testData.configNames) {
-            val classes = context.compileResourceFolder(testData.src, config)
+            val classes = context.compileResourceFolder("trivial/" + testData.src, config)
             println("Validating $config config...")
             if (!validate(classes, config)) return false
         }

@@ -12,38 +12,12 @@ import java.io.FileOutputStream
 import java.util.*
 
 open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, private val project: Project) {
-    /**
-     * Полное имя аннотации, которую будет искать вырезалка
-     * <br></br>
-     * Хороший пример аннотации:
-     * `
-     * <pre>
-     * public @interface GradleSideOnly {
-     * GradleSide[] value();
-     * }
-    </pre> *
-    ` *
-     *
-     * Либо:
-     * <pre>
-     * public @interface GradleSideOnly {
-     * GradleSide value();
-     * }
-    </pre> *
-     *
-     *
-     *
-     */
     var annotation: String? = null
     var removeAnnotations = false
     var withoutDefaultLib = false
     var validation = true
     var validationOverriderAnnotation: String? = null
 
-    /**
-     * Список конфигураций билдов
-     * @see .builds
-     */
     var invokes: MutableList<InvocationClassData> = ArrayList()
     fun invocation(closure: InvocationClassData.() -> Unit) {
         val data = InvocationClassData()
@@ -56,32 +30,23 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
         ConfigureUtil.configure(closure, data)
     }
 
-    /**
-     * Эта функция нужна исключительно для улучшения читаемости кода, но все сделано так, что без нее никак))
-     *
-     * На вход вам нужно подать имя энума стороны, который вы используете в заданной аннотации
-     * Например для энума
-     * <pre>
-     * `<br></br>
-     * public enum GradleSide {
-     * SERVER, CLIENT
-     * }
-    ` *
-    </pre> *
-     * Значения могут быть:
-     * CLIENT и SERVER
-     * @param name имя энума стороны.
-     * @return удобавиромое представление стороны
-     */
+
+    var markers: MutableList<DynSideMarker> = arrayListOf()
+
+    fun markers(closure: MarkersSpec.() -> Unit) {
+        val spec = MarkersSpec()
+        spec.closure()
+    }
+
+    fun markers(closure: Closure<*>) {
+        val spec = MarkersSpec()
+        ConfigureUtil.configure(closure, spec)
+    }
+
     fun side(name: String?): SideName {
         return make(name!!)
     }
 
-    /**
-     *
-     * @param closure
-     * @return
-     */
     fun builds(closure: Closure<*>?) {
         builds.configure(closure)
     }
@@ -142,5 +107,28 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
             }
         }
 
+    }
+
+    inner class MarkersSpec internal constructor() {
+
+        fun field(block: DynSideMarkerBuilderField.() -> Unit) {
+            val builder = DynSideMarkerBuilderField()
+            builder.block()
+            markers.add(builder.build())
+        }
+
+        fun field(closure: Closure<*>) {
+            field { ConfigureUtil.configure(closure, this) }
+        }
+
+        fun method(block: DynSideMarkerBuilderMethod.() -> Unit) {
+            val builder = DynSideMarkerBuilderMethod()
+            builder.block()
+            markers.add(builder.build())
+        }
+
+        fun method(closure: Closure<*>) {
+            method { ConfigureUtil.configure(closure, this) }
+        }
     }
 }
