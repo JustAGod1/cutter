@@ -21,6 +21,12 @@ class Simple {
         if (SideUtil.isClient() && SideUtil.isServer()) {
             System.out.println("Dead code");
         }
+        if (SideUtil.isClient || SideUtil.isServer) {
+            System.out.println("code");
+        }
+        if (SideUtil.isClient() || SideUtil.isServer()) {
+            System.out.println("code");
+        }
     }
 }
 
