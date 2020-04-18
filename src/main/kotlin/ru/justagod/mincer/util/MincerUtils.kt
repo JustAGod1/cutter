@@ -33,7 +33,7 @@ object MincerUtils {
         val result = hashMapOf<String, ByteArraySource>()
         ZipUtil.iterate(file) { input, entry ->
             if (!entry.isDirectory)
-                result[entry.name] = ByteArraySource(entry.name, input!!.readBytes())
+                result[entry.name] = ByteArraySource(entry.name, input!!.readBytes(estimatedSize = 256))
         }
 
         return result

@@ -7,8 +7,6 @@ import ru.justagod.plugin.data.DynSideMarkerBuilder
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.TestingContext
-import ru.justagod.plugin.test.base.context.ForgeContext
-import ru.justagod.plugin.test.base.context.GradleContext
 import ru.justagod.plugin.test.base.context.StraightContext
 import java.io.BufferedReader
 import java.io.File
@@ -34,7 +32,7 @@ object EuristicTests : TestRunner {
                             DynSideMarkerBuilder().method().owner("test10.SideUtil").name("isServer").desc("()Z").sides(setOf(server)).build(),
                             DynSideMarkerBuilder().method().owner("test10.SideUtil").name("isClient").desc("()Z").sides(setOf(client)).build(),
                             DynSideMarkerBuilder().field().owner("test10.SideUtil").name("isServer").sides(setOf(server)).build(),
-                            DynSideMarkerBuilder().field().owner("test10.SideUtil").name("isClient").sides(setOf(client)).build()
+                            DynSideMarkerBuilder().field().owner("test10 .SideUtil").name("isClient").sides(setOf(client)).build()
                     )
             )
         }
@@ -58,9 +56,8 @@ object EuristicTests : TestRunner {
     private fun runServerCheck(compiled: File) {
         runAndCheck(compiled, """
                 Server code
-                Server code
-                Server code
-                Both
+                code
+                code
                 
             """.trimIndent())
     }
@@ -68,9 +65,8 @@ object EuristicTests : TestRunner {
     private fun runClientCheck(compiled: File) {
         runAndCheck(compiled, """
                 Client code
-                Client code
-                Client code
-                Both
+                code
+                code
                 
             """.trimIndent())
     }

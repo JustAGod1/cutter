@@ -8,6 +8,7 @@ import ru.justagod.plugin.data.DynSideMarker
 import ru.justagod.plugin.data.FlowDirection
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.util.CutterUtils
+import ru.justagod.plugin.util.intersection
 
 class SidlyInstructionsIter private constructor(
         private val data: MutableList<AbstractInsnNode>,
@@ -62,6 +63,8 @@ class SidlyInstructionsIter private constructor(
             mark(data.indexOf(node.label), side)
         }
         if (direction == FlowDirection.ALWAYS_PASS || direction == FlowDirection.BOTH) {
+            val labelNode = data[data.indexOf(node.label)]
+            sides.computeIfAbsent(labelNode) { hashSetOf() }.add(side)
             mark(idx + 1, side)
         }
     }

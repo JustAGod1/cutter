@@ -4,9 +4,9 @@ class Simple {
 
     public static void main(String[] args) {
         boolean flag = Runtime.getRuntime().availableProcessors() > 0;
-        if (flag || SideUtil.isServer()) {
+        if (flag && SideUtil.isServer()) {
             System.out.println("Server code");
-        } else if (flag || SideUtil.isClient()) {
+        } else if (flag && SideUtil.isClient()) {
             System.out.println("Client code");
         } else {
             System.out.println("Both");
@@ -16,6 +16,7 @@ class Simple {
         if (SideUtil.isClient || SideUtil.isServer) {
             System.out.println("code");
         }
+
         if (SideUtil.isClient() || SideUtil.isServer()) {
             System.out.println("code");
         }

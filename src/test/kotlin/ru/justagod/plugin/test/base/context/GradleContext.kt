@@ -54,8 +54,8 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
                     |        classpath group: 'org.ow2.asm', name: 'asm-commons', version: '6.0'
                     |        classpath group: 'org.ow2.asm', name: 'asm-tree', version: '6.0'
                     |        classpath group: 'org.ow2.asm', name: 'asm-util', version: '6.0'
-                    |        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.40"
-                    |        classpath group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.40'
+                    |        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.70"
+                    |        classpath group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.70'
                     |    }
                     |}
                     |
@@ -90,7 +90,10 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
     protected open fun runGradleCommand(vararg args: String) {
         val pb = ProcessBuilder()
         pb.inheritIO()
-        pb.command(listOf("gradle") + args + "--no-daemon" + "--stacktrace")
+        if(System.getProperties().getProperty("windows")?.equals("true", ignoreCase = true) != true)
+            pb.command(listOf("gradle") + args + "--no-daemon" + "--stacktrace")
+        else
+            pb.command(listOf("cmd", "/c", "gradle") + args + "--no-daemon" + "--stacktrace")
         pb.directory(root)
         val p = pb.start()
         val code = p.waitFor()

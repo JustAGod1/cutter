@@ -13,10 +13,10 @@ import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.*
 import ru.justagod.plugin.data.DynSideMarker
 import ru.justagod.plugin.data.SideName
-import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.processing.model.InvokeClass
 import ru.justagod.plugin.processing.model.MethodDesc
 import ru.justagod.plugin.processing.model.ProjectModel
+import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.util.PrimitivesAdapter
 import ru.justagod.plugin.util.intersectsWith
 
@@ -27,7 +27,7 @@ class CutterMincer(
         private val targetSides: Set<SideName>,
         private val primalSides: Set<SideName>,
         private val markers: List<DynSideMarker>
-): SubMincer<ProjectModel, ProjectModel> {
+) : SubMincer<ProjectModel, ProjectModel> {
     override fun process(context: WorkerContext<ProjectModel, ProjectModel>): MincerResultType {
         val tree = context.input.sidesTree
         val invokeClass = CutterUtils.findInvokeClass(context.name, context.mincer, context.input)
@@ -74,7 +74,7 @@ class CutterMincer(
                             method.instructions,
                             methodSides,
                             markers
-                    ) { (insn,sides) ->
+                    ) { (insn, sides) ->
                         if (insn is FrameNode || !sides.intersectsWith(targetSides)) {
                             modified = true
                             return@iterateAndTransform false
