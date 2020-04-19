@@ -59,7 +59,12 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
         return builds
     }
 
+
     fun initializeDefault() {
+        initializeDefault(!withoutDefaultLib, false)
+    }
+
+    fun initializeDefault(defaultLib: Boolean, heuristic: Boolean) {
         val targetDir = File(project.file(".gradle"), "cutter-defaults")
         targetDir.mkdirs()
         val names = Arrays.asList("Defaults.jar", "Defaults-sources.jar", "Defaults-javadoc.jar")
@@ -71,7 +76,7 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
             input.copyTo(output, 1024 * 5)
             project.dependencies.add("compile", project.files(target))
             // I'm sorry for that
-            if (name == "Defaults.jar" && !withoutDefaultLib) (project.tasks.getByName("jar") as AbstractArchiveTask).from(project.zipTree(target))
+            if (name == "Defaults.jar" && defaultLib) (project.tasks.getByName("jar") as AbstractArchiveTask).from(project.zipTree(target))
         }
         annotation = "ru.justagod.cutter.GradleSideOnly"
         val serverSide = side ("SERVER")
@@ -104,6 +109,15 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
             create("server") {
                 it.targetSides = listOf(serverSide)
                 it.primalSides = listOf(clientSide, serverSide)
+            }
+        }
+        if (heuristic) {
+            markers {
+                field {
+                    name = "isRemote"
+                    owner = "net.minecraft.world.World"
+                    sides = setOf(clientSide)
+                }
             }
         }
 
