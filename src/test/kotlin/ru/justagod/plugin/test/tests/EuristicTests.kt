@@ -7,6 +7,7 @@ import ru.justagod.plugin.data.DynSideMarkerBuilder
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.TestingContext
+import ru.justagod.plugin.test.base.context.GradleContext
 import ru.justagod.plugin.test.base.context.StraightContext
 import java.io.BufferedReader
 import java.io.File
@@ -32,10 +33,48 @@ object EuristicTests : TestRunner {
                             DynSideMarkerBuilder().method().owner("test10.SideUtil").name("isServer").desc("()Z").sides(setOf(server)).build(),
                             DynSideMarkerBuilder().method().owner("test10.SideUtil").name("isClient").desc("()Z").sides(setOf(client)).build(),
                             DynSideMarkerBuilder().field().owner("test10.SideUtil").name("isServer").sides(setOf(server)).build(),
-                            DynSideMarkerBuilder().field().owner("test10 .SideUtil").name("isClient").sides(setOf(client)).build()
+                            DynSideMarkerBuilder().field().owner("test10.SideUtil").name("isClient").sides(setOf(client)).build()
                     )
             )
         }
+        context.before()
+        run(context)
+    }
+
+    @Test
+    fun gradle() {
+        val config = """
+            cutter.initializeDefault()
+            cutter {
+                def server = side('server')
+                def client = side('client')
+                markers {
+                    field {
+                        owner = 'test10.SideUtil'
+                        name = 'isServer'
+                        sides = [server]
+                    }
+                    field {
+                        owner = 'test10.SideUtil'
+                        name = 'isClient'
+                        sides = [client]
+                    }
+                    method {
+                        owner = 'test10.SideUtil'
+                        name = 'isClient'
+                        desc = '()Z'
+                        sides = [client]
+                    }
+                    method {
+                        owner = 'test10.SideUtil'
+                        name = 'isServer'
+                        desc = '()Z'
+                        sides = [server]
+                    }
+                }
+            }
+        """.trimIndent()
+        val context = GradleContext(config)
         context.before()
         run(context)
     }
@@ -56,6 +95,7 @@ object EuristicTests : TestRunner {
     private fun runServerCheck(compiled: File) {
         runAndCheck(compiled, """
                 Server code
+                server
                 code
                 code
                 
@@ -65,6 +105,7 @@ object EuristicTests : TestRunner {
     private fun runClientCheck(compiled: File) {
         runAndCheck(compiled, """
                 Client code
+                client
                 code
                 code
                 

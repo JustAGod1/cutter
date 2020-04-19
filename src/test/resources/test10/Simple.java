@@ -12,6 +12,13 @@ class Simple {
             System.out.println("Both");
         }
 
+        if (SideUtil.isClient) {
+            System.out.println("client");
+        }
+
+        if (SideUtil.isServer) {
+            System.out.println("server");
+        }
 
         if (SideUtil.isClient || SideUtil.isServer) {
             System.out.println("code");
