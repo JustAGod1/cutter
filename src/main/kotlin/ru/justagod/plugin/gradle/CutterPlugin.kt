@@ -37,7 +37,7 @@ class CutterPlugin : Plugin<Project> {
                         data.removeAnnotations && config.removeAnnotations,
                         data.primalSides.toSet(), data.targetSides.toSet(),
                         invokeClasses,
-                        emptyList()
+                        config.markers
                 )
             }
             val task = project.getTasks().create("build" + data.name.capitalize(), CutterTask::class.java)

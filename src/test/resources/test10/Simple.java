@@ -3,27 +3,27 @@ package test10;
 class Simple {
 
     public static void main(String[] args) {
-        if (SideUtil.isServer()) {
+        boolean flag = Runtime.getRuntime().availableProcessors() > 0;
+        if (flag && SideUtil.isServer()) {
             System.out.println("Server code");
-        }
-        if (SideUtil.isServer) {
-            System.out.println("Server code");
-        }
-        if (SideUtil.isClient()) {
+        } else if (flag && SideUtil.isClient()) {
             System.out.println("Client code");
+        } else {
+            System.out.println("Both");
         }
+
         if (SideUtil.isClient) {
-            System.out.println("Client code");
+            System.out.println("client");
         }
-        if (SideUtil.isClient && SideUtil.isServer) {
-            System.out.println("Dead code");
+
+        if (SideUtil.isServer) {
+            System.out.println("server");
         }
-        if (SideUtil.isClient() && SideUtil.isServer()) {
-            System.out.println("Dead code");
-        }
+
         if (SideUtil.isClient || SideUtil.isServer) {
             System.out.println("code");
         }
+
         if (SideUtil.isClient() || SideUtil.isServer()) {
             System.out.println("code");
         }

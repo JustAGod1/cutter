@@ -3,6 +3,7 @@ package ru.justagod.plugin.processing.pipeline
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import org.objectweb.asm.tree.FrameNode
 import org.objectweb.asm.tree.MethodNode
 import ru.justagod.mincer.control.MincerArchive
 import ru.justagod.mincer.control.MincerResultType
@@ -12,10 +13,10 @@ import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.*
 import ru.justagod.plugin.data.DynSideMarker
 import ru.justagod.plugin.data.SideName
-import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.processing.model.InvokeClass
 import ru.justagod.plugin.processing.model.MethodDesc
 import ru.justagod.plugin.processing.model.ProjectModel
+import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.util.PrimitivesAdapter
 import ru.justagod.plugin.util.intersectsWith
 
@@ -26,7 +27,7 @@ class CutterMincer(
         private val targetSides: Set<SideName>,
         private val primalSides: Set<SideName>,
         private val markers: List<DynSideMarker>
-): SubMincer<ProjectModel, ProjectModel> {
+) : SubMincer<ProjectModel, ProjectModel> {
     override fun process(context: WorkerContext<ProjectModel, ProjectModel>): MincerResultType {
         val tree = context.input.sidesTree
         val invokeClass = CutterUtils.findInvokeClass(context.name, context.mincer, context.input)
@@ -69,19 +70,16 @@ class CutterMincer(
                     }
                     modified = true
                 } else {
-                    val iter = SidlyInstructionsIter(
-                            method.instructions.iterator(),
+                    SidlyInstructionsIter.iterateAndTransform(
+                            method.instructions,
                             methodSides,
                             markers
-                    )
-                    while (iter.hasNext()) {
-                        val (_, sides) = iter.next()
-                        if (!sides.intersectsWith(targetSides)) {
-                            iter.remove()
+                    ) { (insn, sides) ->
+                        if (insn is FrameNode || !sides.intersectsWith(targetSides)) {
                             modified = true
-                            continue
+                            return@iterateAndTransform false
                         }
-
+                        true
                     }
                 }
             }
