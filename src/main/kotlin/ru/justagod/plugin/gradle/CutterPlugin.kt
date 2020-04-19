@@ -42,7 +42,7 @@ class CutterPlugin : Plugin<Project> {
             }
             val task = project.getTasks().create("build" + data.name.capitalize(), CutterTask::class.java)
             task.dataHarvester = dataHarvester
-            task.archiveName = { data.archiveName ?: null }
+            task.archiveName = { data.archiveName }
             task.group = "build"
             task.dependsOn(project.tasks.getByName("build"))
             taskAll.dependsOn(task)
