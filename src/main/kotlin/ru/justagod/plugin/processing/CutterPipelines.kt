@@ -15,7 +15,7 @@ object CutterPipelines {
     fun makePipelineWithValidation(data: BakedCutterTaskData): Pipeline<*, ValidationResult> {
         return makePipeline(data)
                 .join(
-                        ValidationMincer(data.primalSides, data.validationOverrideAnnotation?.name, arrayListOf()),
+                        ValidationMincer(data.primalSides, data.validationOverrideAnnotation?.name, data.markers),
                         WalkThroughFilter,
                         null
                 )
