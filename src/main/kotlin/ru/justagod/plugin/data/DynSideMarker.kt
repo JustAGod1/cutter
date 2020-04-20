@@ -7,7 +7,6 @@ import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.util.CutterUtils
-import ru.justagod.plugin.util.intersectsWith
 import java.lang.RuntimeException
 
 enum class FlowDirection {

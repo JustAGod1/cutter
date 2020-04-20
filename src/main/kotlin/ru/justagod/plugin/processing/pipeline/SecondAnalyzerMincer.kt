@@ -9,16 +9,17 @@ import ru.justagod.model.InheritanceHelper
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.model.PathHelper
 import ru.justagod.plugin.processing.model.ProjectModel
+import ru.justagod.plugin.util.intersectWith
 import ru.justagod.plugin.util.intersectsWith
 
 class SecondAnalyzerMincer(private val primalSides: Set<SideName>): SubMincer<ProjectModel, ProjectModel> {
     override fun process(context: WorkerContext<ProjectModel, ProjectModel>): MincerResultType {
         if (context.name.simpleName == "package-info") return MincerResultType.SKIPPED
         val tree = context.input.sidesTree
-        val sides = tree.get(context.name.path, primalSides)
+        val sides = tree.get(context.name.path, primalSides).toMutableSet()
 
         context.mincer.inheritance.walk(context.name) {
-            sides.intersectsWith(tree.get(it.name.path, primalSides))
+            sides.retainAll(tree.get(it.name.path, primalSides))
         }
 
         tree.set(PathHelper.klass(context.name), sides)

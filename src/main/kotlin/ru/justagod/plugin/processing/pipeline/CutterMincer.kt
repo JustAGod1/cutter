@@ -132,7 +132,7 @@ class CutterMincer(
         } else {
             visitInsns(method, Opcodes.ACONST_NULL, Opcodes.ARETURN)
         }
-        method.visitMaxs(10, 10)
+        method.visitMaxs(20, 20)
     }
 
     private fun visitInsns(mv: MethodVisitor, vararg opcodes: Int) = opcodes.forEach { mv.visitInsn(it) }

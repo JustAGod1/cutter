@@ -9,7 +9,7 @@ import ru.justagod.model.InheritanceHelper
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.model.PathHelper
 import ru.justagod.plugin.processing.model.ProjectModel
-import ru.justagod.plugin.util.intersectsWith
+import ru.justagod.plugin.util.intersectWith
 
 class ThirdAnalyzerMincer(private val primalSides: Set<SideName>)
     : SubMincer<ProjectModel, ProjectModel> {
@@ -23,7 +23,7 @@ class ThirdAnalyzerMincer(private val primalSides: Set<SideName>)
             val sides = tree.get(context.name.path + name, primalSides).toMutableSet()
 
             context.mincer.inheritance.walk(context.name) {
-                sides.intersectsWith(tree.get(PathHelper.method(it.name, method.name, method.desc), primalSides))
+                sides.retainAll(tree.get(PathHelper.method(it.name, method.name, method.desc), primalSides))
             }
             tree.set(PathHelper.method(context.name, method.name, method.desc), sides)
         }

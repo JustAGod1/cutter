@@ -8,7 +8,7 @@ fun <T>Collection<T>.intersection(other: Collection<T>): List<T> {
     return this.filter { it in other }
 }
 
-fun <T>MutableCollection<T>.intersectsWith(other: Collection<T>) {
+fun <T>MutableCollection<T>.intersectWith(other: Collection<T>) {
     this.removeIf { it !in other }
 }
 
