@@ -18,6 +18,7 @@ class SidlyInstructionsIter private constructor(
 
     private val delegate = data.iterator()
     private val sides = HashMap<AbstractInsnNode, MutableSet<SideName>>(data.size)
+    private val cache = hashSetOf<JumpInsnNode>()
 
 
     init {
@@ -48,7 +49,9 @@ class SidlyInstructionsIter private constructor(
 
         if (node !is JumpInsnNode) return
         if (node.opcode == Opcodes.GOTO) {
-            mark(data.indexOf(node.label), side)
+            val notInCache = node !in cache
+            cache += node
+            if (notInCache) mark(data.indexOf(node.label), side)
             return
         }
         var direction = FlowDirection.BOTH
@@ -59,7 +62,8 @@ class SidlyInstructionsIter private constructor(
                 error("Dynamic markers have made opposite decisions about code flow. Please check your config.")
         }
 
-        if (direction == FlowDirection.ALWAYS_JUMP || direction == FlowDirection.BOTH) {
+        if (node !in cache && direction == FlowDirection.ALWAYS_JUMP || direction == FlowDirection.BOTH) {
+            cache += node
             mark(data.indexOf(node.label), side)
         }
         if (direction == FlowDirection.ALWAYS_PASS || direction == FlowDirection.BOTH) {

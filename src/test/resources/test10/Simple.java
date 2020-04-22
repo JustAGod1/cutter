@@ -27,6 +27,8 @@ class Simple {
         if (SideUtil.isClient() || SideUtil.isServer()) {
             System.out.println("code");
         }
+
+        while (!SideUtil.isClient()) {}
     }
 }
 
