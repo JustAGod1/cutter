@@ -1,6 +1,8 @@
 package ru.justagod.plugin.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.zeroturnaround.zip.ZipUtil
@@ -8,6 +10,7 @@ import ru.justagod.mincer.Mincer
 import ru.justagod.mincer.control.MincerResultType
 import ru.justagod.mincer.util.MincerUtils
 import ru.justagod.mincer.util.recursiveness.ByteArraySource
+import ru.justagod.mincer.util.recursiveness.MincerFallbackFS
 import ru.justagod.mincer.util.recursiveness.MincerZipFS
 import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.processing.CutterPipelines.makePipeline
@@ -28,15 +31,19 @@ open class CutterTask : DefaultTask() {
     private fun processArchive(f: File, name: String) {
         val pipeline = if (CutterPlugin.instance.config.validation) makePipelineWithValidation(data) else makePipeline(data)
         val archive = MincerUtils.readZip(f)
-        val fs = MincerZipFS(f, archive)
+        val librariesData = collectLibraries()
+        val generalFs = MincerZipFS(archive)
+        val librariesFs = MincerZipFS(librariesData)
 
-        val mincer = Mincer.Builder(fs, false)
+        val router = MincerFallbackFS(generalFs, librariesFs)
+
+        val mincer = Mincer.Builder(router, false)
                 .registerSubMincer(pipeline)
                 .build()
 
         val resultEntries = hashMapOf<String, ByteArraySource>()
         do {
-            val iterator = fs.entries.entries.iterator()
+            val iterator = generalFs.entries.entries.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
                 if (!entry.value.path.endsWith(".class")) {
@@ -57,7 +64,7 @@ open class CutterTask : DefaultTask() {
                 }
             }
             archive.entries.clear()
-            fs.entries.putAll(resultEntries)
+            generalFs.entries.putAll(resultEntries)
         } while (mincer.endIteration())
 
         if (CutterPlugin.instance.config.validation) {
@@ -74,11 +81,18 @@ open class CutterTask : DefaultTask() {
         }
         val target = File(f.absoluteFile.parentFile, archiveName?.invoke()
                 ?: f.nameWithoutExtension + "-" + name + "." + f.extension)
-        ZipUtil.pack(fs.entries.values.toTypedArray(), target)
+        ZipUtil.pack(generalFs.entries.values.toTypedArray(), target)
     }
 
-    private fun processArchive() {
+    private fun collectLibraries(): MutableMap<String, ByteArraySource> {
+        val result = hashMapOf<String, ByteArraySource>()
+        val javaConv = project.convention.plugins["java"] as JavaPluginConvention
+        for (file in javaConv.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).compileClasspath.files) {
+            if (file.extension == "jar" || file.extension == "zip") {
+                result.putAll(MincerUtils.readZip(file))
+            }
+        }
 
-
+        return result
     }
 }

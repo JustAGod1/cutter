@@ -5,7 +5,7 @@ import ru.justagod.mincer.control.MincerArchive
 import ru.justagod.mincer.control.MincerFS
 import java.io.File
 
-class MincerZipFS(private val file: File, val entries: MutableMap<String, ByteArraySource>): MincerFS {
+class MincerZipFS(val entries: MutableMap<String, ByteArraySource>): MincerFS {
 
     override fun pushGeneratedClass(path: String, bytecode: ByteArray) {
         entries[path] = ByteArraySource(path, bytecode)
@@ -22,7 +22,4 @@ class MincerZipFS(private val file: File, val entries: MutableMap<String, ByteAr
         return entries[path]?.bytes
     }
 
-    fun commit() {
-        ZipUtil.pack(entries.values.toTypedArray(), file)
-    }
 }

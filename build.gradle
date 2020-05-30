@@ -1,3 +1,4 @@
+import java.nio.file.Files
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 buildscript {
@@ -133,10 +134,11 @@ task appendDefaultLib(type: Jar) {
     archiveName = 'cutter.jar.tmp'
     from zipTree(project.file('build/libs/cutter.jar', PathValidation.EXISTS))
     into('defaults') {
-        from(project.fileTree(defaultsProj.file("build/libs", PathValidation.EXISTS)))
+        from(project.fileTree(defaultsProj.file("build/libs")))
     }
     doLast {
-        project.file('build/libs/cutter.jar.tmp').renameTo(project.file('build/libs/cutter.jar'))
+        Files.deleteIfExists(project.file('build/libs/cutter.jar').toPath())
+        Files.move(project.file('build/libs/cutter.jar.tmp').toPath(), project.file('build/libs/cutter.jar').toPath())
     }
 
 }
