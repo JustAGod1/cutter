@@ -3,7 +3,7 @@ package ru.justagod.plugin.test.base.context
 import java.io.File
 import java.lang.RuntimeException
 
-class ForgeContext(private val forgeVersion: String, gradleScript: String) : GradleContext(gradleScript) {
+class ForgeContext(private val forgeVersion: String, gradleScript: String) : GradleContext(gradleScript, false) {
 
     override fun makeBuildGradle() {
         File("forge").resolve(forgeVersion).copyRecursively(root, false) { _, err ->

@@ -82,7 +82,7 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
         for (name in names) {
             val target = File(targetDir, name)
             val path = "defaults/$name"
-            val input = javaClass.classLoader.getResourceAsStream(path) ?: throw RuntimeException("Cannot find \$path")
+            val input = javaClass.classLoader.getResourceAsStream(path) ?: throw RuntimeException("Cannot find $path")
             val output = FileOutputStream(target)
             input.copyTo(output, 1024 * 5)
             project.dependencies.add("compile", project.files(target))

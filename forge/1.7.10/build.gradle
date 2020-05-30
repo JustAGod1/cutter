@@ -16,7 +16,6 @@ buildscript {
     }
     dependencies {
         classpath 'org.zeroturnaround:zt-zip:1.12'
-        classpath group: 'org.ow2.asm', name: 'asm-tree', version: '8.0.1'
         classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.40"
         classpath files(rootProject.file('cutter.jar'))
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'

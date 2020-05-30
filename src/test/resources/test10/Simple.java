@@ -29,6 +29,7 @@ class Simple {
         }
 
         while (!SideUtil.isClient()) {}
+        for (;!SideUtil.isClient();) {}
     }
 }
 

@@ -4,6 +4,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.RelativePath
 import org.gradle.api.internal.file.RelativePathSpec
+import org.gradle.api.specs.CompositeSpec
+import org.gradle.api.specs.OrSpec
+import org.gradle.api.specs.Spec
 import org.gradle.api.specs.Specs
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.data.BakedCutterTaskData
@@ -38,7 +41,7 @@ class CutterPlugin : Plugin<Project> {
         config.builds.all { data ->
             val dataHarvester = {
                 val invokeClasses = config.invokes.map { parse(it) }
-                val excludeSpec = if (config.excludes.isNotEmpty()) Specs.union(config.excludes) else Specs.satisfyNone()
+                val excludeSpec = if (config.excludes.isNotEmpty()) OrSpec<RelativePath>(config.excludes) else Spec<RelativePath> { false }
                 BakedCutterTaskData(
                         data.name,
                         ClassTypeReference(config.annotation ?: error("You have to define annotation name")),

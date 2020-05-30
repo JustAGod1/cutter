@@ -12,7 +12,7 @@ import ru.justagod.plugin.util.intersection
 
 class SidlyInstructionsIter private constructor(
         private val data: MutableList<AbstractInsnNode>,
-        primalSides: Set<SideName>,
+        private val primalSides: Set<SideName>,
         private val markers: List<DynSideMarker>
 ) : MutableIterator<Pair<AbstractInsnNode, Set<SideName>>> {
 
@@ -22,7 +22,7 @@ class SidlyInstructionsIter private constructor(
 
 
     init {
-        if (data.isNotEmpty()) {
+        if (data.isNotEmpty() && markers.isNotEmpty()) {
             for (primalSide in primalSides) {
                 mark(0, primalSide)
             }
@@ -79,7 +79,12 @@ class SidlyInstructionsIter private constructor(
 
     override fun next(): Pair<AbstractInsnNode, Set<SideName>> {
         val next = delegate.next()
-        return next to (sides[next] ?: emptySet<SideName>())
+        if (markers.isNotEmpty()) {
+            return next to (sides[next] ?: emptySet<SideName>())
+        } else {
+            return next to (sides[next] ?: primalSides)
+
+        }
     }
 
     override fun remove() {

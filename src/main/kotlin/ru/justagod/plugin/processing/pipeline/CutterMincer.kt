@@ -61,26 +61,32 @@ class CutterMincer(
             val methodsIter = node.methods.iterator()
             while (methodsIter.hasNext()) {
                 val method = methodsIter.next()
-                val methodSides = tree.get(path + (method.name + method.desc), primalSides)
-                if (!methodSides.intersectsWith(targetSides)) {
-                    if (context.input.lambdaMethods[context.name]?.contains(MethodDesc(method.name, method.desc)) == true) {
-                        emptifyMethod(method)
-                    } else {
-                        methodsIter.remove()
-                    }
-                    modified = true
-                } else {
-                    SidlyInstructionsIter.iterateAndTransform(
-                            method.instructions,
-                            methodSides,
-                            markers
-                    ) { (insn, sides) ->
-                        if (insn is FrameNode || !sides.intersectsWith(targetSides)) {
-                            modified = true
-                            return@iterateAndTransform false
+                try {
+                    val methodSides = tree.get(path + (method.name + method.desc), primalSides)
+                    if (!methodSides.intersectsWith(targetSides)) {
+                        if (context.input.lambdaMethods[context.name]?.contains(MethodDesc(method.name, method.desc)) == true) {
+                            emptifyMethod(method)
+                        } else {
+                            methodsIter.remove()
                         }
-                        true
+                        modified = true
+                    } else {
+                        SidlyInstructionsIter.iterateAndTransform(
+                                method.instructions,
+                                methodSides,
+                                markers
+                        ) { (insn, sides) ->
+                            if (insn is FrameNode || !sides.intersectsWith(targetSides)) {
+                                modified = true
+                                return@iterateAndTransform false
+                            }
+                            true
+                        }
                     }
+                } catch (e: Exception) {
+                    throw RuntimeException("Exception while processing method ${method.name}${method.desc}", e)
+                } catch (e: Error) {
+                    throw Error("Error while processing method ${method.name}${method.desc}", e)
                 }
             }
         }

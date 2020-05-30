@@ -6,7 +6,7 @@ import java.io.File
 import java.lang.RuntimeException
 import java.nio.file.Files
 
-open class GradleContext(protected val gradleScript: String) : TestingContext() {
+open class GradleContext(protected val gradleScript: String, private val overrideVersion: Boolean = true) : TestingContext() {
     protected val root = File("./gradle-test")
     private var dontCopyAnno = false
 
@@ -26,9 +26,17 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
         root.resolve("settings.gradle").writeText("include 'gradle-test'")
         makeBuildGradle()
         if (System.getProperty("debug") == "true") {
-            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005\norg.gradle.jvmargs=-Dprint-sides=true")
+            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Dprint-sides=true")
         } else {
             root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-Dprint-sides=true")
+        }
+        if (overrideVersion) {
+            root
+                    .resolve("gradle/wrapper/gradle-wrapper.properties")
+                    .also { it.parentFile.mkdirs() }
+                    .writeText("distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-5.0-all.zip")
+
+            runGradleCommand("wrapper")
         }
         val srcDir = root.resolve("src").resolve("main").resolve("java")
         srcDir.mkdirs()

@@ -45,6 +45,8 @@ class ChainHeadQueue(
             return MincerResult(bytecode, MincerResultType.SKIPPED)
         } catch (e: Exception) {
             throw RuntimeException("Exception while processing $name", e)
+        } catch (e: Error) {
+            throw Error("Error while processing $name", e)
         }
 
     }

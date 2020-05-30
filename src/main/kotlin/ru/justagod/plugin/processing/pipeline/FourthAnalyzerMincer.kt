@@ -20,6 +20,7 @@ import ru.justagod.plugin.processing.model.PathHelper
 import ru.justagod.plugin.processing.model.ProjectModel
 import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.util.intersection
+import java.lang.Error
 
 /**
  * In this stage we analyze lambdas and anonymous classes and assign them the same sides that assigned to
@@ -57,17 +58,23 @@ class FourthAnalyzerMincer(
     override fun process(context: WorkerContext<ProjectModel, ProjectModel>): MincerResultType {
         val node = context.info!!.node
         node.methods?.forEach {
-            val sides = context.input.sidesTree.get(PathHelper.method(context.name, it.name, it.desc), primalSides)
-            SidlyInstructionsIter.iterate(
-                    it.instructions,
-                    sides,
-                    markers
-            ) { (instruction, sides) ->
+            try {
+                val sides = context.input.sidesTree.get(PathHelper.method(context.name, it.name, it.desc), primalSides)
+                SidlyInstructionsIter.iterate(
+                        it.instructions,
+                        sides,
+                        markers
+                ) { (instruction, sides) ->
                     if (instruction is InvokeDynamicInsnNode) {
                         analyzeInvokeDynamic(instruction, context, sides)
                     } else if (instruction is TypeInsnNode) {
                         analyzeTypeInsn(instruction, context, sides)
                     }
+                }
+            } catch (e: Exception) {
+                throw RuntimeException("Exception while processing method ${it.name}${it.desc}", e)
+            } catch (e: Error) {
+                throw Error("Error while processing method ${it.name}${it.desc}", e)
             }
         }
 
