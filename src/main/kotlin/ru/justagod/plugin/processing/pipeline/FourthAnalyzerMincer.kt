@@ -2,6 +2,7 @@ package ru.justagod.plugin.processing.pipeline
 
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.MethodNode
@@ -21,6 +22,8 @@ import ru.justagod.plugin.processing.model.ProjectModel
 import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.util.intersection
 import java.lang.Error
+import java.math.BigInteger
+import java.security.MessageDigest
 
 /**
  * In this stage we analyze lambdas and anonymous classes and assign them the same sides that assigned to
@@ -55,8 +58,12 @@ class FourthAnalyzerMincer(
         private val primalSides: Set<SideName>,
         private val markers: List<DynSideMarker>
 ) : SubMincer<ProjectModel, ProjectModel> {
+
+    private var lambdasCounter = 0
+
     override fun process(context: WorkerContext<ProjectModel, ProjectModel>): MincerResultType {
         val node = context.info!!.node
+        val additionalMethods = arrayListOf<MethodNode>()
         node.methods?.forEach {
             try {
                 val sides = context.input.sidesTree.get(PathHelper.method(context.name, it.name, it.desc), primalSides)
@@ -66,7 +73,10 @@ class FourthAnalyzerMincer(
                         markers
                 ) { (instruction, sides) ->
                     if (instruction is InvokeDynamicInsnNode) {
-                        analyzeInvokeDynamic(instruction, context, sides)
+                        val m = analyzeInvokeDynamic(instruction, context, sides)
+                        if (m != null) {
+                            additionalMethods += m
+                        }
                     } else if (instruction is TypeInsnNode) {
                         analyzeTypeInsn(instruction, context, sides)
                     }
@@ -78,7 +88,9 @@ class FourthAnalyzerMincer(
             }
         }
 
-        return MincerResultType.SKIPPED
+        node.methods.addAll(additionalMethods)
+
+        return if (additionalMethods.isEmpty()) MincerResultType.SKIPPED else MincerResultType.MODIFIED
     }
 
     private fun analyzeTypeInsn(
@@ -107,7 +119,7 @@ class FourthAnalyzerMincer(
             instruction: InvokeDynamicInsnNode,
             context: WorkerContext<ProjectModel, ProjectModel>,
             sides: Set<SideName>
-    ) {
+    ): MethodNode? {
         if (instruction.bsm.owner == "java/lang/invoke/LambdaMetafactory") {
             if (instruction.bsm.name != "metafactory" && instruction.bsm.name == "altMetafactory") error("WTF")
             if (instruction.bsm.name == "altMetafactory") {
@@ -145,8 +157,71 @@ class FourthAnalyzerMincer(
                             }
                     )
                 }
+            } else if (invokeClass != null) {
+                val name = "lambda$$lambdasCounter$" + (implMethod.owner + "." + implMethod.name + implMethod.desc).sha1()
+                val parameters = Type.getArgumentTypes(implMethod.desc).toMutableList()
+                if (implMethod.tag == H_INVOKEVIRTUAL || implMethod.tag == H_INVOKESPECIAL || implMethod.tag == H_INVOKEINTERFACE) {
+                    parameters.add(0, Type.getType("L" + implMethod.owner + ";"))
+                } else if (implMethod.tag != H_INVOKESTATIC && implMethod.tag != H_NEWINVOKESPECIAL) {
+                    return null
+                }
+                val returnType = Type.getReturnType(implMethod.desc)
+                val desc = "(" + parameters.joinToString(separator = "") { it.descriptor } + ")" + returnType.descriptor
+                val method = MethodNode(
+                        ACC_PUBLIC or ACC_STATIC or ACC_SYNTHETIC,
+                        name, desc,
+                        null, null
+                )
+
+                method.visitCode()
+                for ((index, type) in parameters.withIndex()) {
+                    method.visitVarInsn(type.getOpcode(ILOAD), index)
+                }
+
+                if (implMethod.tag == H_NEWINVOKESPECIAL) {
+                    method.visitTypeInsn(NEW, implMethod.owner)
+                    method.visitInsn(DUP)
+                }
+
+                val opcode = when (implMethod.tag) {
+                    H_INVOKEVIRTUAL -> INVOKEVIRTUAL
+                    H_INVOKESPECIAL, H_NEWINVOKESPECIAL -> INVOKESPECIAL
+                    H_INVOKESTATIC -> INVOKESTATIC
+                    H_INVOKEINTERFACE -> INVOKEINTERFACE
+                    else -> error("WTF")
+                }
+
+                method.visitMethodInsn(opcode, implMethod.owner, implMethod.name, implMethod.desc, implMethod.isInterface)
+                if (returnType.descriptor == "V") method.visitInsn(RETURN)
+                else method.visitInsn(returnType.getOpcode(IRETURN))
+
+                instruction.bsmArgs[1] = Handle(
+                        H_INVOKESTATIC,
+                        context.info!!.node.name,
+                        name,
+                        desc,
+                        context.info.data.access.isInterface
+                )
+
+                context.input.lambdaMethods.computeIfAbsent(context.name) { hashSetOf() }
+                        .add(MethodDesc(name, desc))
+                context.input.sidesTree.set(
+                        context.name.path + (name + desc),
+                        sides.intersection(invokeClass.sides).toSet()
+                )
+
+                return method
+
             }
         }
+
+        return null
+    }
+
+    private fun String.sha1(): String {
+        val digest = MessageDigest.getInstance("SHA-1")
+        val checksum = digest.digest(this.toByteArray())
+        return BigInteger(1, checksum).toString(16)
     }
 
     override fun endProcessing(input: ProjectModel, cache: MincerArchive?, inheritance: InheritanceHelper, pipeline: Pipeline<ProjectModel, ProjectModel>) {

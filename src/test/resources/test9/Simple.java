@@ -6,6 +6,7 @@ import ru.justagod.cutter.invoke.*;
 class Simple {
 
     public static void main(String[] args) {
+        Invoke.serverValue(Runtime::getRuntime);
         InvokeClient a = () -> {
             System.out.println("Hello client lambda");
         };
@@ -26,6 +27,8 @@ class Simple {
                 System.out.println("Hello server anonymous");
             }
         };
+
+
         d.run();
     }
 }
