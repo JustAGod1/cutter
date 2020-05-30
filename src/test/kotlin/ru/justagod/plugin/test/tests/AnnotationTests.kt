@@ -12,8 +12,9 @@ import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.mincer.util.MincerDecentFS
 import ru.justagod.mincer.util.MincerUtils
 import ru.justagod.mincer.util.makeFirstSimple
+import ru.justagod.model.ClassTypeReference
 import ru.justagod.model.InheritanceHelper
-import ru.justagod.plugin.data.CutterTaskData
+import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.test.base.context.GradleContext
 import ru.justagod.plugin.test.base.context.StraightContext
@@ -55,12 +56,17 @@ object AnnotationTests {
     @Test
     fun straight() {
         val context = StraightContext { name ->
-            val data = CutterTaskData(name)
-            data.invokeClasses = emptyList()
-            data.primalSides = listOf(SideName.make("server"), SideName.make("client"))
-            data.targetSides = listOf(SideName.make(name))
-            data.removeAnnotations = true
-            data
+            BakedCutterTaskData(
+                    name = name,
+                    annotation = ClassTypeReference(annotation),
+                    validationOverrideAnnotation = null,
+                    removeAnnotations = true,
+                    primalSides = setOf(SideName.make("server"), SideName.make("client")),
+                    targetSides = setOf(SideName.make(name)),
+                    invocators = emptyList(),
+                    markers = emptyList(),
+                    excludes = { false }
+            )
         }
         val virgin = context.compileResourceFolder("test8", null)
         assert(!validate(virgin))

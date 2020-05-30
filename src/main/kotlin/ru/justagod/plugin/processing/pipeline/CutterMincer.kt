@@ -3,27 +3,32 @@ package ru.justagod.plugin.processing.pipeline
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import org.objectweb.asm.tree.FrameNode
 import org.objectweb.asm.tree.MethodNode
+import ru.justagod.mincer.control.MincerArchive
 import ru.justagod.mincer.control.MincerResultType
+import ru.justagod.mincer.pipeline.Pipeline
 import ru.justagod.mincer.processor.SubMincer
 import ru.justagod.mincer.processor.WorkerContext
-import ru.justagod.model.ClassTypeReference
-import ru.justagod.model.PrimitiveKind
-import ru.justagod.model.PrimitiveTypeReference
-import ru.justagod.model.fetchTypeReference
+import ru.justagod.model.*
+import ru.justagod.plugin.data.DynSideMarker
 import ru.justagod.plugin.data.SideName
-import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.processing.model.InvokeClass
 import ru.justagod.plugin.processing.model.MethodDesc
 import ru.justagod.plugin.processing.model.ProjectModel
+import ru.justagod.plugin.util.CutterUtils
 import ru.justagod.plugin.util.PrimitivesAdapter
 import ru.justagod.plugin.util.intersectsWith
 
 /**
- * Final stage
+ * Final stage (just before validation)
  */
-class CutterMincer(private val targetSides: List<SideName>, private val primalSides: Set<SideName>): SubMincer<ProjectModel, Unit> {
-    override fun process(context: WorkerContext<ProjectModel, Unit>): MincerResultType {
+class CutterMincer(
+        private val targetSides: Set<SideName>,
+        private val primalSides: Set<SideName>,
+        private val markers: List<DynSideMarker>
+) : SubMincer<ProjectModel, ProjectModel> {
+    override fun process(context: WorkerContext<ProjectModel, ProjectModel>): MincerResultType {
         val tree = context.input.sidesTree
         val invokeClass = CutterUtils.findInvokeClass(context.name, context.mincer, context.input)
         if (invokeClass != null) {
@@ -56,27 +61,45 @@ class CutterMincer(private val targetSides: List<SideName>, private val primalSi
             val methodsIter = node.methods.iterator()
             while (methodsIter.hasNext()) {
                 val method = methodsIter.next()
-                if (!tree.get(path + (method.name + method.desc), primalSides).intersectsWith(targetSides)) {
-                    if (context.input.lambdaMethods[context.name]?.contains(MethodDesc(method.name, method.desc)) == true) {
-                        emptifyMethod(method)
+                try {
+                    val methodSides = tree.get(path + (method.name + method.desc), primalSides)
+                    if (!methodSides.intersectsWith(targetSides)) {
+                        if (context.input.lambdaMethods[context.name]?.contains(MethodDesc(method.name, method.desc)) == true) {
+                            emptifyMethod(method)
+                        } else {
+                            methodsIter.remove()
+                        }
+                        modified = true
                     } else {
-                        methodsIter.remove()
+                        SidlyInstructionsIter.iterateAndTransform(
+                                method.instructions,
+                                methodSides,
+                                markers
+                        ) { (insn, sides) ->
+                            if (insn is FrameNode || !sides.intersectsWith(targetSides)) {
+                                modified = true
+                                return@iterateAndTransform false
+                            }
+                            true
+                        }
                     }
-                    modified = true
+                } catch (e: Exception) {
+                    throw RuntimeException("Exception while processing method ${method.name}${method.desc}", e)
+                } catch (e: Error) {
+                    throw Error("Error while processing method ${method.name}${method.desc}", e)
                 }
             }
         }
-
         return if (modified) MincerResultType.MODIFIED else MincerResultType.SKIPPED
     }
 
-    private fun processInvokeClass(context: WorkerContext<ProjectModel, Unit>, info: InvokeClass) {
+
+    private fun processInvokeClass(context: WorkerContext<ProjectModel, ProjectModel>, info: InvokeClass) {
         if (info.name == context.name) return
         val node = context.info!!.node
-        val implMethod = node.methods?.find { it.name == info.functionalMethod.name && it.desc == info.functionalMethod.desc }
-        if (implMethod == null) {
-            error("${info.name} says that its impl method is ${info.functionalMethod} but it isn't implemented in ${context.name}")
-        }
+        val implMethod = node.methods
+                ?.find { it.name == info.functionalMethod.name && it.desc == info.functionalMethod.desc }
+                ?: error("${info.name} says that its impl method is ${info.functionalMethod} but it isn't implemented in ${context.name}")
 
         emptifyMethod(implMethod)
     }
@@ -115,9 +138,13 @@ class CutterMincer(private val targetSides: List<SideName>, private val primalSi
         } else {
             visitInsns(method, Opcodes.ACONST_NULL, Opcodes.ARETURN)
         }
-        method.visitMaxs(10, 10)
+        method.visitMaxs(20, 20)
     }
 
     private fun visitInsns(mv: MethodVisitor, vararg opcodes: Int) = opcodes.forEach { mv.visitInsn(it) }
+
+    override fun endProcessing(input: ProjectModel, cache: MincerArchive?, inheritance: InheritanceHelper, pipeline: Pipeline<ProjectModel, ProjectModel>) {
+        pipeline.value = input
+    }
 
 }

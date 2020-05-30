@@ -2,7 +2,8 @@ package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
-import ru.justagod.plugin.data.CutterTaskData
+import ru.justagod.model.ClassTypeReference
+import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.context.ForgeContext
@@ -203,11 +204,17 @@ object CutterTrivialTests {
     @TestFactory
     fun straightTests(): List<DynamicTest> {
         val context = StraightContext { name ->
-            val data = CutterTaskData(name)
-            data.invokeClasses = emptyList()
-            data.primalSides = listOf(SideName.make("server"), SideName.make("client"))
-            data.targetSides = listOf(SideName.make(name))
-            data
+            BakedCutterTaskData(
+                    name = name,
+                    annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
+                    validationOverrideAnnotation = null,
+                    removeAnnotations = false,
+                    primalSides = setOf(SideName.make("server"), SideName.make("client")),
+                    targetSides = setOf(SideName.make(name)),
+                    invocators = emptyList(),
+                    markers = emptyList(),
+                    excludes = { false }
+            )
         }
         context.before()
         return tests().map {

@@ -29,44 +29,14 @@ object MincerUtils {
         } while (panel.endIteration())
     }
 
-    private fun readZip(file: File): HashMap<String, ByteArraySource> {
+    fun readZip(file: File): HashMap<String, ByteArraySource> {
         val result = hashMapOf<String, ByteArraySource>()
         ZipUtil.iterate(file) { input, entry ->
             if (!entry.isDirectory)
-                result[entry.name] = ByteArraySource(entry.name, input!!.readBytes())
+                result[entry.name] = ByteArraySource(entry.name, input!!.readBytes(estimatedSize = 256))
         }
 
         return result
-
-    }
-
-    fun processArchive(file: File, factory: MincerFactory): MincerZipFS {
-        val archive = MincerZipFS(file, readZip(file))
-        val mincer = factory(archive)
-        val resultEntries = hashMapOf<String, ByteArraySource>()
-        do {
-            val iterator = archive.entries.entries.iterator()
-            while (iterator.hasNext()) {
-                val entry = iterator.next()
-                if (!entry.value.path.endsWith(".class")) {
-                    resultEntries[entry.key] = entry.value
-                    continue
-                }
-
-                val result = mincer.advance(entry.value.bytes, entry.value.path, 0)
-                if (result.type == MincerResultType.DELETED) {
-                    iterator.remove()
-                    resultEntries -= entry.key
-                } else {
-                    resultEntries[entry.key] = ByteArraySource(entry.key, result.resultedBytecode)
-                }
-            }
-            archive.entries.clear()
-            archive.entries.putAll(resultEntries)
-        } while (mincer.endIteration())
-
-
-        return archive
 
     }
 

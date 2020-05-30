@@ -6,7 +6,7 @@ import java.io.File
 import java.lang.RuntimeException
 import java.nio.file.Files
 
-open class GradleContext(protected val gradleScript: String) : TestingContext() {
+open class GradleContext(protected val gradleScript: String, private val overrideVersion: Boolean = true) : TestingContext() {
     protected val root = File("./gradle-test")
     private var dontCopyAnno = false
 
@@ -26,9 +26,17 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
         root.resolve("settings.gradle").writeText("include 'gradle-test'")
         makeBuildGradle()
         if (System.getProperty("debug") == "true") {
-            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005\norg.gradle.jvmargs=-Dprint-sides=true")
+            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Dprint-sides=true")
         } else {
             root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-Dprint-sides=true")
+        }
+        if (overrideVersion) {
+            root
+                    .resolve("gradle/wrapper/gradle-wrapper.properties")
+                    .also { it.parentFile.mkdirs() }
+                    .writeText("distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-5.0-all.zip")
+
+            runGradleCommand("wrapper")
         }
         val srcDir = root.resolve("src").resolve("main").resolve("java")
         srcDir.mkdirs()
@@ -49,13 +57,14 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
                     |        
                     |        classpath gradleApi()
                     |        classpath localGroovy()
+                    |        classpath group: 'org.ow2.asm', name: 'asm-tree', version: '8.0.1'
                     |        classpath 'org.zeroturnaround:zt-zip:1.12'
                     |        classpath group: 'org.ow2.asm', name: 'asm', version: '6.0'
                     |        classpath group: 'org.ow2.asm', name: 'asm-commons', version: '6.0'
                     |        classpath group: 'org.ow2.asm', name: 'asm-tree', version: '6.0'
                     |        classpath group: 'org.ow2.asm', name: 'asm-util', version: '6.0'
-                    |        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.40"
-                    |        classpath group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.40'
+                    |        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.70"
+                    |        classpath group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.70'
                     |    }
                     |}
                     |
@@ -90,7 +99,10 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
     protected open fun runGradleCommand(vararg args: String) {
         val pb = ProcessBuilder()
         pb.inheritIO()
-        pb.command(listOf("gradle") + args + "--no-daemon" + "--stacktrace")
+        if(System.getProperties().getProperty("windows")?.equals("true", ignoreCase = true) != true)
+            pb.command(listOf("gradle") + args + "--no-daemon" + "--stacktrace")
+        else
+            pb.command(listOf("cmd", "/c", "gradle") + args + "--no-daemon" + "--stacktrace")
         pb.directory(root)
         val p = pb.start()
         val code = p.waitFor()
@@ -118,6 +130,6 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
 
 
     companion object {
-        const val defaultGradleScript = "cutter.initializeDefault()"
+        const val defaultGradleScript = "cutter.initializeDefault()\ncutter.exclude(\"**.lol\")"
     }
 }

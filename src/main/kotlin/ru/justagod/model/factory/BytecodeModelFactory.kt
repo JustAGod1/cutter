@@ -1,6 +1,7 @@
 package ru.justagod.model.factory
 
 import ru.justagod.model.*
+import ru.justagod.mincer.util.chunked
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.AnnotationNode
@@ -24,7 +25,7 @@ class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
                     ?.groupBy { fetchTypeReference(it.desc) as ClassTypeReference }
                     ?.mapValues { it.value[0] }
                     ?.mapValues {
-                        it.value.values?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
+                        (it.value.values as? Iterable<Any>)?.chunked(size = 2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
                     }
                     ?.mapValues {
                         it.value.mapValues {
@@ -40,7 +41,7 @@ class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
                     ?.groupBy { fetchTypeReference(it.desc) as ClassTypeReference }
                     ?.mapValues { it.value[0] }
                     ?.mapValues {
-                        it.value.values?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
+                        (it.value.values as? Iterable<Any>)?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
                     }
                     ?.mapValues {
                         it.value.mapValues {

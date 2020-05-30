@@ -46,3 +46,26 @@ fun <Input : Any, Output : Any> (Pipeline<*, out Input>).join(other: SubMincer<i
                 default
         )
 
+
+fun <T>Iterable<T>.chunked(size: Int): List<List<T>> {
+    val result = arrayListOf<List<T>>()
+    var cnt = size
+    val iter = this.iterator()
+
+    var current = arrayListOf<T>()
+    while (iter.hasNext()) {
+        val e = iter.next()
+        current.add(e)
+        cnt--
+
+        if (cnt == 0) {
+            result += current
+            current = arrayListOf()
+            cnt = size
+        }
+    }
+
+    if (current.isNotEmpty()) result += current
+
+    return result
+}

@@ -15,14 +15,16 @@ abstract class TestingContext {
     }
 
 
-    protected fun resolve(resource: String): File {
-        val path = if (!resource.startsWith("/")) {
-            TestingContext::class.java.getResource("/$resource")!!
-        } else {
-            TestingContext::class.java.getResource(resource)!!
-        }.path
+    companion object {
+        fun resolve(resource: String): File {
+            val path = if (!resource.startsWith("/")) {
+                TestingContext::class.java.getResource("/$resource")!!
+            } else {
+                TestingContext::class.java.getResource(resource)!!
+            }.path
 
-        return File(path)
+            return File(path)
+        }
     }
 
 

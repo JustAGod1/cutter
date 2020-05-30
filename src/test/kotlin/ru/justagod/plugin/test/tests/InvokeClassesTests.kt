@@ -2,6 +2,7 @@ package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
 import ru.justagod.model.ClassTypeReference
+import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.CutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.model.InvokeClass
@@ -16,32 +17,34 @@ import java.io.File
 import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
-object InvokeClassesTest : TestRunner {
+object InvokeClassesTests : TestRunner {
 
     @Test
     fun straight() {
         val context = StraightContext { name ->
-            val taskData = CutterTaskData(name)
-            taskData.primalSides = listOf(
-                    SideName.make("SERVER"),
-                    SideName.make("CLIENT")
-            )
-            taskData.targetSides = listOf(
-                    SideName.make(name)
-            )
-            taskData.invokeClasses = listOf(
-                    InvokeClass(
-                            ClassTypeReference("ru.justagod.cutter.invoke.InvokeServer"),
-                            hashSetOf(SideName.make("SERVER")),
-                            MethodDesc("run", "()V")
+            BakedCutterTaskData(
+                    name = name,
+                    annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
+                    validationOverrideAnnotation = null,
+                    removeAnnotations = false,
+                    primalSides = setOf(SideName.make("SERVER"), SideName.make("CLIENT")),
+                    targetSides = setOf(SideName.make(name)),
+                    invocators = listOf(
+                            InvokeClass(
+                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeServer"),
+                                    hashSetOf(SideName.make("SERVER")),
+                                    MethodDesc("run", "()V")
+                            ),
+                            InvokeClass(
+                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
+                                    hashSetOf(SideName.make("CLIENT")),
+                                    MethodDesc("run", "()V")
+                            )
                     ),
-                    InvokeClass(
-                            ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
-                            hashSetOf(SideName.make("CLIENT")),
-                            MethodDesc("run", "()V")
-                    )
+                    markers = emptyList(),
+                    cuttingMarkers = emptyList(),
+                    excludes = { false }
             )
-            taskData
         }
         context.before()
         run(context)
@@ -77,28 +80,28 @@ object InvokeClassesTest : TestRunner {
 
     @Test
     fun gradleDef() {
-        val context = GradleContext(GradleContext.defaultGradleScript)
+        val context = GradleContext(GradleContext.defaultGradleScript).default()
         context.before()
         run(context)
     }
 
     @Test
     fun forge1710Def() {
-        val context = ForgeContext("1.7.10", GradleContext.defaultGradleScript)
+        val context = ForgeContext("1.7.10", GradleContext.defaultGradleScript).default()
         context.before()
         run(context)
     }
 
     @Test
     fun forge18Def() {
-        val context = ForgeContext("1.8", GradleContext.defaultGradleScript)
+        val context = ForgeContext("1.8", GradleContext.defaultGradleScript).default()
         context.before()
         run(context)
     }
 
     @Test
     fun forge1122Def() {
-        val context = ForgeContext("1.12.2", GradleContext.defaultGradleScript)
+        val context = ForgeContext("1.12.2", GradleContext.defaultGradleScript).default()
         context.before()
         run(context)
     }

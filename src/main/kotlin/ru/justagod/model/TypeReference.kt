@@ -25,6 +25,8 @@ data class ClassTypeReference(val name: String) : TypeReference() {
 
     override fun toASMType(): Type = Type.getType("L${name.replace(".", "/")};")
 
+    fun internalName() = name.replace('.', '/')
+
     companion object {
         fun fromInternal(s: String) = ClassTypeReference(s.replace("/", "."))
         fun fromDesc(s: String) = fetchTypeReference(s) as ClassTypeReference
