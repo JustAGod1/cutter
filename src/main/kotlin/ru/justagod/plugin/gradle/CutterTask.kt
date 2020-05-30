@@ -3,22 +3,19 @@ package ru.justagod.plugin.gradle
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
-import org.zeroturnaround.zip.ZipEntrySource
 import org.zeroturnaround.zip.ZipUtil
 import ru.justagod.mincer.Mincer
-import ru.justagod.mincer.control.MincerFS
-import ru.justagod.mincer.util.MincerUtils.processArchive
+import ru.justagod.mincer.control.MincerResultType
+import ru.justagod.mincer.util.MincerUtils
+import ru.justagod.mincer.util.recursiveness.ByteArraySource
+import ru.justagod.mincer.util.recursiveness.MincerZipFS
 import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.CutterConfig
-import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.CutterPipelines.makePipeline
 import ru.justagod.plugin.processing.CutterPipelines.makePipelineWithValidation
 import ru.justagod.plugin.processing.pipeline.validation.ValidationResult
-import ru.justagod.plugin.processing.pipeline.validation.data.ValidationError
 import java.io.File
-import javax.inject.Inject
 
-open class CutterTask: DefaultTask() {
+open class CutterTask : DefaultTask() {
     lateinit var dataHarvester: () -> BakedCutterTaskData
     var archiveName: (() -> String?)? = null
     private val data: BakedCutterTaskData by lazy { dataHarvester() }
@@ -30,12 +27,39 @@ open class CutterTask: DefaultTask() {
 
     private fun processArchive(f: File, name: String) {
         val pipeline = if (CutterPlugin.instance.config.validation) makePipelineWithValidation(data) else makePipeline(data)
-        val archive = processArchive(f
-        ) {
-            Mincer.Builder(it, false)
-                    .registerSubMincer(pipeline)
-                    .build()
-        }
+        val archive = MincerUtils.readZip(f)
+        val fs = MincerZipFS(f, archive)
+
+        val mincer = Mincer.Builder(fs, false)
+                .registerSubMincer(pipeline)
+                .build()
+
+        val resultEntries = hashMapOf<String, ByteArraySource>()
+        do {
+            val iterator = fs.entries.entries.iterator()
+            while (iterator.hasNext()) {
+                val entry = iterator.next()
+                if (!entry.value.path.endsWith(".class")) {
+                    resultEntries[entry.key] = entry.value
+                    continue
+                }
+                if (data.excludes(entry.value.path)) {
+                    resultEntries[entry.key] = entry.value
+                    continue
+                }
+
+                val result = mincer.advance(entry.value.bytes, entry.value.path, 0)
+                if (result.type == MincerResultType.DELETED) {
+                    iterator.remove()
+                    resultEntries -= entry.key
+                } else {
+                    resultEntries[entry.key] = ByteArraySource(entry.key, result.resultedBytecode)
+                }
+            }
+            archive.entries.clear()
+            fs.entries.putAll(resultEntries)
+        } while (mincer.endIteration())
+
         if (CutterPlugin.instance.config.validation) {
             val value = pipeline.value as ValidationResult
             if (value.isNotEmpty()) {
@@ -48,7 +72,13 @@ open class CutterTask: DefaultTask() {
                 throw RuntimeException("Validation failed")
             }
         }
-        val target = File(f.absoluteFile.parentFile, archiveName?.invoke() ?: f.nameWithoutExtension + "-" + name + "." + f.extension)
-        ZipUtil.pack(archive.entries.values.toTypedArray(), target)
+        val target = File(f.absoluteFile.parentFile, archiveName?.invoke()
+                ?: f.nameWithoutExtension + "-" + name + "." + f.extension)
+        ZipUtil.pack(fs.entries.values.toTypedArray(), target)
+    }
+
+    private fun processArchive() {
+
+
     }
 }

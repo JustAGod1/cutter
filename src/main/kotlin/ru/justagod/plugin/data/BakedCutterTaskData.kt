@@ -12,5 +12,6 @@ class BakedCutterTaskData(
         val targetSides: Set<SideName>,
         val invocators: List<InvokeClass>,
         val markers: List<DynSideMarker>,
+        val excludes: (String) -> Boolean,
         val cuttingMarkers: List<DynSideMarker> = markers
 )

@@ -3,11 +3,13 @@ package ru.justagod.plugin.data
 import groovy.lang.Closure
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.file.RelativePath
+import org.gradle.api.internal.file.pattern.PatternMatcherFactory
+import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.util.ConfigureUtil
 import ru.justagod.plugin.data.SideName.Companion.make
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.util.*
 
@@ -17,6 +19,7 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
     var withoutDefaultLib = false
     var validation = true
     var validationOverriderAnnotation: String? = null
+    val excludes = arrayListOf<Spec<RelativePath>>()
 
     var invokes: MutableList<InvocationClassData> = ArrayList()
     fun invocation(closure: InvocationClassData.() -> Unit) {
@@ -59,6 +62,14 @@ open class CutterConfig(val builds: NamedDomainObjectContainer<CutterTaskData>, 
         return builds
     }
 
+
+    fun exclude(vararg patterns: String?) {
+        if (project.gradle.gradleVersion >= "6")
+            error("Excludes aren't supported in gradle 6+ yet. Your version: ${project.gradle.gradleVersion}")
+        for (pattern in patterns) {
+            excludes.add(PatternMatcherFactory.getPatternMatcher(true, true, pattern))
+        }
+    }
 
     fun initializeDefault() {
         initializeDefault(!withoutDefaultLib, false)

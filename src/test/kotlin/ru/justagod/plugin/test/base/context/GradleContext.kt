@@ -49,6 +49,7 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
                     |        
                     |        classpath gradleApi()
                     |        classpath localGroovy()
+                    |        classpath group: 'org.ow2.asm', name: 'asm-tree', version: '8.0.1'
                     |        classpath 'org.zeroturnaround:zt-zip:1.12'
                     |        classpath group: 'org.ow2.asm', name: 'asm', version: '6.0'
                     |        classpath group: 'org.ow2.asm', name: 'asm-commons', version: '6.0'
@@ -121,6 +122,6 @@ open class GradleContext(protected val gradleScript: String) : TestingContext() 
 
 
     companion object {
-        const val defaultGradleScript = "cutter.initializeDefault()"
+        const val defaultGradleScript = "cutter.initializeDefault()\ncutter.exclude(\"**.lol\")"
     }
 }

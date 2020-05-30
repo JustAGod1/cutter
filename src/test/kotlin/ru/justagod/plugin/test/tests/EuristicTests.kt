@@ -34,7 +34,8 @@ object EuristicTests : TestRunner {
                             DynSideMarkerBuilder().method().owner("test10.SideUtil").name("isClient").desc("()Z").sides(setOf(client)).build(),
                             DynSideMarkerBuilder().field().owner("test10.SideUtil").name("isServer").sides(setOf(server)).build(),
                             DynSideMarkerBuilder().field().owner("test10.SideUtil").name("isClient").sides(setOf(client)).build()
-                    )
+                    ),
+                    excludes = { false }
             )
         }
         context.before()

@@ -212,7 +212,8 @@ object CutterTrivialTests {
                     primalSides = setOf(SideName.make("server"), SideName.make("client")),
                     targetSides = setOf(SideName.make(name)),
                     invocators = emptyList(),
-                    markers = emptyList()
+                    markers = emptyList(),
+                    excludes = { false }
             )
         }
         context.before()

@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
 buildscript {
     repositories {
         mavenCentral()
@@ -11,6 +13,7 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.10'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 apply plugin: 'idea'
 apply plugin: 'maven'
@@ -117,15 +120,24 @@ uploadArchives {
 }
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
-    compile 'org.zeroturnaround:zt-zip:1.12'
-    compile group: 'org.ow2.asm', name: 'asm-debug-all', version: '5.2'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.40"
+    shadow gradleApi()
+    shadow 'org.zeroturnaround:zt-zip:1.12'
+    compile 'org.ow2.asm:asm-tree:8.0.1'
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.40"
 
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
+
+shadowJar {
+    archiveName = "cutter.jar"
+    relocate 'org.objectweb', 'shadow.org.objectweb'
+}
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 idea {
     module {

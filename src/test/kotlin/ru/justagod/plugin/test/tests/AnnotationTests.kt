@@ -64,7 +64,8 @@ object AnnotationTests {
                     primalSides = setOf(SideName.make("server"), SideName.make("client")),
                     targetSides = setOf(SideName.make(name)),
                     invocators = emptyList(),
-                    markers = emptyList()
+                    markers = emptyList(),
+                    excludes = { false }
             )
         }
         val virgin = context.compileResourceFolder("test8", null)

@@ -94,7 +94,8 @@ object ValidationTests {
                                 MethodDesc("run", "()V")
                         )
                 ),
-                markers = emptyList()
+                markers = emptyList(),
+                excludes = { false }
         )
         val pipeline = CutterPipelines.makePipelineWithValidation(task)
 

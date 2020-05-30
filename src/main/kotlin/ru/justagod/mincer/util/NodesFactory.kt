@@ -16,7 +16,7 @@ class NodesFactory(private val harvester: (name: String) -> ByteArray) {
         val bytecode = if (reference in cache) cache[reference]!!
         else harvester(reference.name.replace('.', '/') + ".class")
         val reader = ClassReader(bytecode)
-        val node = ClassNode(Opcodes.ASM5)
+        val node = ClassNode(Opcodes.ASM8)
         reader.accept(node, 0)
         return node
     }

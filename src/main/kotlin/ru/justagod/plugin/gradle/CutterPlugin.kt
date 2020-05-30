@@ -2,6 +2,9 @@ package ru.justagod.plugin.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.RelativePath
+import org.gradle.api.internal.file.RelativePathSpec
+import org.gradle.api.specs.Specs
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.CutterConfig
@@ -22,7 +25,12 @@ class CutterPlugin : Plugin<Project> {
     @Override
     override fun apply(project: Project) {
         val tasksContainer = project.container(CutterTaskData::class.java)
+
+
+
         config = project.extensions.create("cutter", CutterConfig::class.java, tasksContainer, project)
+
+
 
         val taskAll = project.getTasks().create("buildAll") {
             it.group = "build"
@@ -30,6 +38,7 @@ class CutterPlugin : Plugin<Project> {
         config.builds.all { data ->
             val dataHarvester = {
                 val invokeClasses = config.invokes.map { parse(it) }
+                val excludeSpec = if (config.excludes.isNotEmpty()) Specs.union(config.excludes) else Specs.satisfyNone()
                 BakedCutterTaskData(
                         data.name,
                         ClassTypeReference(config.annotation ?: error("You have to define annotation name")),
@@ -37,7 +46,9 @@ class CutterPlugin : Plugin<Project> {
                         data.removeAnnotations && config.removeAnnotations,
                         data.primalSides.toSet(), data.targetSides.toSet(),
                         invokeClasses,
-                        config.markers
+                        config.markers,
+                        { excludeSpec.isSatisfiedBy(RelativePath.parse(true, it)) }
+
                 )
             }
             val task = project.getTasks().create("build" + data.name.capitalize(), CutterTask::class.java)

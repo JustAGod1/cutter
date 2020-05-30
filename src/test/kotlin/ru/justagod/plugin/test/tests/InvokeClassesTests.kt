@@ -42,8 +42,8 @@ object InvokeClassesTests : TestRunner {
                             )
                     ),
                     markers = emptyList(),
-                    cuttingMarkers = emptyList()
-
+                    cuttingMarkers = emptyList(),
+                    excludes = { false }
             )
         }
         context.before()
