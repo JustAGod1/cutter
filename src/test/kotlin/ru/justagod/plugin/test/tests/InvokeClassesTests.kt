@@ -39,6 +39,16 @@ object InvokeClassesTests : TestRunner {
                                     ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
                                     hashSetOf(SideName.make("CLIENT")),
                                     MethodDesc("run", "()V")
+                            ),
+                            InvokeClass(
+                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeServerValue"),
+                                    hashSetOf(SideName.make("SERVER")),
+                                    MethodDesc("run", "()Ljava/lang/Object;")
+                            ),
+                            InvokeClass(
+                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeClientValue"),
+                                    hashSetOf(SideName.make("CLIENT")),
+                                    MethodDesc("run", "()Ljava/lang/Object;")
                             )
                     ),
                     markers = emptyList(),

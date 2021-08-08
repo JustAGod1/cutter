@@ -138,7 +138,7 @@ def defaultsProj = project(':Defaults')
 
 task appendDefaultLib(type: Jar) {
     archiveName = 'cutter.jar.tmp'
-    from zipTree(project.file('build/libs/cutter.jar', PathValidation.EXISTS))
+    from zipTree(project.file('build/libs/cutter.jar'))
     into('defaults') {
         from(project.fileTree(defaultsProj.file("build/libs")))
     }
