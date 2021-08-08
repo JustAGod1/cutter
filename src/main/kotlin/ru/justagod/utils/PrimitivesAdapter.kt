@@ -1,7 +1,8 @@
-package ru.justagod.plugin.util
+package ru.justagod.utils
 
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
+import ru.justagod.stackManipulation.*
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.model.PrimitiveKind
 import ru.justagod.model.PrimitiveTypeReference
@@ -35,6 +36,19 @@ object PrimitivesAdapter {
 
     fun getPrimitive(ref: ClassTypeReference) = wrapperToWrapper[ref]!!.primitive
 
+    fun getClass(type: TypeReference, appender: BytecodeAppender) {
+        if (type is PrimitiveTypeReference) {
+            val wrapper = getWrapperForPrimitive(type.kind)
+            appender += FieldGetStaticInstruction(
+                    wrapper,
+                    "TYPE",
+                    ClassTypeReference(Class::class)
+            )
+        } else {
+            appender += TypeLoadInstruction(type)
+        }
+    }
+
     fun wrap(mv: MethodVisitor, kind: PrimitiveKind) {
         val entry = primitiveToWrapper[kind]!!
         val internalName = entry.wrapper.toASMType().internalName
@@ -48,6 +62,20 @@ object PrimitivesAdapter {
         )
     }
 
+    fun wrap(appender: BytecodeAppender, kind: PrimitiveKind): ClassTypeReference {
+        val entry = primitiveToWrapper[kind]!!
+        val internalName = entry.wrapper
+
+        appender += InvokeStaticMethodInstruction(
+                internalName,
+                "valueOf",
+                "(${kind.asmType.descriptor})${internalName.toASMType().descriptor}",
+                false
+        )
+
+        return internalName
+    }
+
     fun unwrap(mv: MethodVisitor, kind: PrimitiveKind) {
         val entry = primitiveToWrapper[kind]!!
         val internalName = entry.wrapper.toASMType().internalName
@@ -57,6 +85,32 @@ object PrimitivesAdapter {
                 internalName,
                 entry.unwrapMethod,
                 "()${kind.asmType.descriptor}",
+                false
+        )
+    }
+
+    fun unwrap(mv: MethodVisitor, wrapper: ClassTypeReference) {
+        val entry = wrapperToWrapper[wrapper]!!
+        val internalName = entry.wrapper.toASMType().internalName
+
+        mv.visitMethodInsn(
+                Opcodes.INVOKEVIRTUAL,
+                internalName,
+                entry.unwrapMethod,
+                "()${entry.primitive.asmType.descriptor}",
+                false
+        )
+    }
+
+    fun unwrap(appender: BytecodeAppender, kind: PrimitiveKind) {
+        val entry = primitiveToWrapper[kind]!!
+        val internalName = entry.wrapper
+
+        appender += InvokeInstanceMethodInstruction(
+                internalName,
+                entry.unwrapMethod,
+                "()${kind.asmType.descriptor}",
+                Opcodes.INVOKEVIRTUAL,
                 false
         )
     }

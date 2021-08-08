@@ -91,62 +91,6 @@ object MincerUtils {
         return queue
     }
 
-    fun processFolderRecursively(root: File, factory: (MincerFS) -> Mincer) {
-        val archives = arrayListOf<MincerZipFS>()
-        for (s in root.listFiles()!!) {
-            val extension = s.extension
-            if (extension == "jar" || extension == "zip") {
-                val entries = hashMapOf<String, ByteArraySource>()
-                ZipUtil.iterate(s) { i, z ->
-                    if (!z.isDirectory) {
-                        entries[z.name] = ByteArraySource(z.name, i.readBytes())
-                    }
-                }
-                archives += MincerZipFS(entries)
-            }
-        }
-
-        val generalFS = MincerTreeFS(root, archives)
-
-
-        archives.parallelStream().forEach { archive ->
-            processArchive(generalFS, archive, factory)
-
-        }
-        processRoot(root, factory(generalFS))
-    }
-
-    fun processArchive(root: File, archiveFile: File, factory: (MincerFS) -> Mincer) {
-        val entries = hashMapOf<String, ByteArraySource>()
-        ZipUtil.iterate(archiveFile) { i, z ->
-            if (!z.isDirectory) {
-                entries[z.name] = ByteArraySource(z.name, i.readBytes())
-            }
-        }
-        val archive = MincerZipFS(entries)
-        val generalFS = MincerTreeFS(root, listOf(archive))
-        processArchive(generalFS, archive, factory)
-        archive.commit()
-    }
-
-    private fun processArchive(generalFS: MincerFS, archive: MincerZipFS, factory: (MincerFS) -> Mincer) {
-        val mincer = factory(MincerFallbackFS(archive, generalFS))
-        do {
-            archive.entries.map { it.value }.parallelStream().forEach { entry ->
-                if (!entry.path.endsWith(".class")) return@forEach
-
-                val result = mincer.advance(ClassTypeReference.fromFilePath(entry.path))
-                if (result.type == MincerResultType.MODIFIED) archive.entries[entry.path] = ByteArraySource(entry.path, result.bytecode())
-                else if (result.type == MincerResultType.DELETED) archive.entries -= entry.path
-            }
-        } while (mincer.endIteration())
-        archive.commit()
-    }
-
-    private fun processRoot(root: File, mincer: Mincer) {
-        MincerUtils.processFolder(mincer, root)
-    }
-
     fun readZip(file: File): HashMap<String, ByteArraySource> {
         val result = hashMapOf<String, ByteArraySource>()
         ZipUtil.iterate(file) { input, entry ->

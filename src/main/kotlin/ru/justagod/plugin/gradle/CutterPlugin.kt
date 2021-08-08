@@ -9,12 +9,6 @@ import org.gradle.api.specs.OrSpec
 import org.gradle.api.specs.Spec
 import org.gradle.api.specs.Specs
 import ru.justagod.model.ClassTypeReference
-import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.CutterConfig
-import ru.justagod.plugin.data.CutterTaskData
-import ru.justagod.plugin.data.InvocationClassData
-import ru.justagod.plugin.processing.model.InvokeClass
-import ru.justagod.plugin.processing.model.MethodDesc
 
 class CutterPlugin : Plugin<Project> {
 
@@ -30,6 +24,7 @@ class CutterPlugin : Plugin<Project> {
         val tasksContainer = project.container(CutterTaskData::class.java)
 
 
+        project.extensions.create()
 
         config = project.extensions.create("cutter", CutterConfig::class.java, tasksContainer, project)
 

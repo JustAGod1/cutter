@@ -10,5 +10,5 @@ class CutterConfig(
     val primalSides: Set<SideName>,
     val targetSides: Set<SideName>,
     val invocators: List<InvokeClass>,
-    val markers: List<DynSideMarker>,
+    val markers: List<DynSideMarker>
 )

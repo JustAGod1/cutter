@@ -12,7 +12,6 @@ import ru.justagod.model.InheritanceHelper
 import ru.justagod.model.OBJECT_REFERENCE
 import ru.justagod.model.factory.BytecodeModelFactory
 import ru.justagod.model.factory.CachedFactory
-import ru.justagod.model.factory.FallbackModelFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 

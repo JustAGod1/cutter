@@ -4,7 +4,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.commons.LocalVariablesSorter
 import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodNode
-import ru.justagod.bazon.stackManipulation.*
+import ru.justagod.stackManipulation.*
 import ru.justagod.mincer.control.MincerResultType
 import ru.justagod.mincer.processor.WorkerContext
 import ru.justagod.model.ClassTypeReference

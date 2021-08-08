@@ -13,8 +13,6 @@ import ru.justagod.mincer.util.recursiveness.ByteArraySource
 import ru.justagod.mincer.util.recursiveness.MincerFallbackFS
 import ru.justagod.mincer.util.recursiveness.MincerZipFS
 import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.processing.CutterPipelines.makePipeline
-import ru.justagod.plugin.processing.CutterPipelines.makePipelineWithValidation
 import ru.justagod.plugin.processing.pipeline.validation.ValidationResult
 import java.io.File
 
@@ -25,9 +23,10 @@ open class CutterTask : DefaultTask() {
 
     @TaskAction
     fun process() {
-        processArchive((this.project.tasks.findByPath("jar") as AbstractArchiveTask?)!!.archivePath, data.name)
+        //processArchive((this.project.tasks.findByPath("jar") as AbstractArchiveTask?)!!.archivePath, data.name)
     }
 
+    /*
     private fun processArchive(f: File, name: String) {
         val pipeline =
             if (CutterPlugin.instance.config.validation) makePipelineWithValidation(data) else makePipeline(data)
@@ -86,6 +85,8 @@ open class CutterTask : DefaultTask() {
         )
         ZipUtil.pack(generalFs.entries.values.toTypedArray(), target)
     }
+
+     */
 
     private fun collectLibraries(): MutableMap<String, ByteArraySource> {
         val result = hashMapOf<String, ByteArraySource>()
