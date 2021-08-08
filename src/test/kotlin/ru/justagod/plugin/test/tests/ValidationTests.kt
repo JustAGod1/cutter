@@ -7,7 +7,6 @@ import ru.justagod.mincer.util.MincerUtils
 import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.SideName
-import ru.justagod.plugin.processing.CutterPipelines
 import ru.justagod.plugin.processing.model.InvokeClass
 import ru.justagod.plugin.processing.model.MethodDesc
 import ru.justagod.plugin.processing.pipeline.validation.data.ClassError
@@ -16,7 +15,6 @@ import ru.justagod.plugin.processing.pipeline.validation.data.MethodError
 import ru.justagod.plugin.processing.pipeline.validation.data.ValidationError
 import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.context.StraightContext
-import java.io.File
 
 object ValidationTests {
 

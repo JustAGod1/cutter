@@ -11,15 +11,7 @@ class MincerZipFS(val entries: MutableMap<String, ByteArraySource>): MincerFS {
         entries[path] = ByteArraySource(path, bytecode)
     }
 
-    override fun pushArchive(id: String, processedClasses: Set<String>) {
-    }
-
-    override fun pullArchive(id: String): MincerArchive? {
-        return null
-    }
-
     override fun pullClass(path: String): ByteArray? {
         return entries[path]?.bytes
     }
-
 }

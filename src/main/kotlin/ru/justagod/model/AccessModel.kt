@@ -1,5 +1,6 @@
 package ru.justagod.model
 
+import org.objectweb.asm.Opcodes
 import java.lang.reflect.Modifier
 
 class AccessModel(val access: Int) {
@@ -15,8 +16,8 @@ class AccessModel(val access: Int) {
     val transient = access and Modifier.TRANSIENT != 0
     val volatile = access and Modifier.VOLATILE != 0
     val synchronized = access and Modifier.SYNCHRONIZED != 0
-    val isInterface = access and Modifier.INTERFACE != 0
-    val abstract = access and Modifier.ABSTRACT
+    val isInterface = access and Opcodes.ACC_INTERFACE != 0
+    val abstract = access and Opcodes.ACC_ABSTRACT != 0
 
     override fun toString(): String {
         val builder = StringBuilder()

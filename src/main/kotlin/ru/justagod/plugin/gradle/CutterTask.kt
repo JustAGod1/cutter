@@ -29,7 +29,8 @@ open class CutterTask : DefaultTask() {
     }
 
     private fun processArchive(f: File, name: String) {
-        val pipeline = if (CutterPlugin.instance.config.validation) makePipelineWithValidation(data) else makePipeline(data)
+        val pipeline =
+            if (CutterPlugin.instance.config.validation) makePipelineWithValidation(data) else makePipeline(data)
         val archive = MincerUtils.readZip(f)
         val librariesData = collectLibraries()
         val generalFs = MincerZipFS(archive)
@@ -37,9 +38,9 @@ open class CutterTask : DefaultTask() {
 
         val router = MincerFallbackFS(generalFs, librariesFs)
 
-        val mincer = Mincer.Builder(router, false)
-                .registerSubMincer(pipeline)
-                .build()
+        val mincer = Mincer.Builder(router)
+            .registerPipeline(pipeline)
+            .build()
 
         val resultEntries = hashMapOf<String, ByteArraySource>()
         do {
@@ -79,8 +80,10 @@ open class CutterTask : DefaultTask() {
                 throw RuntimeException("Validation failed")
             }
         }
-        val target = File(f.absoluteFile.parentFile, archiveName?.invoke()
-                ?: f.nameWithoutExtension + "-" + name + "." + f.extension)
+        val target = File(
+            f.absoluteFile.parentFile, archiveName?.invoke()
+                ?: f.nameWithoutExtension + "-" + name + "." + f.extension
+        )
         ZipUtil.pack(generalFs.entries.values.toTypedArray(), target)
     }
 

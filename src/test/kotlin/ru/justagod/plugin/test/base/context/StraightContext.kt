@@ -4,8 +4,6 @@ import ru.justagod.mincer.MincerBuilder
 import ru.justagod.mincer.util.MincerDecentFS
 import ru.justagod.mincer.util.MincerUtils
 import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.CutterTaskData
-import ru.justagod.plugin.processing.CutterPipelines
 import ru.justagod.plugin.test.base.TestingContext
 import java.io.File
 import java.lang.RuntimeException

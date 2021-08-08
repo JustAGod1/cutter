@@ -1,12 +1,13 @@
 package ru.justagod.model.factory
 
 import ru.justagod.model.*
-import ru.justagod.mincer.util.chunked
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
+import org.objectweb.asm.tree.MethodNode
 import ru.justagod.mincer.util.NodesFactory
 
 class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
@@ -25,7 +26,7 @@ class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
                     ?.groupBy { fetchTypeReference(it.desc) as ClassTypeReference }
                     ?.mapValues { it.value[0] }
                     ?.mapValues {
-                        (it.value.values as? Iterable<Any>)?.chunked(size = 2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
+                        it.value.values?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
                     }
                     ?.mapValues {
                         it.value.mapValues {
@@ -41,7 +42,7 @@ class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
                     ?.groupBy { fetchTypeReference(it.desc) as ClassTypeReference }
                     ?.mapValues { it.value[0] }
                     ?.mapValues {
-                        (it.value.values as? Iterable<Any>)?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
+                        it.value.values?.chunked(2)?.map { Pair(it[0] as String, it[1]) }?.toMap() ?: emptyMap()
                     }
                     ?.mapValues {
                         it.value.mapValues {
@@ -68,7 +69,7 @@ class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
                     ClassTypeReference(node.name.toCanonicalName())
             )
             val fields = node.fields?.map { makeFieldModel(it, model) } ?: emptyList()
-            val methods = emptyList<MethodModel>()
+            val methods = node.methods?.map { makeMethodNode(it, model) } ?: emptyList()
             model._fields = fields
             model._methods = methods
             model._typeParameters = { parseClassSignature(node.signature, model).filterIsInstance<ReferencedGenericTypeModel>() }
@@ -82,6 +83,16 @@ class BytecodeModelFactory(private val harvester: NodesFactory) : ModelFactory {
             model._superClass = superClass
             model._interfaces = interfaces
             return model
+        }
+
+        private fun makeMethodNode(method: MethodNode, parent: AbstractModel): MethodModel {
+            return MethodModel(
+                    method.name,
+                    AccessModel(method.access),
+                    parseType(Type.getReturnType(method.desc).descriptor, parent),
+                    Type.getArgumentTypes(method.desc).map { parseType(it.descriptor, parent) },
+                    parent
+            )
         }
 
         @Suppress("UNCHECKED_CAST")

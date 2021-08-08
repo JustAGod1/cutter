@@ -1,11 +1,10 @@
 package ru.justagod.mincer.processor
 
-import ru.justagod.mincer.control.MincerArchive
 import ru.justagod.mincer.control.MincerResultType
-import ru.justagod.mincer.pipeline.Pipeline
+import ru.justagod.mincer.pipeline.MincerPipeline
 import ru.justagod.model.InheritanceHelper
 
-interface SubMincer<Input : Any, Output : Any> {
+interface SubMincer<Input, Output> {
 
     /**
      * @return нужно ли перезаписать класс
@@ -14,17 +13,11 @@ interface SubMincer<Input : Any, Output : Any> {
 
     fun startProcessing(
             input: Input,
-            cache: MincerArchive?,
-            inheritance: InheritanceHelper,
-            pipeline: Pipeline<Input, Output>
-    ) {
-    }
+            output: Output
+    ) = output
 
     fun endProcessing(
             input: Input,
-            cache: MincerArchive?,
-            inheritance: InheritanceHelper,
-            pipeline: Pipeline<Input, Output>
-    ) {
-    }
+            output: Output
+    )  = output
 }
