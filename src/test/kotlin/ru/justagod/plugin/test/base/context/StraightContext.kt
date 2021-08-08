@@ -1,8 +1,8 @@
 package ru.justagod.plugin.test.base.context
 
-import ru.justagod.mincer.MincerBuilder
-import ru.justagod.mincer.util.MincerDecentFS
-import ru.justagod.mincer.util.MincerUtils
+import ru.justagod.cutter.mincer.MincerBuilder
+import ru.justagod.cutter.mincer.util.MincerDecentFS
+import ru.justagod.cutter.mincer.util.MincerUtils
 import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.test.base.TestingContext
 import java.io.File

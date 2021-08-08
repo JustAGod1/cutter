@@ -1,7 +1,7 @@
 package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
-import ru.justagod.model.ClassTypeReference
+import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.DynSideMarkerBuilder
 import ru.justagod.plugin.data.SideName

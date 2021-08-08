@@ -2,7 +2,7 @@ package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
-import ru.justagod.model.ClassTypeReference
+import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.test.base.TestRunner

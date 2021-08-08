@@ -4,17 +4,9 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.AbstractArchiveTask
-import org.zeroturnaround.zip.ZipUtil
-import ru.justagod.mincer.Mincer
-import ru.justagod.mincer.control.MincerResultType
-import ru.justagod.mincer.util.MincerUtils
-import ru.justagod.mincer.util.recursiveness.ByteArraySource
-import ru.justagod.mincer.util.recursiveness.MincerFallbackFS
-import ru.justagod.mincer.util.recursiveness.MincerZipFS
+import ru.justagod.cutter.mincer.util.MincerUtils
+import ru.justagod.cutter.mincer.util.recursiveness.ByteArraySource
 import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.processing.pipeline.validation.ValidationResult
-import java.io.File
 
 open class CutterTask : DefaultTask() {
     lateinit var dataHarvester: () -> BakedCutterTaskData

@@ -1,10 +1,10 @@
 package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
-import ru.justagod.mincer.MincerBuilder
-import ru.justagod.mincer.util.MincerDecentFS
-import ru.justagod.mincer.util.MincerUtils
-import ru.justagod.model.ClassTypeReference
+import ru.justagod.cutter.mincer.MincerBuilder
+import ru.justagod.cutter.mincer.util.MincerDecentFS
+import ru.justagod.cutter.mincer.util.MincerUtils
+import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.plugin.data.BakedCutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.model.InvokeClass

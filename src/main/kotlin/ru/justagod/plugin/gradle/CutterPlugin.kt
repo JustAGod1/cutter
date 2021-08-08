@@ -3,12 +3,9 @@ package ru.justagod.plugin.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.RelativePath
-import org.gradle.api.internal.file.RelativePathSpec
-import org.gradle.api.specs.CompositeSpec
 import org.gradle.api.specs.OrSpec
 import org.gradle.api.specs.Spec
-import org.gradle.api.specs.Specs
-import ru.justagod.model.ClassTypeReference
+import ru.justagod.cutter.model.ClassTypeReference
 
 class CutterPlugin : Plugin<Project> {
 

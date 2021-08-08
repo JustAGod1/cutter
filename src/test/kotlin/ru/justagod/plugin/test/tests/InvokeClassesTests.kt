@@ -1,9 +1,8 @@
 package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
-import ru.justagod.model.ClassTypeReference
+import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.CutterTaskData
 import ru.justagod.plugin.data.SideName
 import ru.justagod.plugin.processing.model.InvokeClass
 import ru.justagod.plugin.processing.model.MethodDesc

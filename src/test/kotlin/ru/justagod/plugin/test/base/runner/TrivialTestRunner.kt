@@ -1,11 +1,11 @@
 package ru.justagod.plugin.test.base.runner
 
-import ru.justagod.mincer.MincerBuilder
-import ru.justagod.mincer.filter.WalkThroughFilter
-import ru.justagod.mincer.pipeline.Pipeline
-import ru.justagod.mincer.util.MincerDecentFS
-import ru.justagod.mincer.util.MincerUtils
-import ru.justagod.mincer.util.makeFirstSimple
+import ru.justagod.cutter.mincer.MincerBuilder
+import ru.justagod.cutter.mincer.filter.WalkThroughFilter
+import ru.justagod.cutter.mincer.pipeline.Pipeline
+import ru.justagod.cutter.mincer.util.MincerDecentFS
+import ru.justagod.cutter.mincer.util.MincerUtils
+import ru.justagod.cutter.mincer.util.makeFirstSimple
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.runner.trivial.TrivialTestData

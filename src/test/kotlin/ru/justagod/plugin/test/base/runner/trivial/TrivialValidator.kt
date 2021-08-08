@@ -1,11 +1,11 @@
 package ru.justagod.plugin.test.base.runner.trivial
 
-import ru.justagod.mincer.control.MincerArchive
-import ru.justagod.mincer.control.MincerResultType
-import ru.justagod.mincer.pipeline.Pipeline
-import ru.justagod.mincer.processor.SubMincer
-import ru.justagod.mincer.processor.WorkerContext
-import ru.justagod.model.InheritanceHelper
+import ru.justagod.cutter.mincer.control.MincerArchive
+import ru.justagod.cutter.mincer.control.MincerResultType
+import ru.justagod.cutter.mincer.pipeline.Pipeline
+import ru.justagod.cutter.mincer.processor.SubMincer
+import ru.justagod.cutter.mincer.processor.WorkerContext
+import ru.justagod.cutter.model.InheritanceHelper
 
 class TrivialValidator(private val configName: String, private val imageModel: ImageModel)
     : SubMincer<Unit, Boolean> {
