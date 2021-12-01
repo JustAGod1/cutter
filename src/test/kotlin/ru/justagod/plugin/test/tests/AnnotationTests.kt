@@ -2,20 +2,16 @@ package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
 import org.objectweb.asm.tree.AnnotationNode
-import ru.justagod.cutter.mincer.MincerBuilder
-import ru.justagod.cutter.mincer.control.MincerArchive
+import ru.justagod.cutter.mincer.Mincer
 import ru.justagod.cutter.mincer.control.MincerResultType
-import ru.justagod.cutter.mincer.filter.WalkThroughFilter
-import ru.justagod.cutter.mincer.pipeline.Pipeline
+import ru.justagod.cutter.mincer.pipeline.MincerPipeline
 import ru.justagod.cutter.mincer.processor.SubMincer
 import ru.justagod.cutter.mincer.processor.WorkerContext
 import ru.justagod.cutter.mincer.util.MincerDecentFS
 import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.mincer.util.makeFirstSimple
 import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.cutter.model.InheritanceHelper
-import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.SideName
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.config.SideName
 import ru.justagod.plugin.test.base.context.GradleContext
 import ru.justagod.plugin.test.base.context.StraightContext
 import java.io.File
@@ -56,16 +52,12 @@ object AnnotationTests {
     @Test
     fun straight() {
         val context = StraightContext { name ->
-            BakedCutterTaskData(
-                    name = name,
-                    annotation = ClassTypeReference(annotation),
-                    validationOverrideAnnotation = null,
-                    removeAnnotations = true,
-                    primalSides = setOf(SideName.make("server"), SideName.make("client")),
-                    targetSides = setOf(SideName.make(name)),
-                    invocators = emptyList(),
-                    markers = emptyList(),
-                    excludes = { false }
+            CutterConfig(
+                annotation = ClassTypeReference(annotation),
+                validationOverrideAnnotation = null,
+                primalSides = setOf(SideName.make("server"), SideName.make("client")),
+                targetSides = setOf(SideName.make(name)),
+                invocators = emptyList()
             )
         }
         val virgin = context.compileResourceFolder("test8", null)
@@ -76,21 +68,21 @@ object AnnotationTests {
     }
 
     private fun validate(compiled: File): Boolean {
-        val pipeline = Pipeline.makeFirstSimple(AnnotationsSearcher(annotation), WalkThroughFilter, null)
-        val mincer = MincerBuilder(MincerDecentFS(compiled), false)
-                .registerSubMincer(pipeline)
-                .build()
+        val pipeline = MincerPipeline.make(AnnotationsSearcher(annotation), true).build()
+        val mincer = Mincer.Builder(MincerDecentFS(compiled))
+            .registerPipeline(pipeline)
+            .build()
         MincerUtils.processFolder(mincer, compiled)
 
-        return pipeline.value!!
+        return pipeline.result()
     }
 
     class AnnotationsSearcher(annotationName: String) : SubMincer<Unit, Boolean> {
         private val annotationDescriptor = 'L' + annotationName.replace('.', '/') + ';'
         override fun process(context: WorkerContext<Unit, Boolean>): MincerResultType {
-            val node = context.info!!.node
+            val node = context.info.node()
 
-            if (context.pipeline.value == false) return MincerResultType.SKIPPED
+            if (!context.pipeline.output) return MincerResultType.SKIPPED
 
             if (analyze(node.invisibleAnnotations, context.pipeline)) return MincerResultType.SKIPPED
             if (analyze(node.visibleAnnotations, context.pipeline)) return MincerResultType.SKIPPED
@@ -106,18 +98,14 @@ object AnnotationTests {
             return MincerResultType.SKIPPED
         }
 
-        private fun analyze(annotations: List<AnnotationNode>?, pipeline: Pipeline<Unit, Boolean>): Boolean {
+        private fun analyze(annotations: List<AnnotationNode>?, pipeline: MincerPipeline<Unit, Boolean>): Boolean {
             if (annotations == null) return false
-            if (pipeline.value == false) return true
+            if (!pipeline.output) return true
             if (annotations.any { it.desc == annotationDescriptor }) {
-                pipeline.value = false
+                pipeline.output = false
                 return true
             }
             return false
-        }
-
-        override fun endProcessing(input: Unit, cache: MincerArchive?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, Boolean>) {
-            if (pipeline.value != false) pipeline.value = true
         }
 
     }

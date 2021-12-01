@@ -1,4 +1,4 @@
-package ru.justagod.cutter.processing.cutter.analization
+package ru.justagod.cutter.processing.analization
 
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
@@ -9,9 +9,9 @@ import org.objectweb.asm.tree.MethodNode
 import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.processor.WorkerContext
 import ru.justagod.cutter.model.*
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.model.MethodAtom
-import ru.justagod.cutter.processing.cutter.model.ProjectModel
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.model.MethodAtom
+import ru.justagod.cutter.processing.model.ProjectModel
 import ru.justagod.cutter.stackManipulation.*
 import ru.justagod.cutter.utils.findMethod
 import java.util.concurrent.atomic.AtomicLong

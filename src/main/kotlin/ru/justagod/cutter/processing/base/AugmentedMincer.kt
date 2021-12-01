@@ -1,4 +1,4 @@
-package ru.justagod.cutter.processing.cutter.base
+package ru.justagod.cutter.processing.base
 
 import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.processor.SubMincer

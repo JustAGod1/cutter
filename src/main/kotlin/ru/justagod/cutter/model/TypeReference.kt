@@ -2,10 +2,11 @@ package ru.justagod.cutter.model
 
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import java.io.Serializable
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 
-sealed class TypeReference {
+sealed class TypeReference : Serializable {
     abstract fun toASMType(): Type
 
     override fun toString() = toASMType().toString()

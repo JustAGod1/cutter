@@ -15,8 +15,8 @@ plugins {
 apply plugin: 'cutter'
 
 version = "1.0"
-group = "com.yourname.modid"
 archivesBaseName = "modid"
+group = "com.yourname.modid"
 
 
 sourceCompatibility = targetCompatibility = '1.8'

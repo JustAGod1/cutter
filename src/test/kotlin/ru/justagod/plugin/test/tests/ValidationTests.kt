@@ -1,109 +1,133 @@
 package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
-import ru.justagod.cutter.mincer.MincerBuilder
+import ru.justagod.cutter.mincer.Mincer
 import ru.justagod.cutter.mincer.util.MincerDecentFS
 import ru.justagod.cutter.mincer.util.MincerUtils
 import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.SideName
-import ru.justagod.plugin.processing.model.InvokeClass
-import ru.justagod.plugin.processing.model.MethodDesc
-import ru.justagod.plugin.processing.pipeline.validation.data.ClassError
-import ru.justagod.plugin.processing.pipeline.validation.data.FieldError
-import ru.justagod.plugin.processing.pipeline.validation.data.MethodError
-import ru.justagod.plugin.processing.pipeline.validation.data.ValidationError
+import ru.justagod.cutter.processing.CutterProcessingUnit
+import ru.justagod.cutter.processing.CutterProcessingUnit.client
+import ru.justagod.cutter.processing.CutterProcessingUnit.server
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.config.InvokeClass
+import ru.justagod.cutter.processing.config.MethodDesc
+import ru.justagod.cutter.processing.config.SideName
+import ru.justagod.cutter.processing.transformation.validation.*
 import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.context.StraightContext
 
 object ValidationTests {
 
     private val expectedErrors = setOf(
-            MethodError(
-                    methodHolder = ClassTypeReference("validation.A"),
-                    methodName = "b",
-                    methodDesc = "()V",
-                    holder = ClassTypeReference("validation.A"),
-                    name = "a",
-                    src = "A.java",
-                    line = 8
+        MethodNotFoundValidationError(
+
+            owner = ClassTypeReference("validation.A"),
+            name = "b",
+            desc = "()V",
+
+            location = MethodBodyLocation(
+                owner = ClassTypeReference("validation.A"),
+                name = "a",
+                source = "A.java",
+                lineNumber = 8
             ),
-            FieldError(
-                    fieldHolder = ClassTypeReference("validation.B"),
-                    fieldName = "c",
-                    holder = ClassTypeReference("validation.B"),
-                    name = "a",
-                    src = "B.java",
-                    line = 11
+            hisSides = setOf(server)
+        ),
+        FieldNotFoundValidationError(
+            owner = ClassTypeReference("validation.B"),
+            name = "c",
+            location = MethodBodyLocation(
+                owner = ClassTypeReference("validation.B"),
+                name = "a",
+                source = "B.java",
+                lineNumber = 11
             ),
-            ClassError(
-                    subject = ClassTypeReference("validation.C2"),
-                    holder = ClassTypeReference("validation.C1"),
-                    name = "a",
-                    src = "C.java",
-                    line = 0
+            hisSides = setOf(server)
+        ),
+        ClassNotFoundValidationError(
+            clazz = ClassTypeReference("validation.C2"),
+            location = FieldLocation(
+                owner = ClassTypeReference("validation.C1"),
+                name = "a",
+                source = "C.java"
             ),
-            ClassError(
-                    subject = ClassTypeReference("validation.C2"),
-                    holder = ClassTypeReference("validation.C1"),
-                    name = "b",
-                    src = "C.java",
-                    line = 0
+            hisSides = setOf(server)
+        ),
+        ClassNotFoundValidationError(
+            clazz = ClassTypeReference("validation.C2"),
+            location = MethodDescLocation(
+                owner = ClassTypeReference("validation.C1"),
+                name = "b",
+                source = "C.java",
+                lineNumber = 10
             ),
-            ClassError(
-                    subject = ClassTypeReference("validation.C2"),
-                    holder = ClassTypeReference("validation.C1"),
-                    name = "c",
-                    src = "C.java",
-                    line = 0
+            hisSides = setOf(server)
+        ),
+        ClassNotFoundValidationError(
+            clazz = ClassTypeReference("validation.C2"),
+            location = MethodDescLocation(
+                owner = ClassTypeReference("validation.C1"),
+                name = "c",
+                source = "C.java",
+                lineNumber = 15
             ),
-            FieldError(
-                    fieldHolder = ClassTypeReference("validation.D"),
-                    fieldName = "a",
-                    holder = ClassTypeReference("validation.D"),
-                    name = "b",
-                    src = "D.java",
-                    line = 13
-            )
+            hisSides = setOf(server)
+        ),
+        FieldNotFoundValidationError(
+            owner = ClassTypeReference("validation.D"),
+            name = "a",
+            location = MethodBodyLocation(
+                owner = ClassTypeReference("validation.D"),
+                name = "b",
+                source = "D.java",
+                lineNumber = 13
+            ),
+            hisSides = setOf(server)
+        ),
+        FieldNotFoundValidationError(
+            owner = ClassTypeReference("validation.D"),
+            name = "a",
+            location = MethodBodyLocation(
+                owner = ClassTypeReference("validation.D"),
+                name = "lambda\$b\$1",
+                source = "D.java",
+                lineNumber = 14
+            ),
+            hisSides = setOf(server)
+        )
     )
 
     @Test
     fun straight() {
         val compiled = StraightContext.compileSources(TestingContext.resolve("validation"))
 
-        val server = SideName.make("SERVER")
-        val client = SideName.make("CLIENT")
-        val task = BakedCutterTaskData(
-                name = "none",
-                annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
-                validationOverrideAnnotation = null,
-                removeAnnotations = false,
-                primalSides = setOf(server, client),
-                targetSides = setOf(server),
-                invocators = listOf(
-                        InvokeClass(
-                                ClassTypeReference("ru.justagod.cutter.invoke.InvokeServer"),
-                                hashSetOf(SideName.make("SERVER")),
-                                MethodDesc("run", "()V")
-                        ),
-                        InvokeClass(
-                                ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
-                                hashSetOf(SideName.make("CLIENT")),
-                                MethodDesc("run", "()V")
-                        )
+        val task = CutterConfig(
+            annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
+            validationOverrideAnnotation = null,
+            primalSides = setOf(server, client),
+            targetSides = setOf(client),
+            invocators = listOf(
+                InvokeClass(
+                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeServer"),
+                    hashSetOf(SideName.make("SERVER")),
+                    MethodDesc("run", "()V")
                 ),
-                markers = emptyList(),
-                excludes = { false }
+                InvokeClass(
+                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
+                    hashSetOf(SideName.make("CLIENT")),
+                    MethodDesc("run", "()V")
+                )
+            )
         )
-        val pipeline = CutterPipelines.makePipelineWithValidation(task)
+        val pipeline = CutterProcessingUnit.makePipeline(task)
 
-        val mincer = MincerBuilder(MincerDecentFS(compiled), false)
-                .registerSubMincer(pipeline)
-                .build()
+        val mincer = Mincer.Builder(MincerDecentFS(compiled))
+            .registerPipeline(pipeline)
+            .build()
         MincerUtils.processFolder(mincer, compiled)
 
 
-        val actualErrors = pipeline.value!!.getValue(client).toSet()
+        val actualErrors = pipeline.result().errors.toSet()
         if (actualErrors == expectedErrors) return
 
         val notRaisedErrors = hashSetOf<ValidationError>()

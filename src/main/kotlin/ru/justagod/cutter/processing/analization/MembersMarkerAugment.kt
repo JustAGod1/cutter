@@ -1,9 +1,9 @@
-package ru.justagod.cutter.processing.cutter.analization
+package ru.justagod.cutter.processing.analization
 
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
+import ru.justagod.cutter.processing.config.CutterConfig
 import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.processor.WorkerContext
-import ru.justagod.cutter.processing.cutter.model.*
+import ru.justagod.cutter.processing.model.*
 
 class MembersMarkerAugment(private val model: ProjectModel, config: CutterConfig) : AnalysisAugment(config) {
     override fun process(context: WorkerContext<Unit, Unit>): MincerResultType {

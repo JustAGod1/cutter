@@ -76,6 +76,8 @@ open class GradleContext(protected val gradleScript: String, private val overrid
                     |}
                     |
                     |$gradleScript
+                    |version = "1.0"
+                    |archivesBaseName = "modid"
                 """.trimMargin()
         )
     }
@@ -84,7 +86,7 @@ open class GradleContext(protected val gradleScript: String, private val overrid
         insertSources(root)
         val jarFile = if (conf != null) {
             runGradleCommand("clean", "build" + conf.capitalize())
-            this.root.resolve("build").resolve("libs").resolve("mod-${conf.toLowerCase()}.jar")
+            this.root.resolve("build").resolve("libs").resolve("modid-1.0-${conf.toLowerCase()}.jar")
         } else {
             runGradleCommand("clean", "build")
             this.root.resolve("build").resolve("libs").resolve("mod.jar")
@@ -130,6 +132,6 @@ open class GradleContext(protected val gradleScript: String, private val overrid
 
 
     companion object {
-        const val defaultGradleScript = "cutter.initializeDefault()\ncutter.exclude(\"**.lol\")"
+        const val defaultGradleScript = ""
     }
 }

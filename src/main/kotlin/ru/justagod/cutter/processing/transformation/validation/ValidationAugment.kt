@@ -1,16 +1,17 @@
-package ru.justagod.cutter.processing.cutter.transformation.validation
+package ru.justagod.cutter.processing.transformation.validation
 
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
 import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.processor.WorkerContext
 import ru.justagod.cutter.model.*
-import ru.justagod.cutter.processing.cutter.base.MincerAugment
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.model.ClassAtom
-import ru.justagod.cutter.processing.cutter.model.FieldAtom
-import ru.justagod.cutter.processing.cutter.model.MethodAtom
-import ru.justagod.cutter.processing.cutter.model.ProjectModel
+import ru.justagod.cutter.processing.base.MincerAugment
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.model.ClassAtom
+import ru.justagod.cutter.processing.model.FieldAtom
+import ru.justagod.cutter.processing.model.MethodAtom
+import ru.justagod.cutter.processing.model.ProjectModel
+import ru.justagod.cutter.processing.transformation.validation.*
 import ru.justagod.cutter.utils.containsAny
 
 class ValidationAugment(private val config: CutterConfig, private val model: ProjectModel) :

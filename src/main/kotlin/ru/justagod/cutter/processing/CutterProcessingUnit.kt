@@ -1,17 +1,14 @@
-package ru.justagod.cutter.processing.cutter
+package ru.justagod.cutter.processing
 
 import ru.justagod.cutter.mincer.pipeline.MincerPipeline
 import ru.justagod.cutter.mincer.pipeline.MincerPipelineController
-import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.cutter.processing.cutter.analization.AnalysisMincer
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.config.InvokeClass
-import ru.justagod.cutter.processing.cutter.config.MethodDesc
-import ru.justagod.cutter.processing.cutter.config.SideName
-import ru.justagod.cutter.processing.cutter.model.ProjectModel
-import ru.justagod.cutter.processing.cutter.transformation.TransformationMincer
-import ru.justagod.cutter.processing.cutter.transformation.validation.ValidationError
-import ru.justagod.cutter.processing.cutter.transformation.validation.ValidationResult
+import ru.justagod.cutter.processing.analization.AnalysisMincer
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.config.SideName
+import ru.justagod.cutter.processing.model.ProjectModel
+import ru.justagod.cutter.processing.transformation.TransformationMincer
+import ru.justagod.cutter.processing.transformation.validation.ValidationError
+import ru.justagod.cutter.processing.transformation.validation.ValidationResult
 
 object CutterProcessingUnit {
 
@@ -23,55 +20,12 @@ object CutterProcessingUnit {
 
     }
 
-    fun makePipelines(input: CutterConfig): List<MincerPipelineController<*>> {
-        return listOf(makePipeline(input, ProjectModel(input.primalSides)))
+    fun makePipeline(input: CutterConfig): MincerPipelineController<ValidationResult> {
+        return makePipeline(input, ProjectModel(input.primalSides))
     }
 
-    val backend = SideName.make("backend")
-    val frontend = SideName.make("frontend")
+    val server = SideName.make("server")
     val client = SideName.make("client")
-    val sides = listOf(backend, frontend, client)
-    fun defaultConfig(targetSides: Set<SideName>) = CutterConfig(
-        annotation = ClassTypeReference("gloomyfolken.bundle.common.core.BundleSideOnly"),
-        validationOverrideAnnotation = ClassTypeReference("gloomyfolken.bundle.common.core.NoValidation"),
-        removeAnnotations = false,
-        primalSides = setOf(frontend, client),
-        targetSides = targetSides,
-        invocators = listOf(
-            InvokeClass(
-                name = ClassTypeReference("gloomyfolken.bundle.common.core.InvokeSideOnly\$InvokeBackendOnly"),
-                sides = setOf(backend),
-                functionalMethod = MethodDesc("run", "()V")
-            ),
-            InvokeClass(
-                name = ClassTypeReference("gloomyfolken.bundle.common.core.InvokeSideOnly\$InvokeFrontendOnly"),
-                sides = setOf(frontend),
-                functionalMethod = MethodDesc("run", "()V")
-            ),
-            InvokeClass(
-                name = ClassTypeReference("gloomyfolken.bundle.common.core.InvokeSideOnly\$InvokeClientOnly"),
-                sides = setOf(client),
-                functionalMethod = MethodDesc("run", "()V")
-            ),
-            InvokeClass(
-                name = ClassTypeReference("gloomyfolken.bundle.common.core.InvokeWithResult\$InvokeBackendOnly"),
-                sides = setOf(backend),
-                functionalMethod = MethodDesc("run", "()Ljava/lang/Object;")
-            ),
-            InvokeClass(
-                name = ClassTypeReference("gloomyfolken.bundle.common.core.InvokeWithResult\$InvokeFrontendOnly"),
-                sides = setOf(frontend),
-                functionalMethod = MethodDesc("run", "()Ljava/lang/Object;")
-            ),
-            InvokeClass(
-                name = ClassTypeReference("gloomyfolken.bundle.common.core.InvokeWithResult\$InvokeClientOnly"),
-                sides = setOf(client),
-                functionalMethod = MethodDesc("run", "()Ljava/lang/Object;")
-            )
-        ),
-        markers = listOf()
-    )
-
 
     fun reportValidationResults(
         errorsBySide: Map<SideName, List<ValidationError>>

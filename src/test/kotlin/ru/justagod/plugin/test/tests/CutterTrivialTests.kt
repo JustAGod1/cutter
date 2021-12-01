@@ -3,8 +3,8 @@ package ru.justagod.plugin.test.tests
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.SideName
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.config.SideName
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.context.ForgeContext
 import ru.justagod.plugin.test.base.context.GradleContext
@@ -139,15 +139,6 @@ object CutterTrivialTests {
     }
 
     @TestFactory
-    fun forge1710(): List<DynamicTest> {
-        val context = ForgeContext("1.7.10", script)
-        context.before()
-        return tests().map {
-            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
-        }
-    }
-
-    @TestFactory
     fun forge18(): List<DynamicTest> {
         val context = ForgeContext("1.8", script)
         context.before()
@@ -175,15 +166,6 @@ object CutterTrivialTests {
     }
 
     @TestFactory
-    fun forge1710Def(): List<DynamicTest> {
-        val context = ForgeContext("1.7.10", GradleContext.defaultGradleScript).default()
-        context.before()
-        return tests().map {
-            DynamicTest.dynamicTest(it.name) { assert(it.run(context)) }
-        }
-    }
-
-    @TestFactory
     fun forge18Def(): List<DynamicTest> {
         val context = ForgeContext("1.8", GradleContext.defaultGradleScript).default()
         context.before()
@@ -204,16 +186,12 @@ object CutterTrivialTests {
     @TestFactory
     fun straightTests(): List<DynamicTest> {
         val context = StraightContext { name ->
-            BakedCutterTaskData(
-                    name = name,
+            CutterConfig(
                     annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
                     validationOverrideAnnotation = null,
-                    removeAnnotations = false,
                     primalSides = setOf(SideName.make("server"), SideName.make("client")),
                     targetSides = setOf(SideName.make(name)),
-                    invocators = emptyList(),
-                    markers = emptyList(),
-                    excludes = { false }
+                    invocators = emptyList()
             )
         }
         context.before()

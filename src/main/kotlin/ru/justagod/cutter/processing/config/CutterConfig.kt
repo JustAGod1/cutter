@@ -1,14 +1,12 @@
-package ru.justagod.cutter.processing.cutter.config
+package ru.justagod.cutter.processing.config
 
-import ru.justagod.cutter.data.DynSideMarker
 import ru.justagod.cutter.model.ClassTypeReference
+import java.io.Serializable
 
-class CutterConfig(
+data class CutterConfig(
     val annotation: ClassTypeReference,
     val validationOverrideAnnotation: ClassTypeReference?,
-    val removeAnnotations: Boolean,
     val primalSides: Set<SideName>,
     val targetSides: Set<SideName>,
-    val invocators: List<InvokeClass>,
-    val markers: List<DynSideMarker>
-)
+    val invocators: List<InvokeClass>
+) : Serializable

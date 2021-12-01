@@ -1,11 +1,9 @@
 package ru.justagod.plugin.test.base.runner
 
-import ru.justagod.cutter.mincer.MincerBuilder
-import ru.justagod.cutter.mincer.filter.WalkThroughFilter
-import ru.justagod.cutter.mincer.pipeline.Pipeline
+import ru.justagod.cutter.mincer.Mincer
+import ru.justagod.cutter.mincer.pipeline.MincerPipeline
 import ru.justagod.cutter.mincer.util.MincerDecentFS
 import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.mincer.util.makeFirstSimple
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.runner.trivial.TrivialTestData
@@ -26,20 +24,21 @@ class TrivialTestRunner(private val testData: TrivialTestData) : TestRunner {
     }
 
     private fun validate(compiled: File, configName: String): Boolean {
-        val pipeline = Pipeline
-                .makeFirstSimple(
+        val pipeline = MincerPipeline
+                .make(
                         TrivialValidator(configName, testData.model),
-                        WalkThroughFilter, null
+                        true
                 )
-        val mincer = MincerBuilder(MincerDecentFS(compiled), false)
-                .registerSubMincer(
+            .build()
+        val mincer = Mincer.Builder(MincerDecentFS(compiled))
+                .registerPipeline(
                         pipeline
                 )
                 .build()
 
         MincerUtils.processFolder(mincer, compiled)
 
-        return pipeline.value!!
+        return pipeline.result()
     }
 
 

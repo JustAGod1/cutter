@@ -1,4 +1,4 @@
-package ru.justagod.cutter.data
+package ru.justagod.cutter.processing.config
 
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -7,7 +7,6 @@ import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.cutter.utils.CutterUtils
-import ru.justagod.cutter.processing.cutter.config.SideName
 import java.lang.RuntimeException
 
 enum class FlowDirection {

@@ -1,4 +1,4 @@
-package ru.justagod.cutter.processing.cutter.model
+package ru.justagod.cutter.processing.model
 
 import org.objectweb.asm.tree.MethodNode
 import ru.justagod.cutter.model.ClassTypeReference

@@ -1,10 +1,10 @@
-package ru.justagod.cutter.processing.cutter.transformation
+package ru.justagod.cutter.processing.transformation
 
-import ru.justagod.cutter.processing.cutter.base.AugmentedMincer
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.model.ProjectModel
-import ru.justagod.cutter.processing.cutter.transformation.validation.ValidationAugment
-import ru.justagod.cutter.processing.cutter.transformation.validation.ValidationResult
+import ru.justagod.cutter.processing.base.AugmentedMincer
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.model.ProjectModel
+import ru.justagod.cutter.processing.transformation.validation.ValidationAugment
+import ru.justagod.cutter.processing.transformation.validation.ValidationResult
 
 class TransformationMincer(model: ProjectModel, config: CutterConfig) : AugmentedMincer<Unit, ValidationResult>() {
 

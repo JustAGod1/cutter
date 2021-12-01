@@ -1,15 +1,16 @@
 package ru.justagod.plugin.test.base.context
 
-import ru.justagod.cutter.mincer.MincerBuilder
+import ru.justagod.cutter.mincer.Mincer
 import ru.justagod.cutter.mincer.util.MincerDecentFS
 import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.plugin.data.BakedCutterTaskData
+import ru.justagod.cutter.processing.CutterProcessingUnit
+import ru.justagod.cutter.processing.config.CutterConfig
 import ru.justagod.plugin.test.base.TestingContext
 import java.io.File
 import java.lang.RuntimeException
 import java.nio.file.Files
 
-open class StraightContext(private val taskFactory: (String) -> BakedCutterTaskData) : TestingContext() {
+open class StraightContext(private val taskFactory: (String) -> CutterConfig) : TestingContext() {
 
     override fun before() {}
 
@@ -17,12 +18,11 @@ open class StraightContext(private val taskFactory: (String) -> BakedCutterTaskD
         val compiled = compileSources(root)
         if (conf == null) return compiled
 
-        val pipeline = CutterPipelines.makePipeline(
-                taskFactory(conf)
-                )
-        val mincer = MincerBuilder(MincerDecentFS(compiled), false)
-                .registerSubMincer(pipeline)
-                .build()
+
+        val pipeline = CutterProcessingUnit.makePipeline(taskFactory(conf))
+        val mincer = Mincer.Builder(MincerDecentFS(compiled))
+            .registerPipeline(pipeline)
+            .build()
         MincerUtils.processFolder(mincer, compiled)
 
         return compiled
@@ -42,21 +42,22 @@ open class StraightContext(private val taskFactory: (String) -> BakedCutterTaskD
 
 
             val command = listOf(
-                    "javac",
-                    "-d",
-                    compiled.absolutePath,
-                    "-source", "8",
-                    "-target", "8",
-                    "-sourcepath", "\"${src.absolutePath}\"") +
+                "javac",
+                "-d",
+                compiled.absolutePath,
+                "-source", "8",
+                "-target", "8",
+                "-sourcepath", "\"${src.absolutePath}\""
+            ) +
                     src
-                            .walkTopDown()
-                            .filter { it.isFile }
-                            .map { it.absoluteFile.relativeTo(src.absoluteFile).path }
+                        .walkTopDown()
+                        .filter { it.isFile }
+                        .map { it.absoluteFile.relativeTo(src.absoluteFile).path }
             println(command.joinToString(separator = " "))
             val p = ProcessBuilder(command)
-                    .directory(src.absoluteFile)
-                    .inheritIO()
-                    .start()
+                .directory(src.absoluteFile)
+                .inheritIO()
+                .start()
             val exitCode = p.waitFor()
             if (exitCode != 0) throw RuntimeException("Cannot compile source")
 

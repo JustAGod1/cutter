@@ -2,10 +2,10 @@ package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
 import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.plugin.data.BakedCutterTaskData
-import ru.justagod.plugin.data.SideName
-import ru.justagod.plugin.processing.model.InvokeClass
-import ru.justagod.plugin.processing.model.MethodDesc
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.config.InvokeClass
+import ru.justagod.cutter.processing.config.MethodDesc
+import ru.justagod.cutter.processing.config.SideName
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.context.ForgeContext
@@ -21,11 +21,9 @@ object InvokeClassesTests : TestRunner {
     @Test
     fun straight() {
         val context = StraightContext { name ->
-            BakedCutterTaskData(
-                    name = name,
+            CutterConfig(
                     annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
                     validationOverrideAnnotation = null,
-                    removeAnnotations = false,
                     primalSides = setOf(SideName.make("SERVER"), SideName.make("CLIENT")),
                     targetSides = setOf(SideName.make(name)),
                     invocators = listOf(
@@ -49,10 +47,7 @@ object InvokeClassesTests : TestRunner {
                                     hashSetOf(SideName.make("CLIENT")),
                                     MethodDesc("run", "()Ljava/lang/Object;")
                             )
-                    ),
-                    markers = emptyList(),
-                    cuttingMarkers = emptyList(),
-                    excludes = { false }
+                    )
             )
         }
         context.before()
@@ -62,13 +57,6 @@ object InvokeClassesTests : TestRunner {
     @Test
     fun gradle() {
         val context = GradleContext(gradleScript)
-        context.before()
-        run(context)
-    }
-
-    @Test
-    fun forge1710() {
-        val context = ForgeContext("1.7.10", gradleScript)
         context.before()
         run(context)
     }
@@ -90,13 +78,6 @@ object InvokeClassesTests : TestRunner {
     @Test
     fun gradleDef() {
         val context = GradleContext(GradleContext.defaultGradleScript).default()
-        context.before()
-        run(context)
-    }
-
-    @Test
-    fun forge1710Def() {
-        val context = ForgeContext("1.7.10", GradleContext.defaultGradleScript).default()
         context.before()
         run(context)
     }

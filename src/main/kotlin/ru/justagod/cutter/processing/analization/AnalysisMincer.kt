@@ -1,8 +1,8 @@
-package ru.justagod.cutter.processing.cutter.analization
+package ru.justagod.cutter.processing.analization
 
-import ru.justagod.cutter.processing.cutter.base.AugmentedMincer
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.model.ProjectModel
+import ru.justagod.cutter.processing.base.AugmentedMincer
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.model.ProjectModel
 
 class AnalysisMincer(private val model: ProjectModel, config: CutterConfig) : AugmentedMincer<Unit, Unit> (
     listOf(

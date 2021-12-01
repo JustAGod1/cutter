@@ -1,6 +1,8 @@
-package ru.justagod.cutter.processing.cutter.config
+package ru.justagod.cutter.processing.config
 
-class SideName private constructor(val name: String) {
+import java.io.Serializable
+
+class SideName private constructor(val name: String) : Serializable {
 
 
     companion object {

@@ -1,4 +1,4 @@
-package ru.justagod.cutter.processing.cutter.transformation
+package ru.justagod.cutter.processing.transformation
 
 import org.objectweb.asm.Type
 import org.objectweb.asm.commons.LocalVariablesSorter
@@ -11,10 +11,10 @@ import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.cutter.model.PrimitiveKind
 import ru.justagod.cutter.model.PrimitiveTypeReference
 import ru.justagod.cutter.model.toReference
-import ru.justagod.cutter.processing.cutter.base.MincerAugment
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.model.*
-import ru.justagod.cutter.processing.cutter.transformation.validation.ValidationResult
+import ru.justagod.cutter.processing.base.MincerAugment
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.model.*
+import ru.justagod.cutter.processing.transformation.validation.ValidationResult
 import ru.justagod.cutter.utils.PrimitivesAdapter
 import ru.justagod.cutter.utils.containsAny
 

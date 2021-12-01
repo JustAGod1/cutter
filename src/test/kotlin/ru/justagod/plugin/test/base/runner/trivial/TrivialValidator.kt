@@ -2,7 +2,7 @@ package ru.justagod.plugin.test.base.runner.trivial
 
 import ru.justagod.cutter.mincer.control.MincerArchive
 import ru.justagod.cutter.mincer.control.MincerResultType
-import ru.justagod.cutter.mincer.pipeline.Pipeline
+import ru.justagod.cutter.mincer.pipeline.MincerPipeline
 import ru.justagod.cutter.mincer.processor.SubMincer
 import ru.justagod.cutter.mincer.processor.WorkerContext
 import ru.justagod.cutter.model.InheritanceHelper
@@ -32,7 +32,7 @@ class TrivialValidator(private val configName: String, private val imageModel: I
         }
         notFoundEntries -= klass
 
-        context.info!!.node.methods?.forEach { mn ->
+        context.info!!.node().methods?.forEach { mn ->
             val m = klass.methods[mn.name] ?: return@forEach
             val match = m.find { it.desc == mn.desc }
             if (match != null) {
@@ -43,7 +43,7 @@ class TrivialValidator(private val configName: String, private val imageModel: I
                 }
             }
         }
-        context.info!!.node.fields?.forEach { fn ->
+        context.info!!.node().fields?.forEach { fn ->
             val f = klass.fields[fn.name] ?: return@forEach
             if (f.desc == fn.desc) {
                 if (!f.doesExistInConf(configName)) {
@@ -56,7 +56,7 @@ class TrivialValidator(private val configName: String, private val imageModel: I
         return MincerResultType.SKIPPED
     }
 
-    override fun endProcessing(input: Unit, cache: MincerArchive?, inheritance: InheritanceHelper, pipeline: Pipeline<Unit, Boolean>) {
+    override fun endProcessing(input: Unit, output: Boolean): Boolean {
         if (notFoundEntries.isNotEmpty()) {
             System.err.println("Not found entries:")
             notFoundEntries.forEachIndexed { i, v ->
@@ -69,7 +69,7 @@ class TrivialValidator(private val configName: String, private val imageModel: I
                 System.err.println("   ${i + 1}) $v")
             }
         }
-        pipeline.value = notFoundEntries.isEmpty() && unexpectedEntries.isEmpty()
+        return notFoundEntries.isEmpty() && unexpectedEntries.isEmpty()
     }
 
 }

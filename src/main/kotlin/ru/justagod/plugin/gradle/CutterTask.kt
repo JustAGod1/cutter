@@ -1,94 +1,47 @@
 package ru.justagod.plugin.gradle
 
-import org.gradle.api.DefaultTask
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.TaskAction
-import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.mincer.util.recursiveness.ByteArraySource
-import ru.justagod.plugin.data.BakedCutterTaskData
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.internal.file.copy.CopyAction
+import org.gradle.api.internal.file.copy.DefaultZipCompressor
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.*
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+import org.gradle.api.tasks.bundling.Jar
+import ru.justagod.cutter.processing.config.CutterConfig
+import java.io.File
+import java.nio.charset.Charset
+import java.util.concurrent.Callable
 
-open class CutterTask : DefaultTask() {
-    lateinit var dataHarvester: () -> BakedCutterTaskData
-    var archiveName: (() -> String?)? = null
-    private val data: BakedCutterTaskData by lazy { dataHarvester() }
+@Suppress("UnstableApiUsage")
+@CacheableTask
+open class CutterTask : Jar() {
 
-    @TaskAction
-    fun process() {
-        //processArchive((this.project.tasks.findByPath("jar") as AbstractArchiveTask?)!!.archivePath, data.name)
+    @Internal
+    val classPath: ListProperty<Configuration> = project.objects.listProperty(Configuration::class.java)
+    @Input
+    val config: Property<CutterConfig> = project.objects.property(CutterConfig::class.java)
+    @Internal
+    val threadsCount: Property<Int> = project.objects.property(Int::class.java)
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    fun getUsedFiles(): ConfigurableFileCollection {
+        return project.files(Callable {
+            val configurations = classPath.get()
+            val result = hashSetOf<File>()
+            configurations.flatMapTo(result) { it.resolve() }
+            return@Callable result
+        })
     }
 
-    /*
-    private fun processArchive(f: File, name: String) {
-        val pipeline =
-            if (CutterPlugin.instance.config.validation) makePipelineWithValidation(data) else makePipeline(data)
-        val archive = MincerUtils.readZip(f)
-        val librariesData = collectLibraries()
-        val generalFs = MincerZipFS(archive)
-        val librariesFs = MincerZipFS(librariesData)
-
-        val router = MincerFallbackFS(generalFs, librariesFs)
-
-        val mincer = Mincer.Builder(router)
-            .registerPipeline(pipeline)
-            .build()
-
-        val resultEntries = hashMapOf<String, ByteArraySource>()
-        do {
-            val iterator = generalFs.entries.entries.iterator()
-            while (iterator.hasNext()) {
-                val entry = iterator.next()
-                if (!entry.value.path.endsWith(".class")) {
-                    resultEntries[entry.key] = entry.value
-                    continue
-                }
-                if (data.excludes(entry.value.path)) {
-                    resultEntries[entry.key] = entry.value
-                    continue
-                }
-
-                val result = mincer.advance(entry.value.bytes, entry.value.path, 0)
-                if (result.type == MincerResultType.DELETED) {
-                    iterator.remove()
-                    resultEntries -= entry.key
-                } else {
-                    resultEntries[entry.key] = ByteArraySource(entry.key, result.resultedBytecode)
-                }
-            }
-            archive.entries.clear()
-            generalFs.entries.putAll(resultEntries)
-        } while (mincer.endIteration())
-
-        if (CutterPlugin.instance.config.validation) {
-            val value = pipeline.value as ValidationResult
-            if (value.isNotEmpty()) {
-                for ((side, value1) in value) {
-                    System.err.println("Validation errors for side ${side.name}:")
-                    for (err in value1) {
-                        System.err.println(err)
-                    }
-                }
-                throw RuntimeException("Validation failed")
-            }
-        }
-        val target = File(
-            f.absoluteFile.parentFile, archiveName?.invoke()
-                ?: f.nameWithoutExtension + "-" + name + "." + f.extension
+    override fun createCopyAction(): CopyAction {
+        return CutterCopyAction(
+            cacheDir = project.file(".gradle").resolve("cutter-transition"),
+            targetFile = destinationDir.resolve(archiveName),
+            processor = DefaultCutterProcessor(threadsCount.getOrElse(10), config.get()),
+            encoding = metadataCharset ?: Charset.defaultCharset().name()
         )
-        ZipUtil.pack(generalFs.entries.values.toTypedArray(), target)
-    }
-
-     */
-
-    private fun collectLibraries(): MutableMap<String, ByteArraySource> {
-        val result = hashMapOf<String, ByteArraySource>()
-        val javaConv = project.convention.plugins["java"] as JavaPluginConvention
-        for (file in javaConv.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).compileClasspath.files) {
-            if (file.extension == "jar" || file.extension == "zip") {
-                result.putAll(MincerUtils.readZip(file))
-            }
-        }
-
-        return result
     }
 }

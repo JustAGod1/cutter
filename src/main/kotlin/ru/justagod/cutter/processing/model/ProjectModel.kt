@@ -1,6 +1,6 @@
-package ru.justagod.cutter.processing.cutter.model
+package ru.justagod.cutter.processing.model
 
-import ru.justagod.cutter.processing.cutter.config.SideName
+import ru.justagod.cutter.processing.config.SideName
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

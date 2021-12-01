@@ -1,4 +1,4 @@
-package ru.justagod.cutter.processing.cutter.analization
+package ru.justagod.cutter.processing.analization
 
 import kotlinx.metadata.Flag
 import kotlinx.metadata.jvm.KotlinClassHeader
@@ -11,11 +11,11 @@ import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.processor.WorkerContext
 import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.cutter.model.factory.BytecodeModelFactory
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.model.ClassAtom
-import ru.justagod.cutter.processing.cutter.model.FieldAtom
-import ru.justagod.cutter.processing.cutter.model.MethodAtom
-import ru.justagod.cutter.processing.cutter.model.ProjectModel
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.model.ClassAtom
+import ru.justagod.cutter.processing.model.FieldAtom
+import ru.justagod.cutter.processing.model.MethodAtom
+import ru.justagod.cutter.processing.model.ProjectModel
 import ru.justagod.cutter.utils.findMethod
 
 class KotlinAnalysisAugment(private val model: ProjectModel, config: CutterConfig) : AnalysisAugment(config) {

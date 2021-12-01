@@ -1,12 +1,12 @@
-package ru.justagod.cutter.processing.cutter.analization
+package ru.justagod.cutter.processing.analization
 
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
-import ru.justagod.cutter.processing.cutter.config.CutterConfig
-import ru.justagod.cutter.processing.cutter.base.MincerAugment
-import ru.justagod.cutter.processing.cutter.config.SideName
+import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.cutter.processing.base.MincerAugment
+import ru.justagod.cutter.processing.config.SideName
 
 abstract class AnalysisAugment(protected val config: CutterConfig) : MincerAugment<Unit, Unit>() {
 
