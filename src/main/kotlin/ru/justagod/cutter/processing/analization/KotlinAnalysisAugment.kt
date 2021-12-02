@@ -77,7 +77,6 @@ class KotlinAnalysisAugment(private val model: ProjectModel, config: CutterConfi
         val header = KotlinClassHeader(
             kind = k,
             metadataVersion = mv,
-            bytecodeVersion = bv,
             data1 = d1,
             data2 = d2,
             extraString = xs,

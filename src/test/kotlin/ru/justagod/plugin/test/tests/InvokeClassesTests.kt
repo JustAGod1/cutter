@@ -8,8 +8,6 @@ import ru.justagod.cutter.processing.config.MethodDesc
 import ru.justagod.cutter.processing.config.SideName
 import ru.justagod.plugin.test.base.TestRunner
 import ru.justagod.plugin.test.base.TestingContext
-import ru.justagod.plugin.test.base.context.ForgeContext
-import ru.justagod.plugin.test.base.context.GradleContext
 import ru.justagod.plugin.test.base.context.StraightContext
 import java.io.BufferedReader
 import java.io.File
@@ -54,47 +52,6 @@ object InvokeClassesTests : TestRunner {
         run(context)
     }
 
-    @Test
-    fun gradle() {
-        val context = GradleContext(gradleScript)
-        context.before()
-        run(context)
-    }
-
-    @Test
-    fun forge18() {
-        val context = ForgeContext("1.8", gradleScript)
-        context.before()
-        run(context)
-    }
-
-    @Test
-    fun forge1122() {
-        val context = ForgeContext("1.12.2", gradleScript)
-        context.before()
-        run(context)
-    }
-
-    @Test
-    fun gradleDef() {
-        val context = GradleContext(GradleContext.defaultGradleScript).default()
-        context.before()
-        run(context)
-    }
-
-    @Test
-    fun forge18Def() {
-        val context = ForgeContext("1.8", GradleContext.defaultGradleScript).default()
-        context.before()
-        run(context)
-    }
-
-    @Test
-    fun forge1122Def() {
-        val context = ForgeContext("1.12.2", GradleContext.defaultGradleScript).default()
-        context.before()
-        run(context)
-    }
 
     private val gradleScript = """
             cutter {

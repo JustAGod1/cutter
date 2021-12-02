@@ -1,4 +1,4 @@
-package ru.justagod.plugin.test.base.runner.trivial
+package ru.justagod.plugin.test.tests.trivial.model
 
 class ImageModel private constructor() {
     val root = Directory("", null)

@@ -7,7 +7,6 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0"
-        classpath group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.3.72'
     }
 }
 
@@ -43,106 +42,16 @@ jar {
     archiveName = "cutter.jar"
 }
 
-test.dependsOn(jar)
 
 test {
     useJUnitPlatform()
     workingDir = rootProject.rootDir
 }
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
+apply from: "build-scripts/Publishing.gradle"
+apply from: "build-scripts/Dependencies.gradle"
 
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-if (project.hasProperty("sonatypeUsername")) {
-    signing {
-        sign configurations.archives
-    }
-    uploadShadow {
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
-
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
-
-                pom.project {
-                    name 'Cutter'
-                    packaging 'jar'
-
-                    description 'Gradle plugin to simplify mods protection'
-                    url 'https://gitlab.com/hvalick2111/cutter'
-
-
-                    scm {
-                        connection 'scm:git:https://gitlab.com/hvalick2111/cutter.git'
-                        developerConnection 'scm:git:https://gitlab.com/hvalick2111/cutter.git'
-                        url 'https://gitlab.com/hvalick2111/cutter'
-                    }
-
-                    licenses {
-                        license {
-                            name = 'MIT License'
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id = 'JustAGod'
-                            name = 'Yury Barinov'
-                            email = 'hvalick2111@gmail.com'
-                        }
-                    }
-                }
-            }
-        }
-    }
-    task relocateShadowJar(type: ConfigureShadowRelocation) {
-        target = tasks.shadowJar
-    }
-
-    tasks.shadowJar.dependsOn tasks.relocateShadowJar
-    tasks.uploadShadow.dependsOn tasks.appendDefaultLib
-}
-
-configurations {
-    testCompile.extendsFrom(shadow)
-}
-
-dependencies {
-    shadow gradleApi()
-    shadow 'org.zeroturnaround:zt-zip:1.12'
-    compile 'org.ow2.asm:asm-tree:8.0.1'
-    compile "org.ow2.asm:asm-commons:6.0"
-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
-    compile "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
-    compile "org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.1.0"
-
-
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testImplementation("org.mockito:mockito-inline:4.0.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("org.mockito:mockito-core:4.0.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:4.1.0")
-
-
-}
 
 def defaultsProj = project(':Defaults')
 
@@ -161,9 +70,15 @@ task appendDefaultLib(type: Jar) {
 }
 
 appendDefaultLib.dependsOn shadowJar
-
-
 appendDefaultLib.dependsOn(defaultsProj.tasks.getByPath("jar"))
+
+test.dependsOn(appendDefaultLib)
+
+compileTestKotlin {
+    kotlinOptions {
+        apiVersion = "1.6"
+    }
+}
 
 shadowJar {
     classifier = null

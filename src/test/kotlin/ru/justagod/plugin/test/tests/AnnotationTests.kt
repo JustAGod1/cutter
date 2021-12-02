@@ -40,7 +40,8 @@ object AnnotationTests {
                 }
             }
     """.trimIndent()
-        val context = GradleContext(script)
+        val context = GradleContext()
+        context.buildScriptWithPlugin(script)
         context.before()
         val virgin = context.compileResourceFolder("test8", null)
         assert(!validate(virgin))

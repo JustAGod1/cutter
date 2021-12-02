@@ -1,59 +1,38 @@
 package ru.justagod.plugin.test.base.context
 
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
 import org.zeroturnaround.zip.ZipUtil
 import ru.justagod.plugin.test.base.TestingContext
 import java.io.File
-import java.lang.RuntimeException
 import java.nio.file.Files
 
-open class GradleContext(protected val gradleScript: String, private val overrideVersion: Boolean = true) : TestingContext() {
-    protected val root = File("./gradle-test")
-    private var dontCopyAnno = false
+class GradleContext(private val root: File = File("gradle-test")) : TestingContext() {
 
-    fun default(): GradleContext {
-        dontCopyAnno = true
-        return this
+    var version = "5.0"
+
+    companion object {
+        const val scriptName = "build.gradle"
+        const val sourceDir = "src/main/java"
+        const val pluginJarName = "cutter.jar"
+        const val settingsName = "settings.gradle"
     }
 
-    override fun before() {
-        root.deleteRecursively()
-        root.mkdirs()
-
-        val dist = root.resolve("cutter.jar")
-        dist.delete()
-        File("build/libs/cutter.jar").copyTo(dist)
-
-        root.resolve("settings.gradle").writeText("include 'gradle-test'")
-        makeBuildGradle()
-        if (System.getProperty("debug") == "true") {
-            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Dprint-sides=true")
-        } else {
-            root.resolve("gradle.properties").writeText("org.gradle.jvmargs=-Dprint-sides=true")
-        }
-        if (overrideVersion) {
-            root
-                    .resolve("gradle/wrapper/gradle-wrapper.properties")
-                    .also { it.parentFile.mkdirs() }
-                    .writeText("distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-5.0-all.zip")
-
-            runGradleCommand("wrapper")
-        }
-        val srcDir = root.resolve("src").resolve("main").resolve("java")
-        srcDir.mkdirs()
-        prepare()
+    fun buildScript(script: String) {
+        root.resolve(scriptName).writeText(script)
     }
 
-    protected open fun prepare() {}
-
-    protected open fun makeBuildGradle() {
-        root.resolve("./build.gradle").writeText(
-                """
+    fun buildScriptWithPlugin(script: String) {
+        buildScriptWithPlugin("modid", "1.0", script)
+    }
+    fun buildScriptWithPlugin(archiveBaseName: String, version: String, script: String) {
+        val enhancedScript = """
                     |buildscript {
                     |    repositories {
                     |        mavenCentral()
                     |    }
                     |    dependencies {
-                    |        classpath files(rootProject.file('cutter.jar'))
+                    |        classpath files(rootProject.file('$pluginJarName'))
                     |        
                     |        classpath gradleApi()
                     |        classpath localGroovy()
@@ -75,20 +54,67 @@ open class GradleContext(protected val gradleScript: String, private val overrid
                     |   archiveName = 'mod.jar'
                     |}
                     |
-                    |$gradleScript
-                    |version = "1.0"
-                    |archivesBaseName = "modid"
+                    |$script
+                    |version = "$version"
+                    |archivesBaseName = "$archiveBaseName"
                 """.trimMargin()
-        )
+
+        buildScript(enhancedScript)
+    }
+
+    fun copyPluginJar() {
+        val dist = root.resolve(pluginJarName)
+        dist.delete()
+        File("build/libs/cutter.jar").copyTo(dist)
+    }
+
+    fun makeGradleSettings(name: String) {
+        val dist = root.resolve(settingsName)
+
+        dist.writeText("rootProject.name = '$name'")
+    }
+
+    private fun makeSourceDirFolder() {
+        root.resolve(sourceDir).mkdirs()
+    }
+
+    fun addSource(name: String, code: String) {
+        makeSourceDirFolder()
+        val dist = root.resolve(sourceDir).resolve(name)
+
+    }
+
+    fun run(vararg task: String): BuildResult {
+        return GradleRunner.create()
+            .withGradleVersion(version)
+            .withArguments((task.toList() + "--stacktrace"))
+            .withProjectDir(root)
+            .forwardOutput()
+            .build()
+    }
+
+    fun runAndFail(vararg task: String): BuildResult {
+        return GradleRunner.create()
+            .withGradleVersion(version)
+            .withArguments((task.toList() + "--stacktrace"))
+            .withProjectDir(root)
+            .forwardOutput()
+            .buildAndFail()
+    }
+
+    override fun before() {
+        copyPluginJar()
+        makeSourceDirFolder()
+        makeGradleSettings(root.name)
     }
 
     override fun compileFolder(root: File, conf: String?): File {
         insertSources(root)
         val jarFile = if (conf != null) {
-            runGradleCommand("clean", "build" + conf.capitalize())
+            run("clean", "build" + conf.capitalize())
             this.root.resolve("build").resolve("libs").resolve("modid-1.0-${conf.toLowerCase()}.jar")
         } else {
-            runGradleCommand("clean", "build")
+            run("clean", "build")
             this.root.resolve("build").resolve("libs").resolve("mod.jar")
         }
         val unpackTarget = Files.createTempDirectory("out").toFile()
@@ -97,41 +123,13 @@ open class GradleContext(protected val gradleScript: String, private val overrid
         return unpackTarget
     }
 
-
-    protected open fun runGradleCommand(vararg args: String) {
-        val pb = ProcessBuilder()
-        pb.inheritIO()
-        if(System.getProperties().getProperty("windows")?.equals("true", ignoreCase = true) != true)
-            pb.command(listOf("gradle") + args + "--no-daemon" + "--stacktrace")
-        else
-            pb.command(listOf("cmd", "/c", "gradle") + args + "--no-daemon" + "--stacktrace")
-        pb.directory(root)
-        val p = pb.start()
-        val code = p.waitFor()
-        if (code != 0) throw RuntimeException("Bad exit code $code")
-    }
-
     private fun insertSources(src: File) {
-        val srcDist = root
-                .resolve("src")
-                .resolve("main")
-                .resolve("java")
+        val srcDist = root.resolve(sourceDir)
         srcDist.deleteRecursively()
         srcDist.mkdirs()
 
         val generalDist = srcDist.resolve(src.name).also { it.mkdirs() }
         src.copyRecursively(generalDist, overwrite = true)
-        if (!dontCopyAnno) {
-            val annoDist = srcDist
-                    .resolve("ru").resolve("justagod").resolve("cutter")
-                    .also { it.mkdirs() }
-            resolve("/ru/justagod/cutter").copyRecursively(annoDist, overwrite = true)
-        }
-
     }
 
-
-    companion object {
-        const val defaultGradleScript = ""
-    }
 }
