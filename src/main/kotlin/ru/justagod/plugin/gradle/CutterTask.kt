@@ -37,8 +37,11 @@ open class CutterTask : Jar() {
     }
 
     override fun createCopyAction(): CopyAction {
+        val cacheDir = project.file(".gradle").resolve("cutter-transition")
+        cacheDir.deleteRecursively()
+        cacheDir.mkdirs()
         return CutterCopyAction(
-            cacheDir = project.file(".gradle").resolve("cutter-transition"),
+            cacheDir = cacheDir,
             targetFile = destinationDir.resolve(archiveName),
             processor = DefaultCutterProcessor(threadsCount.getOrElse(10), config.get()),
             encoding = metadataCharset ?: Charset.defaultCharset().name()

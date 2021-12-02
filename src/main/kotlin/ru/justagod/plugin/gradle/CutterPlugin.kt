@@ -5,7 +5,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.DependencyResolutionListener
 import org.gradle.api.artifacts.ResolvableDependencies
-import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.bundling.Jar
@@ -40,8 +39,7 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
         input.copyTo(output, 1024 * 5)
 
         val jar = project.tasks.findByName("jar") as Jar
-
-        jar.from(target)
+        jar.from(project.zipTree(target))
 
         return target
     }
@@ -54,10 +52,7 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
         defaultsFile = copyDefaults(project)
         project.gradle.addListener(this)
 
-        val classesOutput = project.convention.getPlugin(JavaPluginConvention::class.java)
-            .sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME)!!
-            .output
-        initiateTasks(project, classesOutput)
+        initiateTasks(project)
 
     }
 
@@ -66,28 +61,27 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
             ?: project.configurations.findByName("compileClasspath")!!
     }
 
-    private fun initiateTasks(project: Project, classes: FileCollection) {
-        initiateServerTask(project, classes)
-        initiateClientTask(project, classes)
+    private fun initiateTasks(project: Project) {
+        initiateServerTask(project)
+        initiateClientTask(project)
     }
 
     private fun cutterTask(
         name: String,
         project: Project,
-        classes: FileCollection,
     ): CutterTask {
         val task = project.task(mapOf("type" to CutterTask::class.java), name) as CutterTask
-        task.from(classes)
         task.classPath.set(listOf(compileConfiguration()))
         task.dependsOn += project.tasks.findByName("build")!!
+        task.group = "cutter"
 
-        task.from(project.tasks.findByName("jar")!!)
+        task.from(Callable { project.tasks.findByName("jar")!!.outputs.files.map { project.zipTree(it) }})
 
         return task
     }
 
-    private fun initiateClientTask(project: Project, classes: FileCollection) {
-        val clientTask = cutterTask("buildClient", project, classes)
+    private fun initiateClientTask(project: Project) {
+        val clientTask = cutterTask("buildClient", project)
 
         clientTask.description = "Builds jar with only client classes"
         clientTask.config.set(configForSide(clientSide))
@@ -95,8 +89,8 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
     }
 
 
-    private fun initiateServerTask(project: Project, classes: FileCollection) {
-        val serverTask = cutterTask("buildServer", project, classes)
+    private fun initiateServerTask(project: Project) {
+        val serverTask = cutterTask("buildServer", project)
 
         serverTask.config.set(configForSide(serverSide))
         serverTask.description = "Builds jar with only server classes"

@@ -29,6 +29,12 @@ class DefaultCutterProcessor(private val threadsCount: Int, private val config: 
 
         printer.awaitTermination(5, TimeUnit.SECONDS)
         printer.shutdownNow()
+
+        val result = pipeline.result()
+        if (result.errors.isNotEmpty()) {
+            System.err.println(CutterProcessingUnit.reportValidationResults(mapOf(config.targetSides to result.errors)))
+            throw RuntimeException("Validation failed")
+        }
     }
 
     private fun makeListener(printer: ExecutorService): MincerUtils.ProcessingListener {

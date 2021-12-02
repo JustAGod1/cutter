@@ -28,7 +28,7 @@ object CutterProcessingUnit {
     val client = SideName.make("client")
 
     fun reportValidationResults(
-        errorsBySide: Map<SideName, List<ValidationError>>
+        errorsBySide: Map<Collection<SideName>, List<ValidationError>>
     ): String = buildString {
         if (errorsBySide.isNotEmpty()) {
             val totalNumErrors = errorsBySide.map { it.value.size }.sum()
@@ -36,7 +36,7 @@ object CutterProcessingUnit {
             append("Validation failed. Total number of validation errors: $totalNumErrors\n")
             for ((side, errors) in errorsBySide) {
                 append("\n")
-                append("$side validated with ${errors.size} errors: \n")
+                append("${side.joinToString()} validated with ${errors.size} errors: \n")
                 errors.forEach { append(it).append("\n") }
             }
             append("Summary:\n")

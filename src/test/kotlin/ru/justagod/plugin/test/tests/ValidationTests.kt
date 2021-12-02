@@ -94,6 +94,18 @@ object ValidationTests {
                 lineNumber = 14
             ),
             hisSides = setOf(server)
+        ),
+        MethodNotFoundValidationError(
+            owner = ClassTypeReference("validation.E"),
+            name = "c",
+            desc = "()V",
+            location = MethodBodyLocation(
+                owner = ClassTypeReference("validation.E"),
+                name = "b",
+                source = "E.java",
+                lineNumber = 11
+            ),
+            hisSides = setOf(server)
         )
     )
 

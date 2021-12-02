@@ -1,5 +1,6 @@
 package ru.justagod.cutter.processing.transformation.validation
 
+import org.objectweb.asm.Handle
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
 import ru.justagod.cutter.mincer.control.MincerResultType
@@ -61,16 +62,23 @@ class ValidationAugment(private val config: CutterConfig, private val model: Pro
                 is MethodInsnNode -> validateMethodRef(
                     ClassTypeReference.fromInternal(insn.owner), insn.name, insn.desc, location()
                 )
-
                 is FieldInsnNode -> validateFieldRef(
                     ClassTypeReference.fromInternal(insn.owner), insn.name, location()
                 )
-
+                is InvokeDynamicInsnNode -> validateInvokeDynamic(insn, location())
                 is MultiANewArrayInsnNode -> validateType(
                     fetchTypeReference(insn.desc), location()
                 )
             }
         }
+    }
+
+    private fun validateInvokeDynamic(insn: InvokeDynamicInsnNode, location: Location) {
+        val implHandle = insn.bsmArgs[1] as Handle
+        val owner = ClassTypeReference.fromInternal(implHandle.owner)
+        if (model.isLambda(MethodAtom(owner, implHandle.name, implHandle.desc))) return
+
+        validateMethodRef(owner, implHandle.name, implHandle.desc, location)
     }
 
     private fun validateMethodDesc(owner: ClassNode, method: MethodNode) {

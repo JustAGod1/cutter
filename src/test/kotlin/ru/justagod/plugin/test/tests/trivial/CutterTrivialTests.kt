@@ -124,8 +124,8 @@ object CutterTrivialTests {
     fun `Generic gradle version test to be sure we still support all gradle versions`(version: String) {
         val context = GradleContext(File("gradle-test"))
         context.version = version
-        context.buildScriptWithPlugin("")
         context.prepare()
+        context.buildScriptWithPlugin("")
 
         assert(run(registry[4], context))
     }
@@ -135,8 +135,8 @@ object CutterTrivialTests {
     fun oneGradleVersionTests(): List<DynamicTest> {
         val context = GradleContext(File("gradle-test"))
         context.version = "4.5"
-        context.buildScriptWithPlugin("")
         context.prepare()
+        context.buildScriptWithPlugin("")
         return registry.map {
             DynamicTest.dynamicTest(it.name) {
                 assert(run(it, context))

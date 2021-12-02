@@ -5,11 +5,11 @@ configurations {
 dependencies {
     shadow gradleApi()
     shadow 'org.zeroturnaround:zt-zip:1.14'
-    compile 'org.ow2.asm:asm-tree:8.0.1'
-    compile "org.ow2.asm:asm-commons:6.0"
-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
-    compile "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
-    compile 'org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.3.0'
+    compile "org.ow2.asm:asm-tree:9.2"
+    compile "org.ow2.asm:asm-commons:9.2"
+    shadow 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
+    shadow "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
+    shadow 'org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.3.0'
 
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'

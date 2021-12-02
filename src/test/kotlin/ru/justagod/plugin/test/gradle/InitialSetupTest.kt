@@ -62,12 +62,11 @@ class InitialSetupTest {
             .`when`(configProperty).set(ArgumentMatchers.any() as CutterConfig?)
 
         `when`(cutterTask.config).thenReturn(configProperty)
-        val classes = mock(SourceSetOutput::class.java)
         val plugin = CutterPlugin()
         CutterPlugin::class.java
-            .getDeclaredMethod(methodName, Project::class.java, FileCollection::class.java)
+            .getDeclaredMethod(methodName, Project::class.java)
             .also { it.isAccessible = true }
-            .invoke(plugin, project, classes)
+            .invoke(plugin, project)
 
 
         assertEquals(config, targetConfig)
@@ -78,12 +77,11 @@ class InitialSetupTest {
     @Test
     fun tasksAdded() {
         `when`(cutterTask.config).thenReturn(mock(Property::class.java) as Property<CutterConfig>)
-        val classes = mock(SourceSetOutput::class.java)
         val plugin = CutterPlugin()
         CutterPlugin::class.java
-            .getDeclaredMethod("initiateTasks", Project::class.java, FileCollection::class.java)
+            .getDeclaredMethod("initiateTasks", Project::class.java)
             .also { it.isAccessible = true }
-            .invoke(plugin, project, classes)
+            .invoke(plugin, project)
 
 
 
