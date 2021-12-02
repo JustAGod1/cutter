@@ -4,7 +4,7 @@ import java.io.File
 
 abstract class TestingContext {
 
-    abstract fun before()
+    abstract fun prepare()
 
     // returns path to folder with compiled classes
     abstract fun compileFolder(root: File, conf: String?): File

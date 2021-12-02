@@ -21,44 +21,15 @@ object AnnotationTests {
     private const val annotation = "ru.justagod.cutter.GradleSideOnly"
 
     @Test
-    fun gradle() {
-        val script = """
-        cutter {
-                annotation = "$annotation"
-                removeAnnotations = true
-                def serverSide = side('SERVER')
-                def clientSide = side('CLIENT')
-                builds {
-                    client {
-                        targetSides = [clientSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                    server {
-                        targetSides = [serverSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                }
-            }
-    """.trimIndent()
-        val context = GradleContext()
-        context.buildScriptWithPlugin(script)
-        context.before()
-        val virgin = context.compileResourceFolder("test8", null)
-        assert(!validate(virgin))
-
-        val defiled = context.compileResourceFolder("test8", "server")
-        assert(validate(defiled))
-    }
-
-    @Test
-    fun straight() {
+    fun enabled() {
         val context = StraightContext { name ->
             CutterConfig(
                 annotation = ClassTypeReference(annotation),
                 validationOverrideAnnotation = null,
                 primalSides = setOf(SideName.make("server"), SideName.make("client")),
                 targetSides = setOf(SideName.make(name)),
-                invocators = emptyList()
+                invocators = emptyList(),
+                deleteAnnotations = true
             )
         }
         val virgin = context.compileResourceFolder("test8", null)
@@ -68,12 +39,31 @@ object AnnotationTests {
         assert(validate(defiled))
     }
 
+    @Test
+    fun disabled() {
+        val context = StraightContext { name ->
+            CutterConfig(
+                annotation = ClassTypeReference(annotation),
+                validationOverrideAnnotation = null,
+                primalSides = setOf(SideName.make("server"), SideName.make("client")),
+                targetSides = setOf(SideName.make(name)),
+                invocators = emptyList(),
+                deleteAnnotations = false
+            )
+        }
+        val virgin = context.compileResourceFolder("test8", null)
+        assert(!validate(virgin))
+
+        val defiled = context.compileResourceFolder("test8", "server")
+        assert(!validate(defiled))
+    }
+
     private fun validate(compiled: File): Boolean {
         val pipeline = MincerPipeline.make(AnnotationsSearcher(annotation), true).build()
         val mincer = Mincer.Builder(MincerDecentFS(compiled))
             .registerPipeline(pipeline)
             .build()
-        MincerUtils.processFolder(mincer, compiled)
+        MincerUtils.processFolder(mincer, compiled, threadsCount = 1)
 
         return pipeline.result()
     }

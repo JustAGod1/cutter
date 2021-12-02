@@ -74,6 +74,8 @@ appendDefaultLib.dependsOn(defaultsProj.tasks.getByPath("jar"))
 
 test.dependsOn(appendDefaultLib)
 
+
+
 compileTestKotlin {
     kotlinOptions {
         apiVersion = "1.6"

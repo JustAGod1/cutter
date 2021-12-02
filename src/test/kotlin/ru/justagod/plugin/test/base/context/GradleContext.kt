@@ -7,7 +7,7 @@ import ru.justagod.plugin.test.base.TestingContext
 import java.io.File
 import java.nio.file.Files
 
-class GradleContext(private val root: File = File("gradle-test")) : TestingContext() {
+class GradleContext(val root: File = File("gradle-test")) : TestingContext() {
 
     var version = "5.0"
 
@@ -22,6 +22,9 @@ class GradleContext(private val root: File = File("gradle-test")) : TestingConte
         root.resolve(scriptName).writeText(script)
     }
 
+    fun buildScriptWithPlugin() {
+        buildScriptWithPlugin("")
+    }
     fun buildScriptWithPlugin(script: String) {
         buildScriptWithPlugin("modid", "1.0", script)
     }
@@ -80,7 +83,7 @@ class GradleContext(private val root: File = File("gradle-test")) : TestingConte
 
     fun addSource(name: String, code: String) {
         makeSourceDirFolder()
-        val dist = root.resolve(sourceDir).resolve(name)
+        root.resolve(sourceDir).resolve("$name.java").writeText(code)
 
     }
 
@@ -102,7 +105,9 @@ class GradleContext(private val root: File = File("gradle-test")) : TestingConte
             .buildAndFail()
     }
 
-    override fun before() {
+    override fun prepare() {
+        root.deleteRecursively()
+        root.mkdirs()
         copyPluginJar()
         makeSourceDirFolder()
         makeGradleSettings(root.name)
@@ -110,14 +115,21 @@ class GradleContext(private val root: File = File("gradle-test")) : TestingConte
 
     override fun compileFolder(root: File, conf: String?): File {
         insertSources(root)
-        val jarFile = if (conf != null) {
+        val artifact = if (conf != null) {
             run("clean", "build" + conf.capitalize())
-            this.root.resolve("build").resolve("libs").resolve("modid-1.0-${conf.toLowerCase()}.jar")
+            "modid-1.0-${conf.toLowerCase()}.jar"
         } else {
             run("clean", "build")
-            this.root.resolve("build").resolve("libs").resolve("mod.jar")
+            "modid-1.0.jar"
         }
+
+        return unpackArtifact(artifact)
+    }
+
+    fun unpackArtifact(name: String): File {
         val unpackTarget = Files.createTempDirectory("out").toFile()
+        val jarFile = root.resolve("build").resolve("libs").resolve(name)
+
         ZipUtil.unpack(jarFile, unpackTarget)
 
         return unpackTarget

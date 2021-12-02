@@ -10,6 +10,7 @@ class TransformationMincer(model: ProjectModel, config: CutterConfig) : Augmente
 
     init {
         register(MembersDeletionAugment(config, model))
+        if (config.deleteAnnotations) register(AnnotationRemoverAugment(config.annotation))
     }
 
     private val validator = ValidationAugment(config, model).register()

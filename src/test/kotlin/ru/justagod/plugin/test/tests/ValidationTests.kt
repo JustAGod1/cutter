@@ -117,7 +117,8 @@ object ValidationTests {
                     hashSetOf(SideName.make("CLIENT")),
                     MethodDesc("run", "()V")
                 )
-            )
+            ),
+            deleteAnnotations = false
         )
         val pipeline = CutterProcessingUnit.makePipeline(task)
 

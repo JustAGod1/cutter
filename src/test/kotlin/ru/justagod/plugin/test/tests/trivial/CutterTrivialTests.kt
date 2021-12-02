@@ -119,42 +119,24 @@ object CutterTrivialTests {
             }.build()
     }
 
-    private val script = """
-        cutter {
-                annotation = "ru.justagod.cutter.GradleSideOnly"
-                def serverSide = side('SERVER')
-                def clientSide = side('CLIENT')
-                builds {
-                    client {
-                        targetSides = [clientSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                    server {
-                        targetSides = [serverSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                }
-            }
-    """.trimIndent()
-
     @ParameterizedTest
     @ValueSource(strings = ["5.0", "5.3", "6.1", "6.7", "7.0", "7.3"])
     fun `Generic gradle version test to be sure we still support all gradle versions`(version: String) {
         val context = GradleContext(File("gradle-test"))
         context.version = version
         context.buildScriptWithPlugin("")
-        context.before()
+        context.prepare()
 
         assert(run(registry[4], context))
     }
 
     @TestFactory
-    @DisplayName("Tests everything on Gradle 4.5")
+    @DisplayName("Test everything on Gradle 4.5")
     fun oneGradleVersionTests(): List<DynamicTest> {
         val context = GradleContext(File("gradle-test"))
         context.version = "4.5"
         context.buildScriptWithPlugin("")
-        context.before()
+        context.prepare()
         return registry.map {
             DynamicTest.dynamicTest(it.name) {
                 assert(run(it, context))
@@ -170,10 +152,11 @@ object CutterTrivialTests {
                 validationOverrideAnnotation = null,
                 primalSides = setOf(SideName.make("server"), SideName.make("client")),
                 targetSides = setOf(SideName.make(name)),
-                invocators = emptyList()
+                invocators = emptyList(),
+                deleteAnnotations = false
             )
         }
-        context.before()
+        context.prepare()
         return registry.map {
             DynamicTest.dynamicTest(it.name) {
                 assert(run(it, context))

@@ -8,5 +8,6 @@ data class CutterConfig(
     val validationOverrideAnnotation: ClassTypeReference?,
     val primalSides: Set<SideName>,
     val targetSides: Set<SideName>,
-    val invocators: List<InvokeClass>
+    val invocators: List<InvokeClass>,
+    val deleteAnnotations: Boolean
 ) : Serializable

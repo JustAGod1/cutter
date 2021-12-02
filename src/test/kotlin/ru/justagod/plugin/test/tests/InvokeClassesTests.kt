@@ -6,108 +6,83 @@ import ru.justagod.cutter.processing.config.CutterConfig
 import ru.justagod.cutter.processing.config.InvokeClass
 import ru.justagod.cutter.processing.config.MethodDesc
 import ru.justagod.cutter.processing.config.SideName
-import ru.justagod.plugin.test.base.TestRunner
-import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.context.StraightContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
-object InvokeClassesTests : TestRunner {
+object InvokeClassesTests {
 
     @Test
-    fun straight() {
-        val context = StraightContext { name ->
-            CutterConfig(
-                    annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
-                    validationOverrideAnnotation = null,
-                    primalSides = setOf(SideName.make("SERVER"), SideName.make("CLIENT")),
-                    targetSides = setOf(SideName.make(name)),
-                    invocators = listOf(
-                            InvokeClass(
-                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeServer"),
-                                    hashSetOf(SideName.make("SERVER")),
-                                    MethodDesc("run", "()V")
-                            ),
-                            InvokeClass(
-                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
-                                    hashSetOf(SideName.make("CLIENT")),
-                                    MethodDesc("run", "()V")
-                            ),
-                            InvokeClass(
-                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeServerValue"),
-                                    hashSetOf(SideName.make("SERVER")),
-                                    MethodDesc("run", "()Ljava/lang/Object;")
-                            ),
-                            InvokeClass(
-                                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeClientValue"),
-                                    hashSetOf(SideName.make("CLIENT")),
-                                    MethodDesc("run", "()Ljava/lang/Object;")
-                            )
-                    )
-            )
-        }
-        context.before()
-        run(context)
-    }
+    fun server() {
+        val context = makeSimpleContext()
+        context.prepare()
 
-
-    private val gradleScript = """
-            cutter {
-                annotation = "ru.justagod.cutter.GradleSideOnly"
-                def serverSide = side('server')
-                def clientSide = side('client')
-                invocation {
-                    name = 'ru.justagod.cutter.invoke.InvokeServer'
-                    sides = [serverSide]
-                    method = 'run()V'
-                }
-                invocation {
-                    name = 'ru.justagod.cutter.invoke.InvokeClient'
-                    sides = [clientSide]
-                    method = 'run()V'
-                }
-                builds {
-                    client {
-                        targetSides = [clientSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                    server {
-                        targetSides = [serverSide]
-                        primalSides = [clientSide, serverSide]
-                    }
-                }
-            }
-        """.trimIndent()
-
-    override val name: String = "Invocation classes test"
-
-    override fun run(context: TestingContext): Boolean {
         val server = context.compileResourceFolder("test9", "server")
         runServerCheck(server)
+    }
+
+    @Test
+    fun client() {
+        val context = makeSimpleContext()
+        context.prepare()
 
         val client = context.compileResourceFolder("test9", "client")
         runClientCheck(client)
+    }
 
-        return true
+    private fun makeSimpleContext() = StraightContext { name ->
+        CutterConfig(
+            annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
+            validationOverrideAnnotation = null,
+            primalSides = setOf(SideName.make("SERVER"), SideName.make("CLIENT")),
+            targetSides = setOf(SideName.make(name)),
+            invocators = listOf(
+                InvokeClass(
+                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeServer"),
+                    hashSetOf(SideName.make("SERVER")),
+                    MethodDesc("run", "()V")
+                ),
+                InvokeClass(
+                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeClient"),
+                    hashSetOf(SideName.make("CLIENT")),
+                    MethodDesc("run", "()V")
+                ),
+                InvokeClass(
+                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeServerValue"),
+                    hashSetOf(SideName.make("SERVER")),
+                    MethodDesc("run", "()Ljava/lang/Object;")
+                ),
+                InvokeClass(
+                    ClassTypeReference("ru.justagod.cutter.invoke.InvokeClientValue"),
+                    hashSetOf(SideName.make("CLIENT")),
+                    MethodDesc("run", "()Ljava/lang/Object;")
+                )
+            ),
+            deleteAnnotations = false
+        )
     }
 
 
     private fun runServerCheck(compiled: File) {
-        runAndCheck(compiled, """
+        runAndCheck(
+            compiled, """
                 Hello server lambda
                 Hello server anonymous
                 
-            """.trimIndent())
+            """.trimIndent()
+        )
     }
 
     private fun runClientCheck(compiled: File) {
-        runAndCheck(compiled, """
+        runAndCheck(
+            compiled, """
                 Hello client lambda
                 Hello client anonymous
                 
-            """.trimIndent())
+            """.trimIndent()
+        )
     }
 
 

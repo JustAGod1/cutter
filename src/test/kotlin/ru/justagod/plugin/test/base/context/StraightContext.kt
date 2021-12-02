@@ -12,7 +12,7 @@ import java.nio.file.Files
 
 open class StraightContext(private val taskFactory: (String) -> CutterConfig) : TestingContext() {
 
-    override fun before() {}
+    override fun prepare() {}
 
     override fun compileFolder(root: File, conf: String?): File {
         val compiled = compileSources(root)

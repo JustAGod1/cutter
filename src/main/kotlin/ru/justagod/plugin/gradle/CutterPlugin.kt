@@ -8,7 +8,7 @@ import org.gradle.api.artifacts.ResolvableDependencies
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.bundling.AbstractArchiveTask
+import org.gradle.api.tasks.bundling.Jar
 import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.cutter.processing.config.CutterConfig
 import ru.justagod.cutter.processing.config.InvokeClass
@@ -16,6 +16,7 @@ import ru.justagod.cutter.processing.config.MethodDesc
 import ru.justagod.cutter.processing.config.SideName
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.Callable
 
 class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
 
@@ -37,6 +38,10 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
 
         val output = FileOutputStream(target)
         input.copyTo(output, 1024 * 5)
+
+        val jar = project.tasks.findByName("jar") as Jar
+
+        jar.from(target)
 
         return target
     }
@@ -66,25 +71,35 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
         initiateClientTask(project, classes)
     }
 
-    private fun initiateClientTask(project: Project, classes: FileCollection) {
-        val clientTask = project.task(mapOf("type" to CutterTask::class.java), "buildClient") as CutterTask
-        clientTask.description = "Builds jar with only client classes"
-        clientTask.from(classes)
-        clientTask.classPath.set(listOf(compileConfiguration()))
-        clientTask.config.set(configForSide(clientSide))
-        clientTask.from(project.zipTree(defaultsFile))
+    private fun cutterTask(
+        name: String,
+        project: Project,
+        classes: FileCollection,
+    ): CutterTask {
+        val task = project.task(mapOf("type" to CutterTask::class.java), name) as CutterTask
+        task.from(classes)
+        task.classPath.set(listOf(compileConfiguration()))
+        task.dependsOn += project.tasks.findByName("build")!!
 
+        task.from(project.tasks.findByName("jar")!!)
+
+        return task
+    }
+
+    private fun initiateClientTask(project: Project, classes: FileCollection) {
+        val clientTask = cutterTask("buildClient", project, classes)
+
+        clientTask.description = "Builds jar with only client classes"
+        clientTask.config.set(configForSide(clientSide))
         clientTask.classifier = "client"
     }
-    private fun initiateServerTask(project: Project, classes: FileCollection) {
-        val serverTask = project.task(mapOf("type" to CutterTask::class.java), "buildServer") as CutterTask
-        serverTask.description = "Builds jar with only server classes"
-        serverTask.from(classes)
-        serverTask.classPath.set(listOf(compileConfiguration()))
-        serverTask.config.set(configForSide(serverSide))
-        serverTask.dependsOn += project.tasks.findByName("classes")
-        serverTask.from(project.zipTree(defaultsFile))
 
+
+    private fun initiateServerTask(project: Project, classes: FileCollection) {
+        val serverTask = cutterTask("buildServer", project, classes)
+
+        serverTask.config.set(configForSide(serverSide))
+        serverTask.description = "Builds jar with only server classes"
         serverTask.classifier = "server"
     }
 
@@ -126,15 +141,13 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
                         sides = setOf(clientSide),
                         functionalMethod = MethodDesc("run", "()Ljava/lang/Object;")
                     )
-                )
+                ),
+                deleteAnnotations = true
             )
         }
     }
 
     override fun beforeResolve(dependencies: ResolvableDependencies) {
-        for (configuration in project.configurations) {
-            println(configuration)
-        }
         project.dependencies.add(compileConfiguration().name, project.files(defaultsFile))
         project.gradle.removeListener(this)
     }
