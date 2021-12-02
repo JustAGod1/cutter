@@ -3,6 +3,7 @@ package ru.justagod.cutter.mincer.pipeline
 import ru.justagod.cutter.mincer.filter.ClassFilter
 import ru.justagod.cutter.mincer.filter.WalkThroughFilter
 import ru.justagod.cutter.mincer.processor.SubMincer
+import ru.justagod.cutter.mincer.Mincer
 
 /**
  * Фактически билдер для пайплайна обработки классов
@@ -13,8 +14,10 @@ import ru.justagod.cutter.mincer.processor.SubMincer
  *
  * Описание его в коде
  * ```
- * Pipeline.make(ClassesCollector()).join(ClassesWriter()).unwind()
+ * Pipeline.make(ClassesCollector()).join(ClassesWriter()).build()
  * ```
+ *
+ * Единственное применение пайплайнов - передать их в [Mincer]. В нем же описано, как и зачем их туда передавать.
  *
  * @param worker - минсер который будет обрабатывать классы на данном этапе пайплайна
  * @param filter - прежде чем попасть в минсер, будет спрошенно разрешение у фильтра

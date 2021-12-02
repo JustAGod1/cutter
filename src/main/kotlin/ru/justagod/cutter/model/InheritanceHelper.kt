@@ -2,13 +2,26 @@ package ru.justagod.cutter.model
 
 import ru.justagod.cutter.model.factory.BytecodeModelFactory
 import ru.justagod.cutter.model.factory.ModelFactory
+import ru.justagod.cutter.mincer.Mincer
+
 import java.util.*
 
+/**
+ * Class that helps you in analyzing classes hierarchy.
+ * It uses mincer class path to discover all available classes
+ *
+ * Instance of this class you'll most likely find in [Mincer.inheritance]
+ *
+ * You should not implement you own hierarchy analyzing.
+ */
 class InheritanceHelper(private val modelFactory: ModelFactory) {
 
     private val buffer = HashMap<ClassTypeReference, ClassModel?>()
     private val nodes = HashMap<ClassTypeReference, InheritanceNode?>()
 
+    /**
+     * @return true if parent is super class or super interface of the child
+     */
     @Synchronized
     fun isChild(child: ClassTypeReference, parent: ClassTypeReference): Boolean {
         return isChild0(child, parent)
@@ -26,6 +39,10 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
         return isChild0(resolvedChildNode.superClass.name, parent)
     }
 
+    /**
+     * Walks in broad-first order by super classes of given class
+     * I.e. first it visits parents than parents of parents
+     */
     inline fun walk(type: ClassTypeReference, acceptor: (ClassModel) -> Unit) {
         val classes = getSuperClasses(type)
         for (clazz in classes) {
@@ -33,6 +50,10 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
         }
     }
 
+
+    /**
+     * Recursively obtain all super classes of given class
+     */
     @Synchronized
     fun getSuperClasses(type: ClassTypeReference, target: MutableList<ClassModel> = LinkedList()): List<ClassModel> {
         return getSuperClasses0(type, target)

@@ -15,14 +15,56 @@ import ru.justagod.cutter.model.factory.CachedFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+
+/**
+ * Mincer makes it easy to process and analyze compiled classes
+ *
+ * You can create Mincer instance via [Builder]
+ *
+ * Imagine you constructed Mincer somehow. Now you can process some bytecode:
+ * ```kotlin
+ * do {
+ *      advance(className).onModification {
+ *          f.writeBytes(it)
+ *      }.onDeletion {
+ *          f.delete()
+ *      }
+ * } while(mincer.endIteration())
+ * ```
+ *
+ * So you just need to pass class names in mincer class path and then write resulted bytecode or delete class if
+ * mincer decides to delete class
+ *
+ * To know what mincer do when you call advance or endIteration you need to know that:
+ * Mincer has the following mandatory components:
+ * 1. Pipelines
+ * 2. Class path
+ *
+ * Pipelines is constructed versions of [ru.justagod.cutter.mincer.pipeline.MincerPipeline].
+ * Where's pipeline in every moment of its lifecycle has only one active sub mincer, mincer may have several active pipelines.
+ * In such case bytecode passed to each active pipeline one by one.
+ *
+ * Class path is classes that mincer can obtain through passed [MincerFS]. It's mandatory to make sure that mincer
+ * class path is the same as compile class path of classes you wish to pass. In other case mincer won't be able to
+ * generate proper stack maps or properly analyze classes hierarchy.
+ *
+ * Warning: Mincer can be used from multiple threads and considered thread-safe
+ */
 class Mincer private constructor(
-    val fs: MincerFS,
+    private val fs: MincerFS,
     queues: List<MincerPipelineController<*>>
 ) {
 
     val debug = System.getProperty("mincer-debug") == "true"
 
+    /**
+     * Currently active pipelines
+     */
     private val queues = queues.toMutableList()
+
+    /**
+     * It makes ASM nodes via bytecode in classpath
+     */
     val nodes = NodesFactory(this::harvestBytecode)
     val factory = CachedFactory(BytecodeModelFactory(nodes))
     val inheritance = InheritanceHelper(factory)
@@ -47,6 +89,7 @@ class Mincer private constructor(
 
             Thread.sleep(1)
         }
+        // If you ever see it just rerun build
         if (empty) throw java.lang.RuntimeException("Some multithreading cringe")
         val bytes = this.javaClass.classLoader.getResourceAsStream(name)?.readBytes()
             ?: ClassLoader.getSystemResourceAsStream(name)?.readBytes()
@@ -57,6 +100,12 @@ class Mincer private constructor(
         return bytes
     }
 
+    /**
+     * Sometimes mincer can predict classes that won't be filtered. So this method will return them.
+     * It's better to use it prediction whenever possible
+     *
+     * @return classes that mincer won't skipp or `null` if we need to process all classes
+     */
     fun targetClasses(): ArrayList<ClassTypeReference>? {
         val result = arrayListOf<ClassTypeReference>()
 
@@ -67,6 +116,15 @@ class Mincer private constructor(
         return result
     }
 
+    /**
+     * Processes given class and returns processing result
+     *
+     * Class have to be in mincer class path. It may seem inconvenient but
+     * at least you have less chances to break contract that mincer class path is the
+     * same as compile class path
+     *
+     * @param name name of class that mincer need to process
+     */
     fun advance(name: ClassTypeReference): MincerResult {
         var acc = MincerResult(this, null, MincerResultType.SKIPPED)
         for (i in queues.indices) {
@@ -77,11 +135,27 @@ class Mincer private constructor(
         return acc
     }
 
+    /**
+     * Advance all pipelines to next sub mincer.
+     * If there's no next sub mincer pipeline is deleted from mincer
+     *
+     * If all pipelines are deleted there's no sense to continue using this mincer
+     *
+     * @return true if there are still some pipelines left
+     */
     fun endIteration(): Boolean {
         queues.removeIf { !it.advance() }
         return queues.isNotEmpty()
     }
 
+    /**
+     * Method to convert [ClassNode] to [ByteArray] via ASM
+     *
+     * Mincer will use it's class path to generate stack maps here
+     *
+     * @param node node to convert
+     * @return bytecode of the given node
+     */
     fun nodeToBytes(node: ClassNode): ByteArray {
         try {
             val writer = GentleClassWriter()

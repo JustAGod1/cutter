@@ -2,6 +2,10 @@ package ru.justagod.cutter.processing.config
 
 import java.io.Serializable
 
+/**
+ * Just type-safe wrapper around string with one perk
+ * equals is case-insensitive
+ */
 class SideName private constructor(val name: String) : Serializable {
 
 
@@ -29,7 +33,7 @@ class SideName private constructor(val name: String) : Serializable {
     }
 
     override fun hashCode(): Int {
-        return name.hashCode()
+        return name.toLowerCase().hashCode()
     }
 
 }

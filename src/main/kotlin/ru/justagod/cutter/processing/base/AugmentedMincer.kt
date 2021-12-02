@@ -4,6 +4,12 @@ import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.processor.SubMincer
 import ru.justagod.cutter.mincer.processor.WorkerContext
 
+/**
+ * It's like moduled sub mincer.
+ *
+ * This sub mincer has modules called augments. It just calls them one by one.
+ * That's it
+ */
 open class AugmentedMincer<Input, Output>() : SubMincer<Input, Output> {
 
     private val augments = arrayListOf<MincerAugment<Input, Output>>()

@@ -10,6 +10,12 @@ import ru.justagod.cutter.processing.transformation.TransformationMincer
 import ru.justagod.cutter.processing.transformation.validation.ValidationError
 import ru.justagod.cutter.processing.transformation.validation.ValidationResult
 
+/**
+ * Utility class to create cutter pipelines from cutter config and report validation errors
+ *
+ * [MincerPipeline]
+ * [CutterConfig]
+ */
 object CutterProcessingUnit {
 
     fun makePipeline(input: CutterConfig, model: ProjectModel): MincerPipelineController<ValidationResult> {

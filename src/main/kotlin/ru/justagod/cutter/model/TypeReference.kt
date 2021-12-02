@@ -6,12 +6,21 @@ import java.io.Serializable
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 
+/**
+ * Type safe notation of bytecode types
+ */
 sealed class TypeReference : Serializable {
     abstract fun toASMType(): Type
 
     override fun toString() = toASMType().toString()
 }
 
+/**
+ * Very handy class to get rid of internal/desc/dotted notation of classes in Java Bytecode.
+ * Just use ClassTypeReference everywhere you can.
+ *
+ * It also makes code much more readable because you don't need to guess what does this random String means anymore
+ */
 data class ClassTypeReference(val name: String) : TypeReference() {
 
     constructor(klass: Class<*>): this(klass.name)

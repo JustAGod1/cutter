@@ -6,6 +6,21 @@ import ru.justagod.cutter.mincer.filter.SingleClassFilter
 import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.cutter.utils.cast
 
+/**
+ * Instance of this class you can obtain from [MincerPipeline.build]
+ *
+ * This class represents constructed chain of sub mincers. Inner representations is kinda mess.
+ * But all you need to know that it is a chain of sub mincers with some utility methods.
+ *
+ * You may use it to obtain pipeline result. Like:
+ * ```
+ * val pipeline = Pipeline.make(...).build()
+ * val mincer = ...
+ * MincerUtils.processFolder(...)
+ *
+ * println(pipeline.result())
+ * ```
+ */
 class MincerPipelineController<Output>(head: MincerPipelineChain<Output>) {
 
     private var started = false
