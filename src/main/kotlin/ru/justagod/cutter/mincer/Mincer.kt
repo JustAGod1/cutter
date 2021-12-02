@@ -14,6 +14,10 @@ import ru.justagod.cutter.model.factory.BytecodeModelFactory
 import ru.justagod.cutter.model.factory.CachedFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 
 /**
@@ -51,7 +55,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Warning: Mincer can be used from multiple threads and considered thread-safe
  */
 class Mincer private constructor(
-    private val fs: MincerFS,
+    val fs: MincerFS,
     queues: List<MincerPipelineController<*>>
 ) {
 
@@ -69,19 +73,59 @@ class Mincer private constructor(
     val factory = CachedFactory(BytecodeModelFactory(nodes))
     val inheritance = InheritanceHelper(factory)
 
+    private val rwClassLocks = hashMapOf<ClassTypeReference, ReentrantReadWriteLock>()
+
     init {
         queues.forEach { it.start() }
     }
 
 
-
     private val cache = ConcurrentHashMap<String, ByteArray>()
+
+    fun makeNode(name: ClassTypeReference, flags: Int = 0) : ClassNode {
+        return readLock(name) {
+            nodes.makeNode(name, flags)
+        }
+    }
+
+    @Synchronized
+    fun <T> writeLock(name: ClassTypeReference, block: () -> T): T {
+        val lock = rwClassLocks.computeIfAbsent(name) { ReentrantReadWriteLock() }
+
+        val result = lock.write {
+            block()
+        }
+
+        cleanUpLock(name, lock)
+
+        return result
+    }
+
+
+    @Synchronized
+    private fun <T> readLock(name: ClassTypeReference, block: () -> T) : T {
+        val lock = rwClassLocks.computeIfAbsent(name) { ReentrantReadWriteLock() }
+
+        val result = lock.read {
+            block()
+        }
+        cleanUpLock(name, lock)
+
+        return result
+    }
+
+    private fun cleanUpLock(name: ClassTypeReference, lock: ReentrantReadWriteLock) {
+        if (!lock.isWriteLocked && lock.readLockCount <= 0) {
+            rwClassLocks -= name
+        }
+    }
+
     private fun harvestBytecode(name: String): ByteArray {
         val cached = cache[name]
         if (cached != null) return cached
 
         var empty = false
-        for (i in 1..10) {
+        for (i in 1..40) {
             val b = fs.pullClass(name)
             if (b == null) break
             else if (b.isNotEmpty()) return b
@@ -126,7 +170,7 @@ class Mincer private constructor(
      * @param name name of class that mincer need to process
      */
     fun advance(name: ClassTypeReference): MincerResult {
-        var acc = MincerResult(this, null, MincerResultType.SKIPPED)
+        var acc = MincerResult(this, name, null, MincerResultType.SKIPPED)
         for (i in queues.indices) {
             acc = acc merge queues[i].process(this, acc.resultedNode, name)
             if (acc.type == MincerResultType.DELETED) return acc

@@ -8,7 +8,10 @@ class MincerTreeFS(root: File, private val leafs: List<MincerFS>): MincerDecentF
 
     override fun pullClass(path: String): ByteArray? {
         val f = root.resolve(path)
-        if (f.exists()) return f.readBytes()
+        if (f.exists()) {
+            val input = f.inputStream()
+            return input.readBytes()
+        }
         for (leaf in leafs) {
             val bytecode = leaf.pullClass(path)
             if (bytecode != null) return bytecode

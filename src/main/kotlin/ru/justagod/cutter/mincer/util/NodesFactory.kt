@@ -1,6 +1,7 @@
 package ru.justagod.cutter.mincer.util
 
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import ru.justagod.cutter.model.ClassTypeReference

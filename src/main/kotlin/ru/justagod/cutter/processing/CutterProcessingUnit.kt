@@ -8,7 +8,7 @@ import ru.justagod.cutter.processing.config.SideName
 import ru.justagod.cutter.processing.model.ProjectModel
 import ru.justagod.cutter.processing.transformation.TransformationMincer
 import ru.justagod.cutter.processing.transformation.validation.ValidationError
-import ru.justagod.cutter.processing.transformation.validation.ValidationResult
+import ru.justagod.processing.cutter.transformation.validation.ValidationResult
 
 /**
  * Utility class to create cutter pipelines from cutter config and report validation errors

@@ -1,29 +1,27 @@
 package ru.justagod.cutter.mincer.control
 
+import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.ClassNode
 import ru.justagod.cutter.mincer.Mincer
+import ru.justagod.cutter.model.ClassTypeReference
 
 /**
  * Represents result of mincer's bytecode processing
  */
-class MincerResult(private val mincer: Mincer, val resultedNode: ClassNode?, val type: MincerResultType) {
+class MincerResult(private val mincer: Mincer, private val name: ClassTypeReference, val resultedNode: ClassNode?, val type: MincerResultType) {
 
-    /**
-     * Just bytecode of resulted node. Throws NPE if class was deleted
-     */
-    fun bytecode() = mincer.nodeToBytes(resultedNode!!)
+    fun lockAndGetBytecode(block: (ByteArray) -> Unit) {
+        val bytecode = bytecode()
 
-
-    // Just internal method to merge results of different sub mincers
-    infix fun merge(other: MincerResult): MincerResult {
-        if (other.type == MincerResultType.SKIPPED) return this
-        return other
+        mincer.writeLock(name) {
+            block(bytecode)
+        }
     }
 
-    // Handy methods starts here
+    fun bytecode() = mincer.nodeToBytes(resultedNode!!)
 
     fun onModification(block: (ByteArray) -> Unit): MincerResult {
-        if (type == MincerResultType.MODIFIED) block(bytecode())
+        if (type == MincerResultType.MODIFIED) lockAndGetBytecode(block)
         return this
     }
 
@@ -32,6 +30,10 @@ class MincerResult(private val mincer: Mincer, val resultedNode: ClassNode?, val
         return this
     }
 
+    infix fun merge(other: MincerResult): MincerResult {
+        if (other.type == MincerResultType.SKIPPED) return this
+        return other
+    }
 
 
 

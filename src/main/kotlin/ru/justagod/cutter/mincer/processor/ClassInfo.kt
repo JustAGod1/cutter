@@ -9,7 +9,7 @@ class ClassInfo(private val mincer: Mincer, private val name: ClassTypeReference
 
     fun node(): ClassNode {
         if (node == null) {
-            node = mincer.nodes.makeNode(name)
+            node = mincer.makeNode(name)
         }
 
         return node!!

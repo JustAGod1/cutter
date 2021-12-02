@@ -25,7 +25,7 @@ class MincerPipelineChain<Output>(
         try {
             if (checkValidity(mincer, name))
                 return doProcess(mincer, node, name)
-            return MincerResult(mincer, node, MincerResultType.SKIPPED)
+            return MincerResult(mincer, name, node, MincerResultType.SKIPPED)
         } catch (e: Exception) {
             throw RuntimeException("Exception while processing $name", e)
         }
@@ -61,7 +61,7 @@ class MincerPipelineChain<Output>(
             }
         }
 
-        return MincerResult(mincer, info.nodeOrNull(), result)
+        return MincerResult(mincer, name, info.nodeOrNull(), result)
     }
 
 

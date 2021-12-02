@@ -1,5 +1,6 @@
 package ru.justagod.processing.cutter.transformation.validation
 
+import org.objectweb.asm.Handle
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
 import ru.justagod.cutter.mincer.control.MincerResultType
@@ -8,10 +9,8 @@ import ru.justagod.cutter.model.*
 import ru.justagod.cutter.model.factory.BytecodeModelFactory
 import ru.justagod.cutter.processing.base.MincerAugment
 import ru.justagod.cutter.processing.config.CutterConfig
-import ru.justagod.cutter.processing.model.ClassAtom
-import ru.justagod.cutter.processing.model.FieldAtom
-import ru.justagod.cutter.processing.model.MethodAtom
-import ru.justagod.cutter.processing.model.ProjectModel
+import ru.justagod.cutter.processing.config.SideName
+import ru.justagod.cutter.processing.model.*
 import ru.justagod.cutter.processing.transformation.validation.*
 import ru.justagod.cutter.utils.containsAny
 
@@ -71,6 +70,7 @@ class ValidationAugment(private val config: CutterConfig, private val model: Pro
                     context,
                     ClassTypeReference.fromInternal(insn.owner), insn.name, location()
                 )
+                is InvokeDynamicInsnNode -> validateInvokeDynamic(context, insn, location())
 
                 is MultiANewArrayInsnNode -> validateType(
                     context,
@@ -78,6 +78,14 @@ class ValidationAugment(private val config: CutterConfig, private val model: Pro
                 )
             }
         }
+    }
+
+    private fun validateInvokeDynamic(context: WorkerContext<Unit, ValidationResult>, insn: InvokeDynamicInsnNode, location: Location) {
+        val implHandle = insn.bsmArgs[1] as Handle
+        val owner = ClassTypeReference.fromInternal(implHandle.owner)
+        if (model.isLambda(MethodAtom(owner, implHandle.name, implHandle.desc))) return
+
+        validateMethodRef(context, owner, implHandle.name, implHandle.desc, location)
     }
 
     private fun fetchObscureTypeReference(descOrInternal: String): TypeReference {

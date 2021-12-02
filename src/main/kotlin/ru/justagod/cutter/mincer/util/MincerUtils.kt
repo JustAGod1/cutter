@@ -2,6 +2,7 @@ package ru.justagod.cutter.mincer.util
 
 import org.zeroturnaround.zip.ZipUtil
 import ru.justagod.cutter.mincer.Mincer
+import ru.justagod.cutter.mincer.control.MincerFS
 import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.util.recursiveness.ByteArraySource
 import ru.justagod.cutter.model.ClassTypeReference
@@ -10,7 +11,7 @@ import java.util.concurrent.*
 
 object MincerUtils {
 
-    fun processFolder(panel: Mincer, folder: File, threadsCount: Int = 10, listener: ProcessingListener = ProcessingListener()) {
+    fun processFolder(panel: Mincer, folder: File, threadsCount: Int = 20, listener: ProcessingListener = ProcessingListener()) {
         val executor = Executors.newFixedThreadPool(threadsCount)
         MincerUtils.processFolder(panel, executor, folder, threadsCount, listener)
         executor.shutdown()
@@ -85,17 +86,6 @@ object MincerUtils {
             .forEach { queue += it }
 
         return queue
-    }
-
-    fun readZip(file: File): HashMap<String, ByteArraySource> {
-        val result = hashMapOf<String, ByteArraySource>()
-        ZipUtil.iterate(file) { input, entry ->
-            if (!entry.isDirectory)
-                result[entry.name] = ByteArraySource(entry.name, input!!.readBytes(estimatedSize = 256))
-        }
-
-        return result
-
     }
 
     class ProcessingListener {
