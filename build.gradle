@@ -14,6 +14,8 @@ buildscript {
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.0'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id "com.gradle.plugin-publish" version "0.18.0"
+    id 'java-gradle-plugin'
 }
 apply plugin: 'idea'
 apply plugin: 'maven'
@@ -21,7 +23,7 @@ apply plugin: 'signing'
 
 group 'tech.justagod'
 archivesBaseName = 'cutter'
-version '2.1.0-SNAPSHOT'
+version '2.1.0-rc'
 
 
 targetCompatibility = sourceCompatibility = 1.8
@@ -71,6 +73,8 @@ task appendDefaultLib(type: Jar) {
 
 appendDefaultLib.dependsOn shadowJar
 appendDefaultLib.dependsOn(defaultsProj.tasks.getByPath("jar"))
+
+build.dependsOn(appendDefaultLib)
 
 test.dependsOn(appendDefaultLib)
 

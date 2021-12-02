@@ -10,6 +10,37 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+gradlePlugin {
+    plugins {
+        create("cutter") {
+            id = "tech.justagod.cutter"
+            implementationClass = "ru.justagod.plugin.gradle.CutterPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://gitlab.com/hvalick2111/cutter'
+    vcsUrl = 'https://gitlab.com/hvalick2111/cutter'
+
+    description = 'Plugin to protect mods\' server code'
+
+    mavenCoordinates {
+        groupId = project.group
+        artifactId = "cutter"
+        version = project.version
+    }
+
+    plugins {
+        cutter {
+            // id is captured from java-gradle-plugin configuration
+            displayName = 'Cutter'
+            tags = ['individual', 'tags', 'per', 'plugin']
+        }
+
+    }
+}
+
 artifacts {
     archives javadocJar, sourcesJar
 }
