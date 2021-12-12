@@ -1,9 +1,13 @@
 package ru.justagod.plugin.gradle
 
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.FileCollection
 import ru.justagod.cutter.mincer.Mincer
 import ru.justagod.cutter.mincer.control.MincerResultType
 import ru.justagod.cutter.mincer.util.MincerDecentFS
 import ru.justagod.cutter.mincer.util.MincerUtils
+import ru.justagod.cutter.mincer.util.recursiveness.MincerTreeFS
+import ru.justagod.cutter.mincer.util.recursiveness.MincerZipFS
 import ru.justagod.cutter.processing.CutterProcessingUnit
 import ru.justagod.cutter.processing.config.CutterConfig
 import java.io.File
@@ -14,11 +18,25 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class DefaultCutterProcessor(private val threadsCount: Int, private val config: CutterConfig) : CutterProcessor {
+class DefaultCutterProcessor(
+    private val threadsCount: Int,
+    private val config: CutterConfig,
+    private val configurations: List<FileCollection>
+) : CutterProcessor {
     override fun process(root: File) {
         val pipeline = CutterProcessingUnit.makePipeline(config)
 
-        val mincer = Mincer.Builder(MincerDecentFS(root))
+        val leaves = configurations.flatten().map {
+            if (it.extension == "jar" || it.extension == "zip") {
+                MincerZipFS(it)
+            } else {
+                MincerDecentFS(it)
+            }
+        }
+
+        val fs = MincerTreeFS(root, leaves)
+
+        val mincer = Mincer.Builder(fs)
             .registerPipeline(pipeline)
             .build()
 

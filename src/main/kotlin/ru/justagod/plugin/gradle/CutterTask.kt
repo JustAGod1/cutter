@@ -2,6 +2,7 @@ package ru.justagod.plugin.gradle
 
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.copy.CopyAction
 import org.gradle.api.internal.file.copy.DefaultZipCompressor
 import org.gradle.api.provider.ListProperty
@@ -18,11 +19,11 @@ import java.util.concurrent.Callable
 @CacheableTask
 open class CutterTask : Jar() {
 
-    @Internal
-    val classPath: ListProperty<Configuration> = project.objects.listProperty(Configuration::class.java)
+    @InputFiles @PathSensitive(PathSensitivity.RELATIVE)
+    val classPath: ListProperty<FileCollection> = project.objects.listProperty(FileCollection::class.java)
     @Input
     val config: Property<CutterConfig> = project.objects.property(CutterConfig::class.java)
-    @Internal
+    @Input @Optional
     val threadsCount: Property<Int> = project.objects.property(Int::class.java)
 
     @InputFiles
@@ -31,7 +32,7 @@ open class CutterTask : Jar() {
         return project.files(Callable {
             val configurations = classPath.get()
             val result = hashSetOf<File>()
-            configurations.flatMapTo(result) { it.resolve() }
+            configurations.flatMapTo(result) { it }
             return@Callable result
         })
     }
@@ -43,7 +44,7 @@ open class CutterTask : Jar() {
         return CutterCopyAction(
             cacheDir = cacheDir,
             targetFile = destinationDir.resolve(archiveName),
-            processor = DefaultCutterProcessor(threadsCount.getOrElse(10), config.get()),
+            processor = DefaultCutterProcessor(threadsCount.getOrElse(10), config.get(), classPath.get()),
             encoding = metadataCharset ?: Charset.defaultCharset().name()
         )
     }

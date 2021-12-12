@@ -60,7 +60,7 @@ class InheritanceHelper(private val modelFactory: ModelFactory) {
     }
 
     private fun getSuperClasses0(type: ClassTypeReference, target: MutableList<ClassModel> = LinkedList()): List<ClassModel> {
-        target.add(getModel(type)!!)
+        target.add(getModel(type) ?: return emptyList())
         val node = resolveNode(getNode(type)!!)
         node.superClass?.let { getSuperClasses0(it.name, target) }
         for (inter in node.interfaces) {

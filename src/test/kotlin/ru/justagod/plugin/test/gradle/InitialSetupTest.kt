@@ -35,7 +35,7 @@ class InitialSetupTest {
     fun before() {
         MockitoAnnotations.openMocks(this)
 
-        `when`(cutterTask.classPath).thenReturn(mock(ListProperty::class.java) as ListProperty<Configuration>)
+        `when`(cutterTask.classPath).thenReturn(mock(ListProperty::class.java) as ListProperty<FileCollection>)
         doReturn(mock(ListProperty::class.java)).`when`(cutterTask).classPath
         doReturn(mock(Property::class.java)).`when`(cutterTask).config
 
