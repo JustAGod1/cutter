@@ -39,7 +39,23 @@ shadowJar {
         from(project(":Defaults").tasks.findByName("renameOutput"))
     }
 }
+
+task gitTag(type: Exec) {
+    commandLine("bash", "-c", "git commit -am ${project.getVersion().toString()} && git tag ${project.getVersion().toString()} && git push")
+    workingDir(project.projectDir)
+
+    group("publish")
+}
+
+task seriousRelease {
+    dependsOn(gitTag)
+    dependsOn(publishPlugins)
+
+    group("publish")
+}
+
 shadowJar.dependsOn(project(":Defaults").tasks.findByName("renameOutput"))
+publishPlugins.dependsOn(shadowJar)
 
 artifacts {
     archives javadocJar, sourcesJar

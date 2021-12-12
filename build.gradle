@@ -21,7 +21,7 @@ apply plugin: 'signing'
 
 group 'tech.justagod'
 archivesBaseName = 'cutter'
-version '2.1.11-rc'
+version '3.0-rc'
 
 
 targetCompatibility = sourceCompatibility = 1.8
