@@ -1,6 +1,4 @@
-package ru.justagod.processing.cutter.transformation.validation
-
-import ru.justagod.cutter.processing.transformation.validation.ValidationError
+package ru.justagod.cutter.processing.transformation.validation
 
 class ValidationResult(val errors: List<ValidationError>) {
 

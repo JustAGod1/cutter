@@ -10,6 +10,15 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+task renameOutput(type: Copy) {
+    destinationDir = new File(project.buildDir, "kek")
+    from(jar).rename {
+        "kek"
+    }
+    dependsOn(jar)
+}
+
+
 artifacts {
     archives javadocJar, sourcesJar
 }

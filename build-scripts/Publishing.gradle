@@ -1,3 +1,4 @@
+import java.nio.file.Files
 
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
@@ -8,15 +9,6 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-}
-
-gradlePlugin {
-    plugins {
-        create("cutter") {
-            id = "tech.justagod.cutter"
-            implementationClass = "ru.justagod.plugin.gradle.CutterPlugin"
-        }
-    }
 }
 
 pluginBundle {
@@ -33,7 +25,8 @@ pluginBundle {
 
     plugins {
         cutter {
-            // id is captured from java-gradle-plugin configuration
+            id = project.group.toString() + ".cutter"
+
             displayName = 'Cutter'
             tags = ['individual', 'tags', 'per', 'plugin']
         }
@@ -41,61 +34,13 @@ pluginBundle {
     }
 }
 
+shadowJar {
+    into("defaults") {
+        from(project(":Defaults").tasks.findByName("renameOutput"))
+    }
+}
+shadowJar.dependsOn(project(":Defaults").tasks.findByName("renameOutput"))
+
 artifacts {
     archives javadocJar, sourcesJar
-}
-if (project.hasProperty("sonatypeUsername")) {
-    signing {
-        sign configurations.archives
-    }
-    uploadShadow {
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
-
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
-
-                pom.project {
-                    name 'Cutter'
-                    packaging 'jar'
-
-                    description 'Gradle plugin to simplify mods protection'
-                    url 'https://gitlab.com/hvalick2111/cutter'
-
-
-                    scm {
-                        connection 'scm:git:https://gitlab.com/hvalick2111/cutter.git'
-                        developerConnection 'scm:git:https://gitlab.com/hvalick2111/cutter.git'
-                        url 'https://gitlab.com/hvalick2111/cutter'
-                    }
-
-                    licenses {
-                        license {
-                            name = 'MIT License'
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id = 'JustAGod'
-                            name = 'Yury Barinov'
-                            email = 'hvalick2111@gmail.com'
-                        }
-                    }
-                }
-            }
-        }
-    }
-    task relocateShadowJar(type: ConfigureShadowRelocation) {
-        target = tasks.shadowJar
-    }
-
-    tasks.shadowJar.dependsOn tasks.relocateShadowJar
-    tasks.uploadShadow.dependsOn tasks.appendDefaultLib
 }

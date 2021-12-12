@@ -1,4 +1,4 @@
-package ru.justagod.processing.cutter.transformation.validation
+package ru.justagod.cutter.processing.transformation.validation
 
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Type

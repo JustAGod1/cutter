@@ -29,7 +29,10 @@ class KotlinAnalysisAugment(private val model: ProjectModel, config: CutterConfi
 
                 model.join(me, owner)
             } else if (method.name.startsWith("access\$")) {
-                val owner = lastInvokedMethod(method) ?: lastInvokedField(method) ?: continue
+                val owner =
+                    lastInvokedMethod(method)?.let { findMethodImplementation(context, it) }
+                    ?: lastInvokedField(method)
+                    ?: continue
 
                 model.join(me, owner)
             }
@@ -45,6 +48,18 @@ class KotlinAnalysisAugment(private val model: ProjectModel, config: CutterConfi
         inspectKotlinMetadata(context)
 
         return MincerResultType.SKIPPED
+    }
+
+    private fun findMethodImplementation(context: WorkerContext<Unit, Unit>, atom: MethodAtom): MethodAtom? {
+
+        var classNode = context.info.node()
+        var methodNode = classNode.findMethod(atom.name, atom.desc)
+        while (methodNode == null) {
+            classNode = context.mincer.makeNode(ClassTypeReference.fromInternal(classNode.superName ?: return null))
+            methodNode = classNode.findMethod(atom.name, atom.desc)
+        }
+
+        return MethodAtom(ClassTypeReference.fromInternal(classNode.name), methodNode)
     }
 
 
@@ -126,7 +141,7 @@ class KotlinAnalysisAugment(private val model: ProjectModel, config: CutterConfi
             val ref = ClassTypeReference.fromInternal(itf)
 
             val itfNode = try {
-                context.mincer.nodes.makeNode(ref)
+                context.mincer.makeNode(ref)
             } catch (e: BytecodeModelFactory.BytecodeNotFoundException) {
                 continue
             }

@@ -14,9 +14,9 @@ import ru.justagod.cutter.model.toReference
 import ru.justagod.cutter.processing.base.MincerAugment
 import ru.justagod.cutter.processing.config.CutterConfig
 import ru.justagod.cutter.processing.model.*
+import ru.justagod.cutter.processing.transformation.validation.ValidationResult
 import ru.justagod.cutter.utils.PrimitivesAdapter
 import ru.justagod.cutter.utils.containsAny
-import ru.justagod.processing.cutter.transformation.validation.ValidationResult
 
 class MembersDeletionAugment(private val config: CutterConfig, private val model: ProjectModel) :
     MincerAugment<Unit, ValidationResult>() {

@@ -32,14 +32,12 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
         val name = "Defaults.jar"
 
         val target = File(targetDir, name)
-        val path = "defaults/$name"
+        val path = "defaults/kek"
         val input = javaClass.classLoader.getResourceAsStream(path) ?: throw RuntimeException("Defaults.jar not found.")
 
         val output = FileOutputStream(target)
         input.copyTo(output, 1024 * 5)
 
-        val jar = project.tasks.findByName("jar") as Jar
-        jar.from(project.zipTree(target))
 
         return target
     }
@@ -47,12 +45,14 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
 
     @Override
     override fun apply(project: Project) {
-        this.project = project
+        project.afterEvaluate {
+            this.project = project
 
-        defaultsFile = copyDefaults(project)
-        project.gradle.addListener(this)
+            defaultsFile = copyDefaults(project)
+            project.gradle.addListener(this)
 
-        initiateTasks(project)
+            initiateTasks(project)
+        }
 
     }
 
@@ -143,6 +143,10 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
 
     override fun beforeResolve(dependencies: ResolvableDependencies) {
         project.dependencies.add(compileConfiguration().name, project.files(defaultsFile))
+
+        val jar = project.tasks.findByName("jar") as Jar
+        jar.from(project.zipTree(defaultsFile))
+
         project.gradle.removeListener(this)
     }
 

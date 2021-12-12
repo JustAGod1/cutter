@@ -19,7 +19,7 @@ class InheritanceMarkerAugment(private val model: ProjectModel, config: CutterCo
 
         context.mincer.inheritance.walk(context.name) {
             if (it.name == context.name) return@walk
-            val superNode = context.mincer.nodes.makeNode(it.name)
+            val superNode = context.mincer.makeNode(it.name)
 
             if (superNode.access and Opcodes.ACC_INTERFACE != 0) {
                 val invocator = config.invocators.find { i -> i.name == it.name } ?: return@walk

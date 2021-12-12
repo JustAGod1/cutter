@@ -28,9 +28,10 @@ class LambdaAnalysisAugment(private val model: ProjectModel, config: CutterConfi
 
         remapLambdas(context)
 
+        val createdBridges = hashMapOf<HandleWrapper, MethodNode>()
         if (methods != null) {
             for (method in methods) {
-                modified = modified or analyzeMethod(method, newMethods, context)
+                modified = modified or analyzeMethod(method, newMethods, createdBridges, context)
 
             }
 
@@ -92,13 +93,14 @@ class LambdaAnalysisAugment(private val model: ProjectModel, config: CutterConfi
     private fun analyzeMethod(
         method: MethodNode,
         methods: ArrayList<MethodNode>,
+        bridges: MutableMap<HandleWrapper, MethodNode>,
         context: WorkerContext<Unit, Unit>
     ): Boolean {
         method.instructions ?: return false
         var modified = false
         for (instruction in method.instructions) {
             if (instruction is InvokeDynamicInsnNode) {
-                modified = modified or analyzeInvokeDynamic(method, methods, instruction, context)
+                modified = modified or analyzeInvokeDynamic(method, methods, instruction, bridges, context)
             }
         }
 
@@ -109,6 +111,7 @@ class LambdaAnalysisAugment(private val model: ProjectModel, config: CutterConfi
         method: MethodNode,
         methods: ArrayList<MethodNode>,
         insn: InvokeDynamicInsnNode,
+        bridges: MutableMap<HandleWrapper, MethodNode>,
         context: WorkerContext<Unit, Unit>
     ): Boolean {
         if (insn.bsm.name != "metafactory" && insn.bsm.name != "altMetafactory") return false
@@ -135,7 +138,16 @@ class LambdaAnalysisAugment(private val model: ProjectModel, config: CutterConfi
             }
 
         } else if (data != null) {
-            val bridgeMethod = createBridgeMethod(implHandle, context)
+
+            val wrapper = HandleWrapper(implHandle)
+            val bridgeMethod = if (wrapper in bridges) {
+                bridges[wrapper]!!
+            } else {
+                val bridgeMethod = createBridgeMethod(implHandle, context)
+                methods += bridgeMethod
+                bridges[wrapper] = bridgeMethod
+                bridgeMethod
+            }
 
             val bridgeAtom = MethodAtom(context.name, bridgeMethod)
             model.join(bridgeAtom, MethodAtom(context.name, method))
@@ -151,14 +163,16 @@ class LambdaAnalysisAugment(private val model: ProjectModel, config: CutterConfi
                 context.info.node().access and Opcodes.ACC_INTERFACE != 0
             )
 
-            methods += bridgeMethod
 
         }
         return true
 
     }
 
-    private fun createBridgeMethod(handle: Handle, context: WorkerContext<Unit, Unit>): MethodNode {
+    private fun createBridgeMethod(
+        handle: Handle,
+        context: WorkerContext<Unit, Unit>
+    ): MethodNode {
         val owner = ClassTypeReference.fromInternal(handle.owner)
         var name = "lambda\$bridge\$${handle.name}"
         val parameters = arrayListOf<TypeReference>()
@@ -231,5 +245,38 @@ class LambdaAnalysisAugment(private val model: ProjectModel, config: CutterConfi
     companion object {
 
         private val lambdaImplPattern = "lambda\\$.+\\$\\d+".toRegex()
+    }
+
+    private class HandleWrapper(val handle: Handle) {
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as HandleWrapper
+
+            if (handle.tag != other.handle.tag) return false
+            if (handle.isInterface != other.handle.isInterface) return false
+            if (handle.desc != other.handle.desc) return false
+            if (handle.owner != other.handle.owner) return false
+            if (handle.name != other.handle.name) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var hash = 0
+            hash += handle.tag.hashCode()
+            hash *= 256
+            hash += handle.isInterface.hashCode()
+            hash *= 256
+            hash += handle.desc.hashCode()
+            hash *= 256
+            hash += handle.owner.hashCode()
+            hash *= 256
+            hash += handle.name.hashCode()
+            hash *= 256
+            return hash
+        }
     }
 }

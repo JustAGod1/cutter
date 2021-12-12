@@ -13,17 +13,15 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.0'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id "com.github.johnrengelman.shadow" version "7.1.0"
     id "com.gradle.plugin-publish" version "0.18.0"
-    id 'java-gradle-plugin'
 }
 apply plugin: 'idea'
-apply plugin: 'maven'
 apply plugin: 'signing'
 
 group 'tech.justagod'
 archivesBaseName = 'cutter'
-version '2.1.0-rc'
+version '2.1.11-rc'
 
 
 targetCompatibility = sourceCompatibility = 1.8
@@ -52,33 +50,6 @@ test {
 
 apply from: "build-scripts/Publishing.gradle"
 apply from: "build-scripts/Dependencies.gradle"
-
-
-
-def defaultsProj = project(':Defaults')
-
-task appendDefaultLib(type: Jar) {
-    archiveName = 'cutter.jar.tmp'
-    group = "build"
-    from zipTree(project.file('build/libs/cutter.jar'))
-    into('defaults') {
-        from(project.fileTree(defaultsProj.file("build/libs")))
-    }
-    doLast {
-        Files.deleteIfExists(project.file('build/libs/cutter.jar').toPath())
-        Files.move(project.file('build/libs/cutter.jar.tmp').toPath(), project.file('build/libs/cutter.jar').toPath())
-    }
-
-}
-
-appendDefaultLib.dependsOn shadowJar
-appendDefaultLib.dependsOn(defaultsProj.tasks.getByPath("jar"))
-
-build.dependsOn(appendDefaultLib)
-
-test.dependsOn(appendDefaultLib)
-
-
 
 compileTestKotlin {
     kotlinOptions {

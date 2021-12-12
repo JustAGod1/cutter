@@ -5,7 +5,7 @@ import ru.justagod.cutter.mincer.processor.WorkerContext
 import ru.justagod.cutter.model.ClassTypeReference
 import ru.justagod.cutter.processing.base.MincerAugment
 import ru.justagod.cutter.processing.transformation.validation.ValidationError
-import ru.justagod.processing.cutter.transformation.validation.ValidationResult
+import ru.justagod.cutter.processing.transformation.validation.ValidationResult
 
 class AnnotationRemoverAugment(private val annotation: ClassTypeReference) : MincerAugment<Unit, ValidationResult>(){
     override fun process(context: WorkerContext<Unit, ValidationResult>): MincerResultType {
