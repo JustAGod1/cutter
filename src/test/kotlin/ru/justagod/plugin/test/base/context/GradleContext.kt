@@ -15,6 +15,7 @@ class GradleContext(val root: File = File("gradle-test")) : TestingContext() {
         const val scriptName = "build.gradle"
         const val sourceDir = "src/main/java"
         const val pluginJarName = "cutter.jar"
+        const val propertiesName = "gradle.properties"
         const val settingsName = "settings.gradle"
     }
 
@@ -111,6 +112,20 @@ class GradleContext(val root: File = File("gradle-test")) : TestingContext() {
         copyPluginJar()
         makeSourceDirFolder()
         makeGradleSettings(root.name)
+        putGradleJVMArgs()
+    }
+
+    private fun putGradleJVMArgs() {
+        if (System.getenv("debug") != "true") return
+        val fileLeakFile = File("file-leak-detector-1.13-jar-with-dependencies.jar")
+        val fileLeakAbs = fileLeakFile.absolutePath.replace("\\", "/")
+
+        val sb = StringBuilder()
+
+        sb.append("\\\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5006\\\" ")
+        sb.append("-javaagent:$fileLeakAbs=http=19999")
+        val f = root.resolve(propertiesName)
+        f.writeText("org.gradle.jvmargs=$sb")
     }
 
     override fun compileFolder(root: File, conf: String?): File {

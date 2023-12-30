@@ -1,12 +1,12 @@
 package ru.justagod.plugin.gradle
 
 import org.gradle.api.internal.file.CopyActionProcessingStreamAction
-import org.gradle.api.internal.file.copy.*
-import org.gradle.api.invocation.Gradle
+import org.gradle.api.internal.file.copy.CopyAction
+import org.gradle.api.internal.file.copy.CopyActionProcessingStream
+import org.gradle.api.internal.file.copy.FileCopyDetailsInternal
 import org.gradle.api.tasks.WorkResult
-import org.gradle.workers.internal.DefaultWorkResult
-import ru.justagod.cutter.processing.config.CutterConfig
 import java.io.File
+import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -34,7 +34,7 @@ class CutterCopyAction(
             val entry = ZipEntry(file.relativeTo(cacheDir).path)
             fileOutput.putNextEntry(entry)
 
-            file.inputStream().copyTo(fileOutput)
+            file.inputStream().use { it.copyTo(fileOutput) }
             fileOutput.closeEntry()
         }
         fileOutput.close()

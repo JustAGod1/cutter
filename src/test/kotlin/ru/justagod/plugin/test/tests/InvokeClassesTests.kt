@@ -1,12 +1,12 @@
 package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
-import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.cutter.processing.config.CutterConfig
-import ru.justagod.cutter.processing.config.InvokeClass
-import ru.justagod.cutter.processing.config.MethodDesc
-import ru.justagod.cutter.processing.config.SideName
+import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.test.base.context.StraightContext
+import ru.justagod.processing.cutter.config.CutterConfig
+import ru.justagod.processing.cutter.config.InvokeClass
+import ru.justagod.processing.cutter.config.MethodDesc
+import ru.justagod.processing.cutter.config.SideName
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -60,7 +60,7 @@ object InvokeClassesTests {
                     MethodDesc("run", "()Ljava/lang/Object;")
                 )
             ),
-            deleteAnnotations = false
+            removeAnnotations = false
         )
     }
 

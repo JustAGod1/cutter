@@ -1,20 +1,20 @@
 package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
-import ru.justagod.cutter.mincer.Mincer
-import ru.justagod.cutter.mincer.util.MincerDecentFS
-import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.cutter.processing.CutterProcessingUnit
-import ru.justagod.cutter.processing.CutterProcessingUnit.client
-import ru.justagod.cutter.processing.CutterProcessingUnit.server
-import ru.justagod.cutter.processing.config.CutterConfig
-import ru.justagod.cutter.processing.config.InvokeClass
-import ru.justagod.cutter.processing.config.MethodDesc
-import ru.justagod.cutter.processing.config.SideName
-import ru.justagod.cutter.processing.transformation.validation.*
+import ru.justagod.mincer.Mincer
+import ru.justagod.mincer.util.MincerDecentFS
+import ru.justagod.mincer.util.MincerUtils
+import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.context.StraightContext
+import ru.justagod.processing.cutter.CutterProcessingUnit
+import ru.justagod.processing.cutter.CutterProcessingUnit.client
+import ru.justagod.processing.cutter.CutterProcessingUnit.server
+import ru.justagod.processing.cutter.config.CutterConfig
+import ru.justagod.processing.cutter.config.InvokeClass
+import ru.justagod.processing.cutter.config.MethodDesc
+import ru.justagod.processing.cutter.config.SideName
+import ru.justagod.processing.cutter.transformation.validation.*
 
 object ValidationTests {
 
@@ -130,7 +130,7 @@ object ValidationTests {
                     MethodDesc("run", "()V")
                 )
             ),
-            deleteAnnotations = false
+            removeAnnotations = false
         )
         val pipeline = CutterProcessingUnit.makePipeline(task)
 
@@ -160,7 +160,7 @@ object ValidationTests {
         if (falseErrors.isNotEmpty()) {
             println("Errors that weren't supposed to exist:")
             for (falseError in falseErrors) {
-                println(falseError)
+                println(falseError.javaClass.simpleName + ": " + falseError)
             }
         }
         if (notRaisedErrors.isNotEmpty()) {
@@ -168,7 +168,7 @@ object ValidationTests {
 
             println("Errors that were supposed to exist:")
             for (notRaisedError in notRaisedErrors) {
-                println(notRaisedError)
+                println(notRaisedError.javaClass.simpleName + ": " + notRaisedError)
             }
         }
 

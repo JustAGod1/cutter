@@ -1,11 +1,11 @@
 package ru.justagod.plugin.test.base.context
 
-import ru.justagod.cutter.mincer.Mincer
-import ru.justagod.cutter.mincer.util.MincerDecentFS
-import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.processing.CutterProcessingUnit
-import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.mincer.Mincer
+import ru.justagod.mincer.util.MincerDecentFS
+import ru.justagod.mincer.util.MincerUtils
 import ru.justagod.plugin.test.base.TestingContext
+import ru.justagod.processing.cutter.CutterProcessingUnit
+import ru.justagod.processing.cutter.config.CutterConfig
 import java.io.File
 import java.lang.RuntimeException
 import java.nio.file.Files

@@ -10,7 +10,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.api.tasks.bundling.Jar
-import ru.justagod.cutter.processing.config.CutterConfig
+import ru.justagod.processing.cutter.config.CutterConfig
 import java.io.File
 import java.nio.charset.Charset
 import java.util.concurrent.Callable

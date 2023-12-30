@@ -6,19 +6,21 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import ru.justagod.cutter.mincer.Mincer
-import ru.justagod.cutter.mincer.pipeline.MincerPipeline
-import ru.justagod.cutter.mincer.util.MincerDecentFS
-import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.cutter.processing.config.CutterConfig
-import ru.justagod.cutter.processing.config.SideName
+import ru.justagod.mincer.Mincer
+import ru.justagod.mincer.pipeline.MincerPipeline
+import ru.justagod.mincer.util.MincerDecentFS
+import ru.justagod.mincer.util.MincerUtils
+import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.test.base.TestingContext
 import ru.justagod.plugin.test.base.context.GradleContext
 import ru.justagod.plugin.test.base.context.StraightContext
 import ru.justagod.plugin.test.tests.trivial.model.TrivialTestData
 import ru.justagod.plugin.test.tests.trivial.model.TrivialTestBuilder
 import ru.justagod.plugin.test.tests.trivial.model.TrivialValidator
+import ru.justagod.processing.cutter.CutterProcessingUnit.client
+import ru.justagod.processing.cutter.CutterProcessingUnit.server
+import ru.justagod.processing.cutter.config.CutterConfig
+import ru.justagod.processing.cutter.config.SideName
 import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
@@ -150,10 +152,10 @@ object CutterTrivialTests {
             CutterConfig(
                 annotation = ClassTypeReference("ru.justagod.cutter.GradleSideOnly"),
                 validationOverrideAnnotation = null,
-                primalSides = setOf(SideName.make("server"), SideName.make("client")),
+                primalSides = setOf(server, client),
                 targetSides = setOf(SideName.make(name)),
                 invocators = emptyList(),
-                deleteAnnotations = false
+                removeAnnotations = false
             )
         }
         context.prepare()

@@ -17,9 +17,9 @@ import org.junit.jupiter.api.TestInstance
 import org.mockito.*
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
-import ru.justagod.cutter.processing.config.CutterConfig
 import ru.justagod.plugin.gradle.CutterPlugin
 import ru.justagod.plugin.gradle.CutterTask
+import ru.justagod.processing.cutter.config.CutterConfig
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class InitialSetupTest {

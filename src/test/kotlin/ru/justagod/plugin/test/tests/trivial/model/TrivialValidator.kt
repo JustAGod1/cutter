@@ -1,8 +1,9 @@
 package ru.justagod.plugin.test.tests.trivial.model
 
-import ru.justagod.cutter.mincer.control.MincerResultType
-import ru.justagod.cutter.mincer.processor.SubMincer
-import ru.justagod.cutter.mincer.processor.WorkerContext
+import ru.justagod.mincer.control.MincerResultType
+import ru.justagod.mincer.processor.SubMincer
+import ru.justagod.mincer.processor.WorkerContext
+
 
 class TrivialValidator(private val configName: String, private val imageModel: ImageModel)
     : SubMincer<Unit, Boolean> {

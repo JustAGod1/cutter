@@ -2,18 +2,17 @@ package ru.justagod.plugin.test.tests
 
 import org.junit.jupiter.api.Test
 import org.objectweb.asm.tree.AnnotationNode
-import ru.justagod.cutter.mincer.Mincer
-import ru.justagod.cutter.mincer.control.MincerResultType
-import ru.justagod.cutter.mincer.pipeline.MincerPipeline
-import ru.justagod.cutter.mincer.processor.SubMincer
-import ru.justagod.cutter.mincer.processor.WorkerContext
-import ru.justagod.cutter.mincer.util.MincerDecentFS
-import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.cutter.processing.config.CutterConfig
-import ru.justagod.cutter.processing.config.SideName
-import ru.justagod.plugin.test.base.context.GradleContext
+import ru.justagod.mincer.Mincer
+import ru.justagod.mincer.control.MincerResultType
+import ru.justagod.mincer.pipeline.MincerPipeline
+import ru.justagod.mincer.processor.SubMincer
+import ru.justagod.mincer.processor.WorkerContext
+import ru.justagod.mincer.util.MincerDecentFS
+import ru.justagod.mincer.util.MincerUtils
+import ru.justagod.model.ClassTypeReference
 import ru.justagod.plugin.test.base.context.StraightContext
+import ru.justagod.processing.cutter.config.CutterConfig
+import ru.justagod.processing.cutter.config.SideName
 import java.io.File
 
 object AnnotationTests {
@@ -29,7 +28,7 @@ object AnnotationTests {
                 primalSides = setOf(SideName.make("server"), SideName.make("client")),
                 targetSides = setOf(SideName.make(name)),
                 invocators = emptyList(),
-                deleteAnnotations = true
+                removeAnnotations = true
             )
         }
         val virgin = context.compileResourceFolder("test8", null)
@@ -48,7 +47,7 @@ object AnnotationTests {
                 primalSides = setOf(SideName.make("server"), SideName.make("client")),
                 targetSides = setOf(SideName.make(name)),
                 invocators = emptyList(),
-                deleteAnnotations = false
+                removeAnnotations = false
             )
         }
         val virgin = context.compileResourceFolder("test8", null)

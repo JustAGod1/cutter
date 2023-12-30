@@ -1,15 +1,17 @@
 package ru.justagod.plugin.gradle
 
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
-import ru.justagod.cutter.mincer.Mincer
-import ru.justagod.cutter.mincer.control.MincerResultType
-import ru.justagod.cutter.mincer.util.MincerDecentFS
-import ru.justagod.cutter.mincer.util.MincerUtils
-import ru.justagod.cutter.mincer.util.recursiveness.MincerTreeFS
-import ru.justagod.cutter.mincer.util.recursiveness.MincerZipFS
-import ru.justagod.cutter.processing.CutterProcessingUnit
-import ru.justagod.cutter.processing.config.CutterConfig
+import org.zeroturnaround.zip.ZipUtil
+import ru.justagod.mincer.Mincer
+import ru.justagod.mincer.control.MincerResultType
+import ru.justagod.mincer.util.MincerDecentFS
+import ru.justagod.mincer.util.MincerUtils
+import ru.justagod.mincer.util.recursiveness.ByteArraySource
+import ru.justagod.mincer.util.recursiveness.MincerTreeFS
+import ru.justagod.mincer.util.recursiveness.MincerZipFS
+import ru.justagod.processing.cutter.CutterProcessingUnit
+import ru.justagod.processing.cutter.config.CutterConfig
+import ru.justagod.processing.cutter.model.ProjectModel
 import java.io.File
 import java.time.Duration
 import java.time.Instant
@@ -24,11 +26,18 @@ class DefaultCutterProcessor(
     private val configurations: List<FileCollection>
 ) : CutterProcessor {
     override fun process(root: File) {
-        val pipeline = CutterProcessingUnit.makePipeline(config)
+        val model = ProjectModel(config.primalSides)
+        val pipeline = CutterProcessingUnit.makePipeline(config, model)
 
         val leaves = configurations.flatten().map {
             if (it.extension == "jar" || it.extension == "zip") {
-                MincerZipFS(it)
+                val entries = hashMapOf<String, ByteArraySource>()
+                ZipUtil.iterate(it) { i, z ->
+                    if (!z.isDirectory) {
+                        entries[z.name] = ByteArraySource(z.name, i.readBytes())
+                    }
+                }
+                MincerZipFS(it, entries)
             } else {
                 MincerDecentFS(it)
             }
@@ -50,7 +59,7 @@ class DefaultCutterProcessor(
 
         val result = pipeline.result()
         if (result.errors.isNotEmpty()) {
-            System.err.println(CutterProcessingUnit.reportValidationResults(mapOf(config.targetSides to result.errors)))
+            System.err.println(CutterProcessingUnit.reportValidationResults(config.targetSides.associateWith { result.errors }))
             throw RuntimeException("Validation failed")
         }
     }

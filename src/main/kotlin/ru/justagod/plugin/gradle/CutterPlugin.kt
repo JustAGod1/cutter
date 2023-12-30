@@ -5,14 +5,13 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.DependencyResolutionListener
 import org.gradle.api.artifacts.ResolvableDependencies
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.bundling.Jar
-import ru.justagod.cutter.model.ClassTypeReference
-import ru.justagod.cutter.processing.config.CutterConfig
-import ru.justagod.cutter.processing.config.InvokeClass
-import ru.justagod.cutter.processing.config.MethodDesc
-import ru.justagod.cutter.processing.config.SideName
+import ru.justagod.model.ClassTypeReference
+import ru.justagod.processing.cutter.config.CutterConfig
+import ru.justagod.processing.cutter.config.InvokeClass
+import ru.justagod.processing.cutter.config.MethodDesc
+import ru.justagod.processing.cutter.config.SideName
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.Callable
@@ -37,6 +36,7 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
 
         val output = FileOutputStream(target)
         input.copyTo(output, 1024 * 5)
+        output.close()
 
 
         return target
@@ -136,7 +136,7 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
                         functionalMethod = MethodDesc("run", "()Ljava/lang/Object;")
                     )
                 ),
-                deleteAnnotations = true
+                removeAnnotations = true
             )
         }
     }
