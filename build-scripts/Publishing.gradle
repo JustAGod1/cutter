@@ -1,12 +1,12 @@
 import java.nio.file.Files
 
-task javadocJar(type: Jar) {
+tasks.register('javadocJar', Jar) {
     classifier = 'javadoc'
     from javadoc
 }
 
 
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
@@ -36,25 +36,25 @@ pluginBundle {
 
 shadowJar {
     into("defaults") {
-        from(project(":Defaults").tasks.findByName("renameOutput"))
+        from(project(":Defaults").tasks.named("renameOutput"))
     }
 }
 
-task gitTag(type: Exec) {
+tasks.register('gitTag', Exec) {
     commandLine("bash", "-c", "git commit -am ${project.getVersion().toString()} && git tag ${project.getVersion().toString()} && git push")
     workingDir(project.projectDir)
 
     group("publish")
 }
 
-task seriousRelease {
+tasks.register('seriousRelease') {
     dependsOn(gitTag)
     dependsOn(publishPlugins)
 
     group("publish")
 }
 
-shadowJar.dependsOn(project(":Defaults").tasks.findByName("renameOutput"))
+shadowJar.dependsOn(project(":Defaults").tasks.named("renameOutput"))
 publishPlugins.dependsOn(shadowJar)
 
 artifacts {

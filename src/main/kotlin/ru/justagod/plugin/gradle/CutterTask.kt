@@ -43,7 +43,7 @@ open class CutterTask : Jar() {
         cacheDir.mkdirs()
         return CutterCopyAction(
             cacheDir = cacheDir,
-            targetFile = destinationDir.resolve(archiveName),
+            targetFile = destinationDirectory.get().asFile.resolve(archiveFileName.get()),
             processor = DefaultCutterProcessor(threadsCount.getOrElse(10), config.get(), classPath.get()),
             encoding = metadataCharset ?: Charset.defaultCharset().name()
         )

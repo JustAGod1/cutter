@@ -122,7 +122,7 @@ object CutterTrivialTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["5.0", "5.3", "6.1", "6.7", "7.0", "7.3"])
+    @ValueSource(strings = ["8.5", "8.4", "7.3", "7.0", "6.7", "6.1", "5.3"])
     fun `Generic gradle version test to be sure we still support all gradle versions`(version: String) {
         val context = GradleContext(File("gradle-test"))
         context.version = version
@@ -133,10 +133,20 @@ object CutterTrivialTests {
     }
 
     @TestFactory
-    @DisplayName("Test everything on Gradle 4.5")
-    fun oneGradleVersionTests(): List<DynamicTest> {
+    @DisplayName("Test everything on Gradle 5.3")
+    fun fullGradle53(): List<DynamicTest> {
+        return fullGradleTest("5.3")
+    }
+
+    @TestFactory
+    @DisplayName("Test everything on Gradle 8.5")
+    fun fullGradle85(): List<DynamicTest> {
+        return fullGradleTest("8.5")
+    }
+
+    private fun fullGradleTest(version: String): List<DynamicTest> {
         val context = GradleContext(File("gradle-test"))
-        context.version = "4.5"
+        context.version = version
         context.prepare()
         context.buildScriptWithPlugin("")
         return registry.map {

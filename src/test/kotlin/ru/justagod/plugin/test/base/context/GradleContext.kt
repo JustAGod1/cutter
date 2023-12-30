@@ -9,7 +9,7 @@ import java.nio.file.Files
 
 class GradleContext(val root: File = File("gradle-test")) : TestingContext() {
 
-    var version = "5.0"
+    var version = "5.3"
 
     companion object {
         const val scriptName = "build.gradle"
@@ -55,7 +55,7 @@ class GradleContext(val root: File = File("gradle-test")) : TestingContext() {
                     |apply plugin: 'cutter'
                     |
                     |jar {
-                    |   archiveName = 'mod.jar'
+                    |   archiveFileName.set('mod.jar')
                     |}
                     |
                     |$script

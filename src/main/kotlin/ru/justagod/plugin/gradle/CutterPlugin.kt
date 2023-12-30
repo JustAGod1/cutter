@@ -61,6 +61,10 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
             ?: project.configurations.findByName("compileClasspath")!!
     }
 
+    private fun implementationConfiguration(): Configuration {
+        return project.configurations.findByName("implementation")!!
+    }
+
     private fun initiateTasks(project: Project) {
         initiateServerTask(project)
         initiateClientTask(project)
@@ -85,7 +89,7 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
 
         clientTask.description = "Builds jar with only client classes"
         clientTask.config.set(configForSide(clientSide))
-        clientTask.classifier = "client"
+        clientTask.archiveClassifier?.set("client")
     }
 
 
@@ -94,7 +98,7 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
 
         serverTask.config.set(configForSide(serverSide))
         serverTask.description = "Builds jar with only server classes"
-        serverTask.classifier = "server"
+        serverTask.archiveClassifier?.set("server")
     }
 
 
@@ -142,7 +146,7 @@ class CutterPlugin : Plugin<Project>, DependencyResolutionListener {
     }
 
     override fun beforeResolve(dependencies: ResolvableDependencies) {
-        project.dependencies.add(compileConfiguration().name, project.files(defaultsFile))
+        project.dependencies.add(implementationConfiguration().name, project.files(defaultsFile))
 
         val jar = project.tasks.findByName("jar") as Jar
         jar.from(project.zipTree(defaultsFile))

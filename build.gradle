@@ -39,7 +39,7 @@ evaluationDependsOnChildren()
 
 
 jar {
-    archiveName = "cutter.jar"
+    archiveFileName.set("cutter.jar")
 }
 
 
