@@ -11,47 +11,37 @@ tasks.register('sourcesJar', Jar) {
     from sourceSets.main.allSource
 }
 
-pluginBundle {
-    website = 'https://gitlab.com/hvalick2111/cutter'
-    vcsUrl = 'https://gitlab.com/hvalick2111/cutter'
-
-    description = 'Plugin to protect mods\' server code'
-
-    mavenCoordinates {
-        groupId = project.group
-        artifactId = "cutter"
-        version = project.version
-    }
-
-    plugins {
-        cutter {
-            id = project.group.toString() + ".cutter"
-
-            displayName = 'Cutter'
-            tags = ['individual', 'tags', 'per', 'plugin']
-        }
-
-    }
-}
-
 shadowJar {
+    archiveClassifier.set(null)
+    classifier = null
+    archiveFileName.set("cutter.jar")
+    relocate 'org.objectweb', 'shadow.org.objectweb'
+    relocate 'kotlin', 'shadow.kotlin'
     into("defaults") {
         from(project(":Defaults").tasks.named("renameOutput"))
     }
 }
 
-tasks.register('gitTag', Exec) {
-    commandLine("bash", "-c", "git commit -am ${project.getVersion().toString()} && git tag ${project.getVersion().toString()} && git push")
-    workingDir(project.projectDir)
+gradlePlugin {
+    vcsUrl = 'https://github.com/JustAGod1/cutter'
+    website = 'https://github.com/JustAGod1/cutter'
 
-    group("publish")
-}
+    //mavenCoordinates {
+        //groupId = project.group
+        //artifactId = "cutter"
+        //version = project.version
+    //}
 
-tasks.register('seriousRelease') {
-    dependsOn(gitTag)
-    dependsOn(publishPlugins)
+    plugins {
+        cutter {
+            id = project.group.toString() + ".cutter"
+            implementationClass = "ru.justagod.plugin.gradle.CutterPlugin"
+            displayName = 'Cutter'
+            description = 'Plugin to protect mods\' server code'
+            tags.set(['protection', 'minecraft', 'forge'])
+        }
 
-    group("publish")
+    }
 }
 
 shadowJar.dependsOn(project(":Defaults").tasks.named("renameOutput"))

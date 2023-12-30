@@ -1,6 +1,3 @@
-import java.nio.file.Files
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
 buildscript {
     repositories {
         mavenCentral()
@@ -14,14 +11,14 @@ buildscript {
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.0'
     id "com.github.johnrengelman.shadow" version "7.1.0"
-    id "com.gradle.plugin-publish" version "0.18.0"
+    id "com.gradle.plugin-publish" version "1.2.1"
+    id 'signing'
 }
 apply plugin: 'idea'
-apply plugin: 'signing'
 
 group 'tech.justagod'
 archivesBaseName = 'cutter'
-version '3.0-rc'
+version '3.0.1-rc'
 
 
 targetCompatibility = sourceCompatibility = 1.8
@@ -57,12 +54,6 @@ compileTestKotlin {
     }
 }
 
-shadowJar {
-    classifier = null
-    archiveName = "cutter.jar"
-    relocate 'org.objectweb', 'shadow.org.objectweb'
-    relocate 'kotlin', 'shadow.kotlin'
-}
 
 
 idea {
@@ -72,3 +63,7 @@ idea {
     }
 }
 
+configurations.archives.artifacts.clear()
+artifacts {
+    archives shadowJar
+}
