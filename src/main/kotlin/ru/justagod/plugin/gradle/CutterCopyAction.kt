@@ -31,7 +31,7 @@ class CutterCopyAction(
         for (file in cacheDir.walkTopDown()) {
             if (file.isDirectory) continue
 
-            val entry = ZipEntry(file.relativeTo(cacheDir).path)
+            val entry = ZipEntry(file.relativeTo(cacheDir).path.replace("\\", "/"))
             fileOutput.putNextEntry(entry)
 
             file.inputStream().use { it.copyTo(fileOutput) }
