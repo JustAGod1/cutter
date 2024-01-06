@@ -79,7 +79,7 @@ object BytecodeUtils {
     }
 
     fun makeMethodSimple(node: ClassNode, name: String, desc: String, access: Int, signature: String? = null, exceptions: Array<String>? = null): LocalVariablesSorter {
-        val method = MethodNode(Opcodes.ASM6, name, desc, signature, exceptions)
+        val method = MethodNode(Opcodes.ASM9, name, desc, signature, exceptions)
         method.access = access
         method.instructions = InsnList()
         val visitor = LocalVariablesSorter(access, desc, method)

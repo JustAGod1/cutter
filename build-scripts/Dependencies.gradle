@@ -8,8 +8,8 @@ configurations {
 dependencies {
     shadow gradleApi()
     shadow 'org.zeroturnaround:zt-zip:1.14'
-    implementation "org.ow2.asm:asm-tree:9.2"
-    implementation "org.ow2.asm:asm-commons:9.2"
+    implementation "org.ow2.asm:asm-tree:9.5"
+    implementation "org.ow2.asm:asm-commons:9.5"
     shadow 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
     shadow "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
     shadow 'org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.3.0'

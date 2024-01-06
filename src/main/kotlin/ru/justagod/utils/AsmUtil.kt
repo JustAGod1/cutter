@@ -216,7 +216,7 @@ object AsmUtil {
 
 fun InstructionSet.toInsnList(): InsnList {
     val m = MethodNode(0, "fake", "()V", null, null)
-    val appender = SimpleAppender(LocalVariablesSorter(Opcodes.ASM6, "()V", m))
+    val appender = SimpleAppender(LocalVariablesSorter(Opcodes.ASM9, "()V", m))
     appender += this
 
     return m.instructions

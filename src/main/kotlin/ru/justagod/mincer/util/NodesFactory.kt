@@ -19,7 +19,7 @@ class NodesFactory(private val harvester: (name: String) -> ByteArray) {
     private fun makeNode(bytecode: ByteArray, flags: Int = 0): ClassNode {
         val reader = ClassReader(bytecode)
 
-        val node = ClassNode(Opcodes.ASM6)
+        val node = ClassNode(Opcodes.ASM9)
         reader.accept(node, flags)
         return node
     }

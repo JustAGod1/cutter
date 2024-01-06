@@ -10,7 +10,7 @@ abstract class VariablesManager(api: Int, mv: MethodVisitor?): MethodVisitor(api
     abstract fun newLocal(type: Type): Int
 }
 
-class DelegatedVariablesManager(private val sorter: LocalVariablesSorter): VariablesManager(Opcodes.ASM6, sorter) {
+class DelegatedVariablesManager(private val sorter: LocalVariablesSorter): VariablesManager(Opcodes.ASM9, sorter) {
     override fun newLocal(type: Type): Int {
         return sorter.newLocal(type)
     }
